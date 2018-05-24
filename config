@@ -1,0 +1,8 @@
+[user]
+	name = pythonflaskserverapps
+	email = pythonflaskserverapps@gmail.com
+	[credential "https://github.com/pythonflaskserverapps/helloworld"]
+		username = pythonflaskserverapps
+[remote "origin"]
+	url = https://github.com/pythonflaskserverapps/helloworld
+	fetch = +refs/heads/*:refs/remotes/origin/*

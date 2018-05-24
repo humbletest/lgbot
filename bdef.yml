@@ -1,0 +1,27 @@
+apppy:
+  deps:
+    - transcrypt/dom.py
+    - transcrypt/widgets.py
+    - transcrypt/client.py
+  cmds:
+    - cc.bat
+appjs: 
+  deps:
+    - transcrypt/app.py
+  cmds:
+    - t.bat
+simpleserver:
+  run: true
+  color: BRIGHTCYAN
+  deps:
+    - simple.py  
+  cmds:
+    - ss.bat
+server:
+  run: true
+  color: BRIGHTYELLOW
+  deps:
+    - server.py  
+    - transcrypt/app.py
+  cmds:    
+    - s.bat
