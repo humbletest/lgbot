@@ -6,6 +6,9 @@ def ce(tag):
 def ge(id):
     return document.getElementById(id)
 
+def addEventListener(object, kind, callback):
+    object.addEventListener(kind, callback, False)
+
 class e:
     def __init__(self, tag):
         self.e = ce(tag)
@@ -26,23 +29,73 @@ class e:
         self.e.setAttribute(key,value)
         return self
 
+    # shorthand for getAttribute
+    def ga(self, key):
+        return self.e.getAttribute(key)
+
     # shorthand for setting value
     def sv(self, value):
         self.e.value = value
         return self
 
     # set inner html
-    def h(self, value):
+    def html(self, value):
         self.e.innerHTML = value
         return self
 
+    # clear
     def x(self):
-        self.h("")
+        self.html("")
+        return self
+
+    # width
+    def w(self, w):
+        self.e.style.width = w + "px"
+        return self
+
+    # height
+    def h(self, h):
+        self.e.style.height = h + "px"
+        return self
+
+    # top
+    def t(self, t):
+        self.e.style.top = t + "px"
+        return self
+
+    # left
+    def l(self, l):
+        self.e.style.left = l + "px"
+        return self
+
+    # margin left
+    def ml(self, ml):
+        self.e.style.marginLeft = ml + "px"
+        return self
+
+    # margin right
+    def mr(self, mr):
+        self.e.style.marginRight = mr + "px"
+        return self
+
+    # margin top
+    def mt(self, mt):
+        self.e.style.marginTop = mt + "px"
+        return self
+
+    # margin bottom
+    def mb(self, mb):
+        self.e.style.marginBottom = mb + "px"
         return self
 
     # add class
     def ac(self, klass):
-        self.sa("class",klass)
+        self.e.classList.add(klass)
+        return self
+
+    # remove class
+    def rc(self, klass):
+        self.e.classList.remove(klass)
         return self
 
     # return value

@@ -1,4 +1,9 @@
 ######################################################
+# constants
+WINDOW_SAFETY_MARGIN = 10
+######################################################
+
+######################################################
 # widgets
 class Button(Input):
     def __init__(self, caption, callback = None):
@@ -40,8 +45,8 @@ class TextInput(e):
 class LogItem(e):
     def __init__(self, content, kind = "normal"):
         super().__init__("div")
-        tdiv = Div().ac("logtimediv").h("{}".format(__new__ (Date()).toLocaleString()))
-        cdiv = Div().ac("logcontentdiv").h(content)
+        tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleString()))
+        cdiv = Div().ac("logcontentdiv").html(content)
         idiv = Div().ac("logitemdiv").aa([tdiv,cdiv])
         idiv.aa([tdiv,cdiv])
         self.a(idiv)
@@ -68,10 +73,61 @@ class Log(e):
         self.add(item)
         self.build()
 
+class Tab(e):
+    def __init__(self, key, displayname, element):
+        self.key = key
+        self.displayname = displayname
+        self.element = element
+        self.tabelement = None
+
 class TabPane(e):
-    def __init__(self):        
+    def __init__(self, args):        
         super().__init__("div")
-        self.container = Div().ac("tabpanecontainer")
-        self.a(self.container)
+        self.kind = args.get("kind", "child")
+        self.width = args.get("width", 600)
+        self.height = args.get("height", 400)
+        self.marginleft = args.get("marginleft", 0)
+        self.margintop = args.get("margintop", 0)
+        self.tabsheight = args.get("tabsheight", 40)
+        if self.kind == "main":
+            self.width = window.innerWidth - 2 * WINDOW_SAFETY_MARGIN
+            self.height = window.innerHeight - 2 * WINDOW_SAFETY_MARGIN
+            self.marginleft = WINDOW_SAFETY_MARGIN
+            self.margintop = WINDOW_SAFETY_MARGIN
+        self.contentheight = self.height - self.tabsheight
+        self.tabsdiv = Div().ac("tabpanetabsdiv").w(self.width).h(self.tabsheight)
+        self.contentdiv = Div().ac("tabpanecontentdiv").w(self.width).h(self.contentheight)
+        self.container = Div().ac("tabpanecontainer").w(self.width).h(self.height).ml(self.marginleft).mt(self.margintop)
+        self.container.aa([self.tabsdiv, self.contentdiv])        
+        self.a(self.container)        
+        self.tabs = []
+        self.seltab = None
+
+    def tabSelectedCallback(self, tab):
+        self.selectByKey(tab.key)
+        pass
+
+    def setTabs(self, tabs, key):
+        self.tabs = tabs
+        self.tabsdiv.x()
+        for tab in self.tabs:
+            tabelement = Div().ac("tabpanetab").html(tab.displayname)
+            self.tabsdiv.a(tabelement)
+            tab.tabelement = tabelement
+            tab.tabelement.ae("mousedown", self.tabSelectedCallback.bind(self, tab))
+        return self.selectByKey(key)
+
+    def selectByKey(self, key):
+        if len(self.tabs) == 0:
+            self.seltab = None
+            return self
+        self.seltab = self.tabs[0]
+        for tab in self.tabs:
+            tab.tabelement.rc("tabpaneseltab")
+            if tab.key == key:
+                self.seltab = tab                                
+                tab.tabelement.ac("tabpaneseltab")
+        self.contentdiv.x().a(self.seltab.element)
+        return self
 ######################################################
 

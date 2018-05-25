@@ -29,6 +29,7 @@ browser:
   refresh: true
   deps:
     - templates/index.html
+    - static/css/widgets.css
     - static/css/app.css
     - static/js/app.js
   cmds: []

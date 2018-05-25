@@ -11,34 +11,49 @@ else:
 SUBMIT_URL = ws_scheme + location.host
 ######################################################
 
+######################################################
+# app globals
+socket = None
+cmdinp = None
+mainlog = None
+maintab = None
+engineconsole = None
+######################################################
+
+######################################################
+# client functions
 def docwln(content):    
     li = LogItem("<pre>" + content + "</pre>")
     mainlog.log(li)    
 
-__pragma__("jsiter")
-
-document.querySelector("#content").innerHTML = "Flask hello world"
-
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
+######################################################
 
-cmdinp = TextInput(cmdinpcallback)
-mainlog = Log()
+######################################################
+# app
+def build():
+    global cmdinp, mainlog, maintab, engineconsole
 
-ge("cmddiv").appendChild(cmdinp.e)
-ge("logdiv").appendChild(mainlog.e)
+    cmdinp = TextInput(cmdinpcallback)
+    mainlog = Log()
 
-maintab = TabPane()
-#ge("tabdiv").appendChild(maintab.e)
+    engineconsole = Div().aa([cmdinp, mainlog])    
 
-docwln("creating socket for submit url [ " + SUBMIT_URL + " ]")
+    maintabpane = TabPane({"kind":"main"})
+    maintabpane.setTabs(
+        [
+            Tab("engineconsole", "Engine console", engineconsole),
+            Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
+        ], "engineconsole"
+    )    
+    
+    ge("maintabdiv").innerHTML = ""
+    ge("maintabdiv").appendChild(maintabpane.e)
+######################################################
 
-socket = io.connect(SUBMIT_URL)
-
-docwln("socket created ok")
-
-cmdinp.focus()
-
+######################################################
+# socket handler
 def onconnect():    
     docwln("socket connected ok")    
     socket.emit('sioreq', {"data": "socket connected"})
@@ -46,8 +61,26 @@ def onconnect():
 def onevent(json):
     docwln("socket received event " + JSON.stringify(json, null, 2))    
 
-socket.on('connect', onconnect)
-socket.on('siores', lambda json: onevent(json))
+def windowresizehandler():
+    build()
 
+def startup():
+    global socket
+
+    docwln("creating socket for submit url [ " + SUBMIT_URL + " ]")
+
+    socket = io.connect(SUBMIT_URL)
+
+    docwln("socket created ok")
+
+    cmdinp.focus()
+
+    socket.on('connect', onconnect)
+    socket.on('siores', lambda json: onevent(json))
+
+    addEventListener(window, "resize", windowresizehandler)
 ######################################################
 
+build()
+
+startup()

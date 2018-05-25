@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-25 13:34:10
+// Transcrypt'ed from Python, 2018-05-25 16:49:02
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2208,6 +2208,9 @@ function app () {
 		var ge = function (id) {
 			return document.getElementById (id);
 		};
+		var addEventListener = function (object, kind, callback) {
+			object.addEventListener (kind, callback, false);
+		};
 		var e = __class__ ('e', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, tag) {
@@ -2229,20 +2232,59 @@ function app () {
 				self.e.setAttribute (key, value);
 				return self;
 			});},
+			get ga () {return __get__ (this, function (self, key) {
+				return self.e.getAttribute (key);
+			});},
 			get sv () {return __get__ (this, function (self, value) {
 				self.e.value = value;
 				return self;
 			});},
-			get h () {return __get__ (this, function (self, value) {
+			get html () {return __get__ (this, function (self, value) {
 				self.e.innerHTML = value;
 				return self;
 			});},
 			get x () {return __get__ (this, function (self) {
-				self.h ('');
+				self.html ('');
+				return self;
+			});},
+			get w () {return __get__ (this, function (self, w) {
+				self.e.style.width = w + 'px';
+				return self;
+			});},
+			get h () {return __get__ (this, function (self, h) {
+				self.e.style.height = h + 'px';
+				return self;
+			});},
+			get t () {return __get__ (this, function (self, t) {
+				self.e.style.top = t + 'px';
+				return self;
+			});},
+			get l () {return __get__ (this, function (self, l) {
+				self.e.style.left = l + 'px';
+				return self;
+			});},
+			get ml () {return __get__ (this, function (self, ml) {
+				self.e.style.marginLeft = ml + 'px';
+				return self;
+			});},
+			get mr () {return __get__ (this, function (self, mr) {
+				self.e.style.marginRight = mr + 'px';
+				return self;
+			});},
+			get mt () {return __get__ (this, function (self, mt) {
+				self.e.style.marginTop = mt + 'px';
+				return self;
+			});},
+			get mb () {return __get__ (this, function (self, mb) {
+				self.e.style.marginBottom = mb + 'px';
 				return self;
 			});},
 			get ac () {return __get__ (this, function (self, klass) {
-				self.sa ('class', klass);
+				self.e.classList.add (klass);
+				return self;
+			});},
+			get rc () {return __get__ (this, function (self, klass) {
+				self.e.classList.remove (klass);
 				return self;
 			});},
 			get v () {return __get__ (this, function (self) {
@@ -2280,6 +2322,7 @@ function app () {
 				self.sa ('type', kind);
 			});}
 		});
+		var WINDOW_SAFETY_MARGIN = 10;
 		var Button = __class__ ('Button', [Input], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, caption, callback) {
@@ -2341,8 +2384,8 @@ function app () {
 					var kind = 'normal';
 				};
 				__super__ (LogItem, '__init__') (self, 'div');
-				var tdiv = Div ().ac ('logtimediv').h ('{}'.format (new Date ().toLocaleString ()));
-				var cdiv = Div ().ac ('logcontentdiv').h (content);
+				var tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleString ()));
+				var cdiv = Div ().ac ('logcontentdiv').html (content);
 				var idiv = Div ().ac ('logitemdiv').aa (list ([tdiv, cdiv]));
 				idiv.aa (list ([tdiv, cdiv]));
 				self.a (idiv);
@@ -2379,12 +2422,74 @@ function app () {
 				self.build ();
 			});}
 		});
+		var Tab = __class__ ('Tab', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, key, displayname, element) {
+				self.key = key;
+				self.displayname = displayname;
+				self.element = element;
+				self.tabelement = null;
+			});}
+		});
 		var TabPane = __class__ ('TabPane', [e], {
 			__module__: __name__,
-			get __init__ () {return __get__ (this, function (self) {
+			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (TabPane, '__init__') (self, 'div');
-				self.container = Div ().ac ('tabpanecontainer');
+				self.kind = args.py_get ('kind', 'child');
+				self.width = args.py_get ('width', 600);
+				self.height = args.py_get ('height', 400);
+				self.marginleft = args.py_get ('marginleft', 0);
+				self.margintop = args.py_get ('margintop', 0);
+				self.tabsheight = args.py_get ('tabsheight', 40);
+				if (self.kind == 'main') {
+					self.width = window.innerWidth - 2 * WINDOW_SAFETY_MARGIN;
+					self.height = window.innerHeight - 2 * WINDOW_SAFETY_MARGIN;
+					self.marginleft = WINDOW_SAFETY_MARGIN;
+					self.margintop = WINDOW_SAFETY_MARGIN;
+				}
+				self.contentheight = self.height - self.tabsheight;
+				self.tabsdiv = Div ().ac ('tabpanetabsdiv').w (self.width).h (self.tabsheight);
+				self.contentdiv = Div ().ac ('tabpanecontentdiv').w (self.width).h (self.contentheight);
+				self.container = Div ().ac ('tabpanecontainer').w (self.width).h (self.height).ml (self.marginleft).mt (self.margintop);
+				self.container.aa (list ([self.tabsdiv, self.contentdiv]));
 				self.a (self.container);
+				self.tabs = list ([]);
+				self.seltab = null;
+			});},
+			get tabSelectedCallback () {return __get__ (this, function (self, tab) {
+				self.selectByKey (tab.key);
+				// pass;
+			});},
+			get setTabs () {return __get__ (this, function (self, tabs, key) {
+				self.tabs = tabs;
+				self.tabsdiv.x ();
+				var __iterable0__ = self.tabs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var tab = __iterable0__ [__index0__];
+					var tabelement = Div ().ac ('tabpanetab').html (tab.displayname);
+					self.tabsdiv.a (tabelement);
+					tab.tabelement = tabelement;
+					tab.tabelement.ae ('mousedown', self.tabSelectedCallback.bind (self, tab));
+				}
+				return self.selectByKey (key);
+			});},
+			get selectByKey () {return __get__ (this, function (self, key) {
+				if (len (self.tabs) == 0) {
+					self.seltab = null;
+					return self;
+				}
+				self.seltab = self.tabs [0];
+				var __iterable0__ = self.tabs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var tab = __iterable0__ [__index0__];
+					tab.tabelement.rc ('tabpaneseltab');
+					if (tab.key == key) {
+						self.seltab = tab;
+						tab.tabelement.ac ('tabpaneseltab');
+					}
+				}
+				self.contentdiv.x ().a (self.seltab.element);
+				return self;
 			});}
 		});
 		if (window.location.protocol == 'https:') {
@@ -2394,34 +2499,50 @@ function app () {
 			var ws_scheme = 'ws://';
 		}
 		var SUBMIT_URL = ws_scheme + location.host;
+		var socket = null;
+		var cmdinp = null;
+		var mainlog = null;
+		var maintab = null;
+		var engineconsole = null;
 		var docwln = function (content) {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			mainlog.log (li);
 		};
-		document.querySelector ('#content').innerHTML = 'Flask hello world';
 		var cmdinpcallback = function (cmd) {
-			socket.emit ('sioreq', {'kind': 'cmd', 'data': cmd});
+			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
-		var cmdinp = TextInput (cmdinpcallback);
-		var mainlog = Log ();
-		ge ('cmddiv').appendChild (cmdinp.e);
-		ge ('logdiv').appendChild (mainlog.e);
-		var maintab = TabPane ();
-		docwln (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');
-		var socket = io.connect (SUBMIT_URL);
-		docwln ('socket created ok');
-		cmdinp.focus ();
+		var build = function () {
+			cmdinp = TextInput (cmdinpcallback);
+			mainlog = Log ();
+			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
+			var maintabpane = TabPane (dict ({'kind': 'main'}));
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'engineconsole');
+			ge ('maintabdiv').innerHTML = '';
+			ge ('maintabdiv').appendChild (maintabpane.e);
+		};
 		var onconnect = function () {
 			docwln ('socket connected ok');
-			socket.emit ('sioreq', {'data': 'socket connected'});
+			socket.emit ('sioreq', dict ({'data': 'socket connected'}));
 		};
 		var onevent = function (json) {
 			docwln ('socket received event ' + JSON.stringify (json, null, 2));
 		};
-		socket.on ('connect', onconnect);
-		socket.on ('siores', (function __lambda__ (json) {
-			return onevent (json);
-		}));
+		var windowresizehandler = function () {
+			build ();
+		};
+		var startup = function () {
+			docwln (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');
+			socket = io.connect (SUBMIT_URL);
+			docwln ('socket created ok');
+			cmdinp.focus ();
+			socket.on ('connect', onconnect);
+			socket.on ('siores', (function __lambda__ (json) {
+				return onevent (json);
+			}));
+			addEventListener (window, 'resize', windowresizehandler);
+		};
+		build ();
+		startup ();
 		__pragma__ ('<all>')
 			__all__.Button = Button;
 			__all__.Div = Div;
@@ -2430,21 +2551,28 @@ function app () {
 			__all__.LogItem = LogItem;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.Span = Span;
+			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
 			__all__.Text = Text;
 			__all__.TextInput = TextInput;
+			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
+			__all__.addEventListener = addEventListener;
+			__all__.build = build;
 			__all__.ce = ce;
 			__all__.cmdinp = cmdinp;
 			__all__.cmdinpcallback = cmdinpcallback;
 			__all__.docwln = docwln;
 			__all__.e = e;
+			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
 			__all__.mainlog = mainlog;
 			__all__.maintab = maintab;
 			__all__.onconnect = onconnect;
 			__all__.onevent = onevent;
 			__all__.socket = socket;
+			__all__.startup = startup;
+			__all__.windowresizehandler = windowresizehandler;
 			__all__.ws_scheme = ws_scheme;
 		__pragma__ ('</all>')
 	}) ();
