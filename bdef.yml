@@ -19,9 +19,16 @@ simpleserver:
     - ss.bat
 server:
   run: true
+  restart: true
   color: BRIGHTYELLOW
   deps:
-    - server.py  
-    - transcrypt/app.py
+    - server.py      
   cmds:    
     - s.bat
+browser:
+  refresh: true
+  deps:
+    - templates/index.html
+    - static/css/app.css
+    - static/js/app.js
+  cmds: []

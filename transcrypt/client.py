@@ -28,6 +28,9 @@ mainlog = Log()
 ge("cmddiv").appendChild(cmdinp.e)
 ge("logdiv").appendChild(mainlog.e)
 
+maintab = TabPane()
+#ge("tabdiv").appendChild(maintab.e)
+
 docwln("creating socket for submit url [ " + SUBMIT_URL + " ]")
 
 socket = io.connect(SUBMIT_URL)

@@ -1,1 +1,1 @@
-start r sb
+start "debugger" r sb

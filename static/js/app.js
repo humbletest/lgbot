@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-24 22:44:15
+// Transcrypt'ed from Python, 2018-05-25 13:34:10
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2379,6 +2379,14 @@ function app () {
 				self.build ();
 			});}
 		});
+		var TabPane = __class__ ('TabPane', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (TabPane, '__init__') (self, 'div');
+				self.container = Div ().ac ('tabpanecontainer');
+				self.a (self.container);
+			});}
+		});
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
 		}
@@ -2398,6 +2406,7 @@ function app () {
 		var mainlog = Log ();
 		ge ('cmddiv').appendChild (cmdinp.e);
 		ge ('logdiv').appendChild (mainlog.e);
+		var maintab = TabPane ();
 		docwln (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');
 		var socket = io.connect (SUBMIT_URL);
 		docwln ('socket created ok');
@@ -2421,6 +2430,7 @@ function app () {
 			__all__.LogItem = LogItem;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.Span = Span;
+			__all__.TabPane = TabPane;
 			__all__.Text = Text;
 			__all__.TextInput = TextInput;
 			__all__.__name__ = __name__;
@@ -2431,6 +2441,7 @@ function app () {
 			__all__.e = e;
 			__all__.ge = ge;
 			__all__.mainlog = mainlog;
+			__all__.maintab = maintab;
 			__all__.onconnect = onconnect;
 			__all__.onevent = onevent;
 			__all__.socket = socket;

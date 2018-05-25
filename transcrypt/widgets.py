@@ -67,5 +67,11 @@ class Log(e):
     def log(self, item):
         self.add(item)
         self.build()
+
+class TabPane(e):
+    def __init__(self):        
+        super().__init__("div")
+        self.container = Div().ac("tabpanecontainer")
+        self.a(self.container)
 ######################################################
 

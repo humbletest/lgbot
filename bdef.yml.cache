@@ -1,3 +1,4 @@
-{server.py: 1527182590.5307374, simple.py: 1527192192.4907668, transcrypt/app.py: 1527194654.5786376,
-  transcrypt/client.py: 1527193946.7173533, transcrypt/dom.py: 1527193946.7183554,
-  transcrypt/widgets.py: 1527193946.7193542}
+{server.py: 1527247880.1702542, simple.py: 1527245383.1193473, static/css/app.css: 1527247978.966005,
+  static/js/app.js: 1527248050.7190204, templates/index.html: 1527247699.3437545,
+  transcrypt/app.py: 1527248049.4765198, transcrypt/client.py: 1527248048.7797947,
+  transcrypt/dom.py: 1527193946.7183554, transcrypt/widgets.py: 1527239969.8579297}

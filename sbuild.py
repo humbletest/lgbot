@@ -1,11 +1,16 @@
 import yaml
 import os
+import sys
 import time
 import threading
 
 from selenium import webdriver
 
+###################################################
+
 from serverutils.process import PopenProcess
+
+###################################################
 
 ANSI = {
     "NONE" : "",
@@ -32,6 +37,15 @@ ANSI = {
     "UNDERLINE" : '\033[4m'
 }
 
+###################################################
+
+browser = webdriver.Chrome()
+browser.set_window_position(int(os.environ["BROWSER_WINDOW_LEFT"]), int(os.environ["BROWSER_WINDOW_TOP"]))
+browser.set_window_size(int(os.environ["BROWSER_WINDOW_WIDTH"]), int(os.environ["BROWSER_WINDOW_HEIGHT"]))
+browserinit = True
+
+###################################################
+
 def rf(path, default):    
     try:
         return open(path).read()
@@ -52,14 +66,16 @@ def runcmd(cmd):
     returncode = proc.wait_for_return_code()
     return returncode
 
+def getlastmod(path):
+    stat = os.stat(path)
+    return stat.st_mtime
+
+###################################################
+
 class BuildCommandFailedException(BaseException):
     def __init__(self, rulename, cmd):
         self.rulename = rulename
         self.cmd = cmd
-
-def getlastmod(path):
-    stat = os.stat(path)
-    return stat.st_mtime
 
 class BDep:
     def __init__(self, path):
@@ -74,6 +90,8 @@ class BRule:
         self.cmds = rdef["cmds"]
         self.run = rdef.get("run", False)        
         self.color = rdef.get("color", "NONE")
+        self.restart = rdef.get("restart", False)
+        self.refresh = rdef.get("refresh", False)
 
 class BTask:
     def __init__(self, name, cmds, color = "NONE"):
@@ -163,12 +181,17 @@ class BDef:
             if changed:
                 somechange = True            
             if rule.run:
-                if loop:                                        
-                    if rule.name in self.tasks:
-                        task = self.tasks[rule.name]
-                        if changed:                                                        
-                            task.kill()
-                            task.run()
+                if loop:                   
+                    if rule.refresh:
+                        browser.refresh()
+                    elif rule.name in self.tasks:
+                        task = self.tasks[rule.name]                        
+                        if changed:                            
+                            if rule.restart:                                
+                                sys.exit(0)                                                    
+                            else:
+                                task.kill()
+                                task.run()
                     else:
                         task = BTask(rule.name, rule.cmds, rule.color)
                         self.tasks[rule.name] = task                          
@@ -187,7 +210,7 @@ class BDef:
                         raise BuildCommandFailedException(rule.name, cmd)
                     else:
                         print(ANSI["GREEN"])
-                        print("{} {} success".format(rule.name, cmd))
+                        print("{} {} success".format(rule.name, cmd))                        
             else:
                 if not loop:
                     print(ANSI["MAGENTA"])
@@ -196,15 +219,15 @@ class BDef:
         if ( not loop ) or somechange:
             print(ANSI["BRIGHTGREEN"])
             print("build succeeded in {:.2f} seconds".format(elapsed))
-            print(ANSI["ENDC"])
+            print(ANSI["ENDC"])        
         self.updatecache()
         return somechange
 
+###################################################
+
 b = BDef().frompath()
 
-browser = webdriver.Chrome()
-browser.set_window_position(int(os.environ["BROWSER_WINDOW_LEFT"]), 10)
-browserinit = True
+###################################################
 
 def build_thread_func():
     global browserinit
@@ -219,6 +242,10 @@ def build_thread_func():
                 browser.refresh()
         time.sleep(1)
 
+###################################################
+
 bth = threading.Thread(target = build_thread_func)
 bth.start()
 #b.build(loop = True)
+
+###################################################

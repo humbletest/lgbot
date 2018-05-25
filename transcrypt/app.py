@@ -146,6 +146,12 @@ class Log(e):
     def log(self, item):
         self.add(item)
         self.build()
+
+class TabPane(e):
+    def __init__(self):        
+        super().__init__("div")
+        self.container = Div().ac("tabpanecontainer")
+        self.a(self.container)
 ######################################################
 
 ######################################################
@@ -177,6 +183,9 @@ mainlog = Log()
 
 ge("cmddiv").appendChild(cmdinp.e)
 ge("logdiv").appendChild(mainlog.e)
+
+maintab = TabPane()
+#ge("tabdiv").appendChild(maintab.e)
 
 docwln("creating socket for submit url [ " + SUBMIT_URL + " ]")
 

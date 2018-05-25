@@ -13,6 +13,7 @@ from flask_socketio import SocketIO, emit
 import time
 import os
 from urllib.parse import quote
+import random
 #########################################################
 
 #########################################################
@@ -99,11 +100,14 @@ class socket_handler:
         return wrapped_f
 #########################################################
 
+def randurl():
+    return random.randint(1e9,1e10)
+
 #########################################################
 # app routes
 @app.route("/")
 def hello():
-    return render_template("index.html")
+    return render_template("index.html", randurl = randurl)
 
 @app.route("/read",methods=["POST"])
 def read():
