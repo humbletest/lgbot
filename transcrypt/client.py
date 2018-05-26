@@ -18,6 +18,7 @@ cmdinp = None
 mainlog = None
 maintab = None
 engineconsole = None
+configschema = None
 ######################################################
 
 ######################################################
@@ -40,12 +41,15 @@ def build():
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
+    configschema = SchemaItem()
+
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
+            Tab("config", "Config", configschema),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
-        ], "engineconsole"
+        ], "config"
     )    
     
     ge("maintabdiv").innerHTML = ""

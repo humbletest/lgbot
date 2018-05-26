@@ -129,5 +129,11 @@ class TabPane(e):
                 tab.tabelement.ac("tabpaneseltab")
         self.contentdiv.x().a(self.seltab.element)
         return self
+
+class SchemaItem(e):
+    def __init__(self):
+        super().__init__("div")
+        self.element = Div().ac("schemaitem")
+        self.a(self.element)
 ######################################################
 

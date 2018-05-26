@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-26 13:36:12
+// Transcrypt'ed from Python, 2018-05-26 14:40:20
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2492,6 +2492,14 @@ function app () {
 				return self;
 			});}
 		});
+		var SchemaItem = __class__ ('SchemaItem', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (SchemaItem, '__init__') (self, 'div');
+				self.element = Div ().ac ('schemaitem');
+				self.a (self.element);
+			});}
+		});
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
 		}
@@ -2504,6 +2512,7 @@ function app () {
 		var mainlog = null;
 		var maintab = null;
 		var engineconsole = null;
+		var configschema = null;
 		var docwln = function (content) {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			mainlog.log (li);
@@ -2515,8 +2524,9 @@ function app () {
 			cmdinp = TextInput (cmdinpcallback);
 			mainlog = Log ();
 			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
+			var configschema = SchemaItem ();
 			var maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'engineconsole');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', configschema), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -2550,6 +2560,7 @@ function app () {
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
 			__all__.SUBMIT_URL = SUBMIT_URL;
+			__all__.SchemaItem = SchemaItem;
 			__all__.Span = Span;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
@@ -2562,6 +2573,7 @@ function app () {
 			__all__.ce = ce;
 			__all__.cmdinp = cmdinp;
 			__all__.cmdinpcallback = cmdinpcallback;
+			__all__.configschema = configschema;
 			__all__.docwln = docwln;
 			__all__.e = e;
 			__all__.engineconsole = engineconsole;

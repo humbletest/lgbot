@@ -261,6 +261,12 @@ class TabPane(e):
                 tab.tabelement.ac("tabpaneseltab")
         self.contentdiv.x().a(self.seltab.element)
         return self
+
+class SchemaItem(e):
+    def __init__(self):
+        super().__init__("div")
+        self.element = Div().ac("schemaitem")
+        self.a(self.element)
 ######################################################
 
 ######################################################
@@ -283,6 +289,7 @@ cmdinp = None
 mainlog = None
 maintab = None
 engineconsole = None
+configschema = None
 ######################################################
 
 ######################################################
@@ -305,12 +312,15 @@ def build():
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
+    configschema = SchemaItem()
+
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
+            Tab("config", "Config", configschema),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
-        ], "engineconsole"
+        ], "config"
     )    
     
     ge("maintabdiv").innerHTML = ""

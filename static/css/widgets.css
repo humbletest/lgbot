@@ -89,3 +89,9 @@
     background-color: #aef;
     overflow: scroll;
 }
+
+.schemaitem {
+    height: 40px;
+    width: 600px;
+    background-color: #ce9;
+}
