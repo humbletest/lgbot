@@ -1,0 +1,1 @@
+transcrypt -b -p .none --nomin test.py
