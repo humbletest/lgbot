@@ -116,6 +116,14 @@ class e:
         self.e.addEventListener(kind, callback)
         return self
 
+    # disable
+    def disable(self):
+        return self.sa("disabled", True)
+
+    # enable
+    def enable(self):
+        return self.sa("disabled", False)
+
 class Div(e):
     def __init__(self):
         super().__init__("div")

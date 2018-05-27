@@ -1,66 +1,43 @@
 .logitemdiv {
-    background-color:lightgray;    
-    padding: 2px;
-    margin: 2px;     
-    line-height: normal;
-    white-space:nowrap;
-    width: 575px;
+    background-color:lightgray; white-space:nowrap;
+    width: 575px; padding: 2px; margin: 2px;
 }
 
 .logtimediv {
-    background-color: gold;
-    display: inline-block;
-    vertical-align: middle;
-    padding: 5px;
-    margin: 2px;
-    width: 100px;
-    font-size: 9px;
-    text-align: center;    
+    background-color: gold; font-size: 9px;
+    display: inline-block; vertical-align: middle; text-align: center;    
+    width: 100px; padding: 5px; margin: 2px;
 }
 
 .logcontentdiv {
-    background-color: aliceblue;
-    vertical-align: middle;
-    display: inline-block;
-    padding: 2px;
-    margin: 2px;
-    font-size: 10px;
-    width: 450px;
+    background-color: aliceblue; font-size: 10px;
+    display: inline-block; vertical-align: middle;    
+    width: 450px; padding: 2px; margin: 2px;
 }
 
 .logdiv {
-    background-color: #bbb;
-    padding: 5px;
-    margin: 5px;
-    width: 600px;
-    height: 400px;
-    overflow: scroll;
+    background-color: #bbb; overflow: scroll;
+    width: 600px; height: 400px; padding: 5px; margin: 5px;
 }
 
 .curlyborder {
-    border: solid 1px;
-    border-radius: 5px;
+    border: solid 1px; border-radius: 5px;
+}
+
+.textinputcontainer {    
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #ace; border: solid 1px; border-radius: 5px;
+    width: 500px; padding: 5px; margin: 5px;
 }
 
 .textinputtext {
-    font-size: 24px;
-    padding: 5px;
-    background-color: yellowgreen;
-    padding: 5px;
-    border: solid 1px;
-    border-radius: 5px;
-    margin: 5px;
+    font-size: 24px; background-color: yellowgreen; border: solid 1px; border-radius: 5px;
+    width: 300px; padding: 5px; margin: 5px;
 }
 
 .textinputbutton {
-    font-size: 18px;
-    padding: 5px;
-    background-color: yellowgreen;
-    padding: 3px;
-    vertical-align: middle;
-    border: solid 1px;
-    border-radius: 5px;
-    margin: 3px;
+    font-size: 18px; background-color: yellowgreen; border: solid 1px; border-radius: 5px;
+    padding: 5px; margin: 3px;
 }
 
 .tabpanecontainer {    
@@ -69,16 +46,12 @@
 
 .tabpanetabsdiv {
     background-color: #dfe;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+    display: flex; justify-content: space-around; align-items: center;
 }
 
 .tabpanetab {
-    background-color: #ddd;        
+    background-color: #ddd; border: solid 1px; border-radius: 5px;
     padding: 5px;
-    border: solid 1px;
-    border-radius: 5px;
 }
 
 .tabpaneseltab {
@@ -86,12 +59,23 @@
 }
 
 .tabpanecontentdiv {
-    background-color: #aef;
-    overflow: scroll;
+    background-color: #aef; overflow: scroll;
 }
 
 .schemaitem {
-    height: 40px;
-    width: 600px;
-    background-color: #ce9;
+    background-color: #ce9; width: 600px; height: 40px;
+}
+
+.schemacollection {
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #d9e;
+}
+
+.schemacollectionrawtextinput {
+    font-size: 22px; padding: 2px; padding-left: 5px;
+}
+
+.schemacollectionopenbutton {
+    width: 30px; height: 30px;
+    background-color: #ee9; cursor: pointer;
 }

@@ -36,12 +36,12 @@ def cmdinpcallback(cmd):
 def build():
     global cmdinp, mainlog, maintab, engineconsole
 
-    cmdinp = TextInput(cmdinpcallback)
+    cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
     mainlog = Log()
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
-    configschema = SchemaItem()
+    configschema = SchemaCollection({})
 
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(

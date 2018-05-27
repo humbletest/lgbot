@@ -231,6 +231,7 @@ b = BDef().frompath()
 
 def build_thread_func():
     global browserinit
+    time.sleep(10)
     while True:        
         somechange = b.build(loop = True)        
         if somechange or browserinit:
