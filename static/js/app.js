@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-26 14:55:15
+// Transcrypt'ed from Python, 2018-05-27 16:43:47
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2301,6 +2301,12 @@ function app () {
 			get ae () {return __get__ (this, function (self, kind, callback) {
 				self.e.addEventListener (kind, callback);
 				return self;
+			});},
+			get disable () {return __get__ (this, function (self) {
+				return self.sa ('disabled', true);
+			});},
+			get enable () {return __get__ (this, function (self) {
+				return self.sa ('disabled', false);
 			});}
 		});
 		var Div = __class__ ('Div', [e], {
@@ -2336,41 +2342,51 @@ function app () {
 				}
 			});}
 		});
-		var Text = __class__ ('Text', [Input], {
+		var RawTextInput = __class__ ('RawTextInput', [Input], {
 			__module__: __name__,
 			get keyup () {return __get__ (this, function (self, ev) {
 				if (!(self.callback === null)) {
 					if (ev.keyCode == 13) {
-						self.callback (self.v ());
+						if (!(self.entercallback === null)) {
+							self.entercallback (self.v ());
+						}
+					}
+					else if (!(self.keycallback === null)) {
+						self.keycallback (ev.keyCode, self.v ());
 					}
 				}
 			});},
-			get __init__ () {return __get__ (this, function (self, callback) {
-				if (typeof callback == 'undefined' || (callback != null && callback .hasOwnProperty ("__kwargtrans__"))) {;
-					var callback = null;
-				};
-				__super__ (Text, '__init__') (self, 'text');
-				self.callback = callback;
-				if (!(callback === null)) {
-					self.ae ('keyup', self.keyup);
-				}
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (RawTextInput, '__init__') (self, 'text');
+				self.entercallback = args.py_get ('entercallback', null);
+				self.keycallback = args.py_get ('keycallback', null);
+				self.ae ('keyup', self.keyup);
 			});}
 		});
-		var TextInput = __class__ ('TextInput', [e], {
+		var TextInputWithButton = __class__ ('TextInputWithButton', [e], {
 			__module__: __name__,
-			get submit_callback () {return __get__ (this, function (self) {
-				if (!(self.callback === null)) {
+			get submitcallback () {return __get__ (this, function (self) {
+				if (!(self.onsubmitcallback === null)) {
 					var v = self.tinp.v ();
 					self.tinp.sv ('');
-					self.callback (v);
+					self.onsubmitcallback (v);
 				}
 			});},
-			get __init__ () {return __get__ (this, function (self, callback) {
-				__super__ (TextInput, '__init__') (self, 'div');
-				self.callback = callback;
-				self.tinp = Text (self.submit_callback).ac ('textinputtext');
-				var sbtn = Button ('Submit', self.submit_callback).ac ('textinputbutton');
-				self.aa (list ([self.tinp, sbtn]));
+			get __init__ () {return __get__ (this, function (self, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (TextInputWithButton, '__init__') (self, 'div');
+				var contclass = args.py_get ('contclass', 'textinputcontainer');
+				var tinpclass = args.py_get ('tinpclass', 'textinputtext');
+				var sbtnclass = args.py_get ('sbtnclass', 'textinputbutton');
+				self.container = Div ().ac (contclass);
+				self.onsubmitcallback = args.py_get ('submitcallback', null);
+				args ['entercallback'] = self.submitcallback;
+				self.tinp = RawTextInput (args).ac (tinpclass);
+				self.sbtn = Button ('Submit', self.submitcallback).ac (sbtnclass);
+				self.container.aa (list ([self.tinp, self.sbtn]));
+				self.a (self.container);
 			});},
 			get focus () {return __get__ (this, function (self) {
 				self.tinp.fl ();
@@ -2494,9 +2510,26 @@ function app () {
 		});
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
-			get __init__ () {return __get__ (this, function (self) {
+			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.element = Div ().ac ('schemaitem');
+				self.a (self.element);
+			});}
+		});
+		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
+			__module__: __name__,
+			get textchangedcallback () {return __get__ (this, function (self, keycode, content) {
+				self.py_name = content;
+				// pass;
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (SchemaCollection, '__init__') (self, args);
+				self.py_name = args.py_get ('name', 'SchemaCollection');
+				self.element.ac ('schemacollection');
+				args ['keycallback'] = self.textchangedcallback;
+				self.rawtextinput = RawTextInput (args).ac ('schemacollectionrawtextinput').sv (self.py_name).disable ();
+				self.openbutton = Div ().ac ('schemacollectionopenbutton');
+				self.element.aa (list ([self.rawtextinput, self.openbutton]));
 				self.a (self.element);
 			});}
 		});
@@ -2521,10 +2554,10 @@ function app () {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
 		var build = function () {
-			cmdinp = TextInput (cmdinpcallback);
+			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
 			mainlog = Log ();
 			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
-			var configschema = SchemaItem ();
+			var configschema = SchemaCollection (dict ({}));
 			var maintabpane = TabPane (dict ({'kind': 'main'}));
 			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', configschema), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
@@ -2559,13 +2592,14 @@ function app () {
 			__all__.Input = Input;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
+			__all__.RawTextInput = RawTextInput;
 			__all__.SUBMIT_URL = SUBMIT_URL;
+			__all__.SchemaCollection = SchemaCollection;
 			__all__.SchemaItem = SchemaItem;
 			__all__.Span = Span;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
-			__all__.Text = Text;
-			__all__.TextInput = TextInput;
+			__all__.TextInputWithButton = TextInputWithButton;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;

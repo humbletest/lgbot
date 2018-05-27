@@ -116,6 +116,14 @@ class e:
         self.e.addEventListener(kind, callback)
         return self
 
+    # disable
+    def disable(self):
+        return self.sa("disabled", True)
+
+    # enable
+    def enable(self):
+        return self.sa("disabled", False)
+
 class Div(e):
     def __init__(self):
         super().__init__("div")
@@ -142,33 +150,43 @@ class Button(Input):
         super().__init__("button")        
         self.sv(caption)
         if not ( callback is None):
-            self.ae("mousedown",callback)
+            self.ae("mousedown", callback)
 
-class Text(Input):
+class RawTextInput(Input):
     def keyup(self, ev):
-        if not ( self.callback is None):
-            if ev.keyCode == 13:
-                self.callback(self.v())
-
-    def __init__(self, callback = None):
-        super().__init__("text")
-        self.callback = callback
-        if not ( callback is None ):
-            self.ae("keyup",self.keyup)
-
-class TextInput(e):
-    def submit_callback(self):
         if not ( self.callback is None ):
+            if ev.keyCode == 13:
+                if not ( self.entercallback is None ):
+                    self.entercallback(self.v())
+            else:
+                if not ( self.keycallback is None ):
+                    self.keycallback(ev.keyCode, self.v())
+
+    def __init__(self, args):
+        super().__init__("text")                
+        self.entercallback = args.get("entercallback", None)
+        self.keycallback = args.get("keycallback", None)
+        self.ae("keyup", self.keyup)
+
+class TextInputWithButton(e):
+    def submitcallback(self):
+        if not ( self.onsubmitcallback is None ):
             v = self.tinp.v()
             self.tinp.sv("")
-            self.callback(v)
+            self.onsubmitcallback(v)
 
-    def __init__(self, callback):
+    def __init__(self, args = {}):
         super().__init__("div")
-        self.callback = callback
-        self.tinp = Text(self.submit_callback).ac("textinputtext")
-        sbtn = Button("Submit",self.submit_callback).ac("textinputbutton")
-        self.aa([self.tinp,sbtn])
+        contclass = args.get("contclass", "textinputcontainer")
+        tinpclass = args.get("tinpclass", "textinputtext")
+        sbtnclass = args.get("sbtnclass", "textinputbutton")
+        self.container = Div().ac(contclass)
+        self.onsubmitcallback = args.get("submitcallback", None)
+        args["entercallback"] = self.submitcallback
+        self.tinp = RawTextInput(args).ac(tinpclass)
+        self.sbtn = Button("Submit", self.submitcallback).ac(sbtnclass)        
+        self.container.aa([self.tinp, self.sbtn])
+        self.a(self.container)
 
     def focus(self):
         self.tinp.fl()
@@ -263,10 +281,26 @@ class TabPane(e):
         return self
 
 class SchemaItem(e):
-    def __init__(self):
+    def __init__(self, args):
         super().__init__("div")
         self.element = Div().ac("schemaitem")
         self.a(self.element)
+
+class SchemaCollection(SchemaItem):
+    def textchangedcallback(self, keycode, content):        
+        self.name = content
+        pass
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.name = args.get("name", "SchemaCollection")
+        self.element.ac("schemacollection")
+        args["keycallback"] = self.textchangedcallback
+        self.rawtextinput = RawTextInput(args).ac("schemacollectionrawtextinput").sv(self.name).disable()
+        self.openbutton = Div().ac("schemacollectionopenbutton")
+        self.element.aa([self.rawtextinput, self.openbutton])        
+        self.a(self.element)
+
 ######################################################
 
 ######################################################
@@ -307,12 +341,12 @@ def cmdinpcallback(cmd):
 def build():
     global cmdinp, mainlog, maintab, engineconsole
 
-    cmdinp = TextInput(cmdinpcallback)
+    cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
     mainlog = Log()
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
-    configschema = SchemaItem()
+    configschema = SchemaCollection({})
 
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
