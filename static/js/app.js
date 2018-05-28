@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-28 18:31:46
+// Transcrypt'ed from Python, 2018-05-28 21:06:15
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2317,6 +2317,10 @@ function app () {
 					return self.enable ();
 				}
 				return self.disable ();
+			});},
+			get fs () {return __get__ (this, function (self, size) {
+				self.e.style.fontSize = size + 'px';
+				return self;
 			});}
 		});
 		var Div = __class__ ('Div', [e], {
@@ -2596,6 +2600,9 @@ function app () {
 		var SCHEMA_KINDS = dict ({'create': 'Create new', 'scalar': 'Scalar', 'list': 'List', 'dict': 'Dict'});
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
+			get toobj () {return __get__ (this, function (self) {
+				return dict ({});
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.kind = 'item';
@@ -2612,12 +2619,15 @@ function app () {
 				self.editmode = !(self.editmode);
 				self.rawtextinput.able (self.editmode);
 			});},
+			get toobj () {return __get__ (this, function (self) {
+				return dict ([[self.py_name, self.item.toobj ()]]);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
 				self.kind = 'nameditem';
 				self.py_name = args.py_get ('name', 'foo');
-				self.editmode = args.py_get ('editmode', false);
 				self.item = args.py_get ('item', SchemaItem (args));
+				self.editmode = args.py_get ('editmode', false);
 				self.element = Div ().ac ('namedschemaitem');
 				self.namediv = Div ().ac ('schemaitemname');
 				args ['keycallback'] = self.textchangedcallback;
@@ -2636,6 +2646,9 @@ function app () {
 			get divclicked () {return __get__ (this, function (self) {
 				self.editmode = !(self.editmode);
 				self.rawtextinput.able (self.editmode);
+			});},
+			get toobj () {return __get__ (this, function (self) {
+				return self.value;
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
@@ -2716,6 +2729,15 @@ function app () {
 		});
 		var SchemaList = __class__ ('SchemaList', [SchemaCollection], {
 			__module__: __name__,
+			get toobj () {return __get__ (this, function (self) {
+				var obj = list ([]);
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					obj.append (item.toobj ());
+				}
+				return obj;
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaList, '__init__') (self, args);
 				self.kind = 'list';
@@ -2724,6 +2746,15 @@ function app () {
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
 			__module__: __name__,
+			get toobj () {return __get__ (this, function (self) {
+				var obj = dict ({});
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					obj [item.py_name] = item.item.toobj ();
+				}
+				return obj;
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaDict, '__init__') (self, args);
 				self.kind = 'dict';
@@ -2743,6 +2774,7 @@ function app () {
 		var maintab = null;
 		var engineconsole = null;
 		var configschema = SchemaDict (dict ({}));
+		var srcdiv = Div ();
 		var docwln = function (content) {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			mainlog.log (li);
@@ -2750,12 +2782,17 @@ function app () {
 		var cmdinpcallback = function (cmd) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
+		var serializecallback = function () {
+			var json = JSON.stringify (configschema.toobj (), null, 2);
+			srcdiv.html (('<pre>' + json) + '</pre>');
+		};
 		var build = function () {
 			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
 			mainlog = Log ();
 			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
+			var configdiv = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), configschema]));
 			var maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', configschema), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', configdiv), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -2821,7 +2858,9 @@ function app () {
 			__all__.maintab = maintab;
 			__all__.onconnect = onconnect;
 			__all__.onevent = onevent;
+			__all__.serializecallback = serializecallback;
 			__all__.socket = socket;
+			__all__.srcdiv = srcdiv;
 			__all__.startup = startup;
 			__all__.windowresizehandler = windowresizehandler;
 			__all__.ws_scheme = ws_scheme;

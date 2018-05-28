@@ -135,6 +135,11 @@ class e:
             return self.enable()
         return self.disable()
 
+    # font size
+    def fs(self, size):
+        self.e.style.fontSize = size + "px"
+        return self
+
 class Div(e):
     def __init__(self):
         super().__init__("div")
@@ -351,6 +356,9 @@ SCHEMA_KINDS = {
 }
 
 class SchemaItem(e):
+    def toobj(self):
+        return {}
+
     def __init__(self, args):
         super().__init__("div")
         self.kind = "item"
@@ -364,13 +372,16 @@ class NamedSchemaItem(e):
     def namedivclicked(self):
         self.editmode = not self.editmode        
         self.rawtextinput.able(self.editmode)        
+
+    def toobj(self):
+        return {self.name: self.item.toobj()}
     
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
-        self.name = args.get("name", "foo")
-        self.editmode = args.get("editmode", False)        
+        self.name = args.get("name", "foo")        
         self.item = args.get("item", SchemaItem(args))
+        self.editmode = args.get("editmode", False)        
         self.element = Div().ac("namedschemaitem")
         self.namediv = Div().ac("schemaitemname")
         args["keycallback"] = self.textchangedcallback        
@@ -387,6 +398,9 @@ class SchemaScalar(SchemaItem):
     def divclicked(self):
         self.editmode = not self.editmode        
         self.rawtextinput.able(self.editmode)        
+
+    def toobj(self):
+        return self.value
 
     def __init__(self, args):
         super().__init__(args)
@@ -459,12 +473,24 @@ class SchemaCollection(SchemaItem):
         self.a(self.container)
 
 class SchemaList(SchemaCollection):
+    def toobj(self):
+        obj = []
+        for item in self.childs:
+            obj.append(item.toobj())
+        return obj
+
     def __init__(self, args):
         super().__init__(args)        
         self.kind = "list"
         self.element.ac("schemalist")
 
 class SchemaDict(SchemaCollection):
+    def toobj(self):
+        obj = {}
+        for item in self.childs:
+            obj[item.name] = item.item.toobj()
+        return obj
+
     def __init__(self, args):
         super().__init__(args)        
         self.kind = "dict"
@@ -493,6 +519,7 @@ mainlog = None
 maintab = None
 engineconsole = None
 configschema = SchemaDict({})
+srcdiv = Div()
 ######################################################
 
 ######################################################
@@ -503,6 +530,10 @@ def docwln(content):
 
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
+
+def serializecallback():
+    json = JSON.stringify(configschema.toobj(), None, 2)
+    srcdiv.html("<pre>" + json + "</pre>")
 ######################################################
 
 ######################################################
@@ -515,11 +546,17 @@ def build():
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
+    configdiv = Div().aa([
+        Button("Serialize", serializecallback).fs(24),
+        configschema
+    ])
+
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
-            Tab("config", "Config", configschema),
+            Tab("config", "Config", configdiv),
+            Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
         ], "config"
     )    
