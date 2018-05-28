@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-28 21:06:15
+// Transcrypt'ed from Python, 2018-05-28 22:30:49
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2768,6 +2768,18 @@ function app () {
 			var ws_scheme = 'ws://';
 		}
 		var SUBMIT_URL = ws_scheme + location.host;
+		var queryParamsString = window.location.search;
+		var queryParams = dict ({});
+		if (len (queryParamsString) > 1) {
+			var queryParamsString = queryParamsString.__getslice__ (1, null, 1);
+			var mainparts = queryParamsString.py_split ('&');
+			var __iterable0__ = mainparts;
+			for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+				var mainpart = __iterable0__ [__index0__];
+				var parts = mainpart.py_split ('=');
+				queryParams [parts [0]] = parts [1];
+			}
+		}
 		var socket = null;
 		var cmdinp = null;
 		var mainlog = null;
@@ -2782,9 +2794,32 @@ function app () {
 		var cmdinpcallback = function (cmd) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
+		var putjsonbin = function (json, callback) {
+			var args = {'method': 'POST', 'headers': {'Content-Type': 'application/json', 'private': false}, 'body': json};
+			fetch ('https://api.jsonbin.io/b', args).then ((function __lambda__ (response) {
+				return response.text ().then ((function __lambda__ (content) {
+					return callback (json, content);
+				}), (function __lambda__ (err) {
+					return print (err);
+				}));
+			}), (function __lambda__ (err) {
+				return print (err);
+			}));
+		};
+		var serializeputjsonbincallback = function (json, content) {
+			try {
+				var obj = JSON.parse (content);
+				var id = obj ['id'];
+				srcdiv.html (((((('<pre>' + json) + "</pre><hr><a href='https://api.jsonbin.io/b/") + id) + "'>") + id) + '</a>');
+			}
+			catch (__except0__) {
+				print ('there was an error parsing json', content);
+				return ;
+			}
+		};
 		var serializecallback = function () {
 			var json = JSON.stringify (configschema.toobj (), null, 2);
-			srcdiv.html (('<pre>' + json) + '</pre>');
+			putjsonbin (json, serializeputjsonbincallback);
 		};
 		var build = function () {
 			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
@@ -2855,10 +2890,17 @@ function app () {
 			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
 			__all__.mainlog = mainlog;
+			__all__.mainpart = mainpart;
+			__all__.mainparts = mainparts;
 			__all__.maintab = maintab;
 			__all__.onconnect = onconnect;
 			__all__.onevent = onevent;
+			__all__.parts = parts;
+			__all__.putjsonbin = putjsonbin;
+			__all__.queryParams = queryParams;
+			__all__.queryParamsString = queryParamsString;
 			__all__.serializecallback = serializecallback;
+			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
 			__all__.startup = startup;

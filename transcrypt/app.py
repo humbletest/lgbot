@@ -509,6 +509,17 @@ else:
     ws_scheme = "ws://"
 
 SUBMIT_URL = ws_scheme + location.host
+
+queryParamsString = window.location.search
+
+queryParams = {}
+
+if len(queryParamsString) > 1:
+    queryParamsString = queryParamsString[1:]
+    mainparts = queryParamsString.split('&')
+    for mainpart in mainparts:
+        parts = mainpart.split("=")
+        queryParams[parts[0]] = parts[1]
 ######################################################
 
 ######################################################
@@ -531,9 +542,39 @@ def docwln(content):
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
 
+__pragma__("jsiter")
+
+def putjsonbin(json, callback):
+    args = {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json",
+            "private": False
+        },
+        "body": json
+    }
+    fetch("https://api.jsonbin.io/b", args).then(
+        lambda response: response.text().then(
+            lambda content: callback(json, content),
+            lambda err: print(err)
+        ),
+        lambda err: print(err)
+        )
+
+__pragma__("nojsiter")
+
+def serializeputjsonbincallback(json, content):    
+    try:
+        obj = JSON.parse(content)
+        id = obj["id"]        
+        srcdiv.html("<pre>" + json + "</pre><hr><a href='https://api.jsonbin.io/b/"+id+"'>"+id+"</a>")
+    except:
+        print("there was an error parsing json", content)
+        return
+
 def serializecallback():
-    json = JSON.stringify(configschema.toobj(), None, 2)
-    srcdiv.html("<pre>" + json + "</pre>")
+    json = JSON.stringify(configschema.toobj(), None, 2)    
+    putjsonbin(json, serializeputjsonbincallback)
 ######################################################
 
 ######################################################
