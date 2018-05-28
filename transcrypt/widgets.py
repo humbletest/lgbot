@@ -188,14 +188,54 @@ SCHEMA_KINDS = {
 class SchemaItem(e):
     def __init__(self, args):
         super().__init__("div")
+        self.kind = "item"
         self.element = Div().ac("schemaitem")
         self.a(self.element)
 
-class SchemaCollection(SchemaItem):
+class NamedSchemaItem(e):
     def textchangedcallback(self, keycode, content):        
         self.name = content
-        pass
 
+    def namedivclicked(self):
+        self.editmode = not self.editmode        
+        self.rawtextinput.able(self.editmode)        
+    
+    def __init__(self, args):
+        super().__init__("div")
+        self.kind = "nameditem"
+        self.name = args.get("name", "foo")
+        self.editmode = args.get("editmode", False)        
+        self.item = args.get("item", SchemaItem(args))
+        self.element = Div().ac("namedschemaitem")
+        self.namediv = Div().ac("schemaitemname")
+        args["keycallback"] = self.textchangedcallback        
+        self.rawtextinput = RawTextInput(args).ac("namedschemaitemrawtextinput").sv(self.name).able(self.editmode)
+        self.namediv.a(self.rawtextinput)
+        self.namediv.ae("mousedown", self.namedivclicked)
+        self.element.aa([self.namediv, self.item])
+        self.a(self.element)
+
+class SchemaScalar(SchemaItem):
+    def textchangedcallback(self, keycode, content):        
+        self.value = content
+
+    def divclicked(self):
+        self.editmode = not self.editmode        
+        self.rawtextinput.able(self.editmode)        
+
+    def __init__(self, args):
+        super().__init__(args)
+        self.kind = "scalar"        
+        self.value = args.get("value", "bar")
+        self.editmode = args.get("editmode", False)                
+        self.element.ac("schemascalar")
+        args["keycallback"] = self.textchangedcallback
+        self.rawtextinput = RawTextInput(args).ac("schemascalarrawtextinput").sv(self.value).able(self.editmode)        
+        self.element.ae("mousedown", self.divclicked)
+        self.element.aa([self.rawtextinput])
+        self.a(self.element)
+
+class SchemaCollection(SchemaItem):
     def buildchilds(self):
         self.childshook.x()
         for child in self.childs:
@@ -203,10 +243,17 @@ class SchemaCollection(SchemaItem):
 
     def createcallback(self, key):
         self.createcombo.setoptions(SCHEMA_KINDS)
-        sch = SchemaCollection({})
-        if key == "scalar":
-            sch = SchemaItem({})
-        self.childs.append(sch)
+        sch = SchemaScalar({})
+        if key == "list":
+            sch = SchemaList({})
+        elif key == "dict":
+            sch = SchemaDict({})
+        appendelement = sch
+        if self.kind == "dict":
+            appendelement = NamedSchemaItem({
+                "item": sch
+            })
+        self.childs.append(appendelement)
         self.buildchilds()
 
     def openchilds(self):
@@ -229,16 +276,15 @@ class SchemaCollection(SchemaItem):
 
     def __init__(self, args):
         super().__init__(args)
+        self.kind = "collection"
         self.name = args.get("name", "SchemaCollection")
         self.opened = args.get("opened", False)
         self.childs = args.get("childs", [])
         self.editmode = args.get("editmode", False)        
         self.childseditable = args.get("childseditable", True)
-        self.element.ac("schemacollection")
-        args["keycallback"] = self.textchangedcallback
-        self.rawtextinput = RawTextInput(args).ac("schemacollectionrawtextinput").sv(self.name).able(self.editmode)
+        self.element.ac("schemacollection")                
         self.openbutton = Div().ac("schemacollectionopenbutton").ae("mousedown", self.openchilds)
-        self.element.aa([self.rawtextinput, self.openbutton])        
+        self.element.aa([self.openbutton])        
         self.createhook = Div()
         self.childshook = Div()
         self.opendiv = Div().ac("schemacollectionopendiv")
@@ -246,6 +292,18 @@ class SchemaCollection(SchemaItem):
         self.container = Div()
         self.container.aa([self.element, self.opendiv])
         self.a(self.container)
+
+class SchemaList(SchemaCollection):
+    def __init__(self, args):
+        super().__init__(args)        
+        self.kind = "list"
+        self.element.ac("schemalist")
+
+class SchemaDict(SchemaCollection):
+    def __init__(self, args):
+        super().__init__(args)        
+        self.kind = "dict"
+        self.element.ac("schemadict")
 
 ######################################################
 

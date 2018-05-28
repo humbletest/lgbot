@@ -29,6 +29,11 @@ class e:
         self.e.setAttribute(key,value)
         return self
 
+    # shorthand for removeAttribute
+    def ra(self, key):
+        self.e.removeAttribute(key)
+        return self
+
     # shorthand for getAttribute
     def ga(self, key):
         return self.e.getAttribute(key)
@@ -122,7 +127,7 @@ class e:
 
     # enable
     def enable(self):
-        return self.sa("disabled", False)
+        return self.ra("disabled")
 
     # able
     def able(self, able):

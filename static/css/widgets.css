@@ -63,7 +63,16 @@
 }
 
 .schemaitem {
-    background-color: #ce9; width: 600px; height: 40px;
+    background-color: #ce9; width: 500px; height: 40px;
+}
+
+.schemaitemname {
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #cef; width: 150px; height: 40px;
+}
+
+.namedschemaitem {
+    display: flex;
 }
 
 .schemacollection {
@@ -71,13 +80,30 @@
     background-color: #d9e;
 }
 
+.schemalist {
+    background-color: #9de;
+}
+
+.schemadict {
+    background-color: #9e9;
+}
+
+.schemascalar {    
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #f49;
+}
+
+.schemascalarrawtextinput {
+    width: 400px; font-size: 22px; padding: 2px; padding-left: 5px;
+}
+
 .schemacreate {
     display: flex; justify-content: space-around; align-items: center;
     background-color: #aaa;
 }
 
-.schemacollectionrawtextinput {
-    font-size: 22px; padding: 2px; padding-left: 5px;
+.namedschemaitemrawtextinput {
+    font-size: 22px; padding: 2px; padding-left: 5px; width: 100px;
 }
 
 .schemacollectionopenbutton {

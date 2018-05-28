@@ -18,7 +18,7 @@ cmdinp = None
 mainlog = None
 maintab = None
 engineconsole = None
-configschema = None
+configschema = SchemaDict({})
 ######################################################
 
 ######################################################
@@ -40,8 +40,6 @@ def build():
     mainlog = Log()
 
     engineconsole = Div().aa([cmdinp, mainlog])    
-
-    configschema = SchemaCollection({})
 
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
