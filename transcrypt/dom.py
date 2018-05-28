@@ -135,6 +135,11 @@ class e:
             return self.enable()
         return self.disable()
 
+    # font size
+    def fs(self, size):
+        self.e.style.fontSize = size + "px"
+        return self
+
 class Div(e):
     def __init__(self):
         super().__init__("div")

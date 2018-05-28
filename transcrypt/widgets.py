@@ -186,6 +186,9 @@ SCHEMA_KINDS = {
 }
 
 class SchemaItem(e):
+    def toobj(self):
+        return {}
+
     def __init__(self, args):
         super().__init__("div")
         self.kind = "item"
@@ -199,13 +202,16 @@ class NamedSchemaItem(e):
     def namedivclicked(self):
         self.editmode = not self.editmode        
         self.rawtextinput.able(self.editmode)        
+
+    def toobj(self):
+        return {self.name: self.item.toobj()}
     
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
-        self.name = args.get("name", "foo")
-        self.editmode = args.get("editmode", False)        
+        self.name = args.get("name", "foo")        
         self.item = args.get("item", SchemaItem(args))
+        self.editmode = args.get("editmode", False)        
         self.element = Div().ac("namedschemaitem")
         self.namediv = Div().ac("schemaitemname")
         args["keycallback"] = self.textchangedcallback        
@@ -222,6 +228,9 @@ class SchemaScalar(SchemaItem):
     def divclicked(self):
         self.editmode = not self.editmode        
         self.rawtextinput.able(self.editmode)        
+
+    def toobj(self):
+        return self.value
 
     def __init__(self, args):
         super().__init__(args)
@@ -294,12 +303,24 @@ class SchemaCollection(SchemaItem):
         self.a(self.container)
 
 class SchemaList(SchemaCollection):
+    def toobj(self):
+        obj = []
+        for item in self.childs:
+            obj.append(item.toobj())
+        return obj
+
     def __init__(self, args):
         super().__init__(args)        
         self.kind = "list"
         self.element.ac("schemalist")
 
 class SchemaDict(SchemaCollection):
+    def toobj(self):
+        obj = {}
+        for item in self.childs:
+            obj[item.name] = item.item.toobj()
+        return obj
+
     def __init__(self, args):
         super().__init__(args)        
         self.kind = "dict"

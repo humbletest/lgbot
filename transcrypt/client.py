@@ -19,6 +19,7 @@ mainlog = None
 maintab = None
 engineconsole = None
 configschema = SchemaDict({})
+srcdiv = Div()
 ######################################################
 
 ######################################################
@@ -29,6 +30,10 @@ def docwln(content):
 
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
+
+def serializecallback():
+    json = JSON.stringify(configschema.toobj(), None, 2)
+    srcdiv.html("<pre>" + json + "</pre>")
 ######################################################
 
 ######################################################
@@ -41,11 +46,17 @@ def build():
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
+    configdiv = Div().aa([
+        Button("Serialize", serializecallback).fs(24),
+        configschema
+    ])
+
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
-            Tab("config", "Config", configschema),
+            Tab("config", "Config", configdiv),
+            Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
         ], "config"
     )    
