@@ -142,6 +142,20 @@ class Input(e):
     def __init__(self, kind):
         super().__init__("input")
         self.sa("type",kind)
+
+class Select(e):
+    def __init__(self):
+        super().__init__("select")
+
+class Option(e):
+    def __init__(self, key, displayname, selected = False):
+        super().__init__("option")
+        self.sa("name", key)
+        self.sa("id", key)
+        self.sv(key)
+        self.html(displayname)
+        if selected:
+            self.sa("selected", True)
 ######################################################
 
 ######################################################
@@ -286,6 +300,51 @@ class TabPane(e):
         self.contentdiv.x().a(self.seltab.element)
         return self
 
+class ComboOption:
+    def __init__(self, key, displayname):
+        self.key = key
+        self.displayname = displayname
+
+class ComboBox(e):
+    def selectchangecallback(self):
+        key = self.select.v()
+        if not ( self.changecallback is None ):
+            self.changecallback(key)
+
+    def __init__(self, args):
+        super().__init__("div")
+        self.selectclass = args.get("selectclass", "comboboxselect")
+        self.optionfirstclass = args.get("optionfirstclass", "comboboxoptionfirst")
+        self.optionclass = args.get("optionclass", "comboboxoption")
+        self.changecallback = args.get("changecallback", None)
+        self.options = []
+        self.container = Div()
+        self.select = Select().ac(self.selectclass)
+        self.select.ae("change", self.selectchangecallback)
+        self.container.a(self.select)
+        self.a(self.container)
+
+    def setoptions(self, options, selectedkey = None):
+        self.options = options
+        self.select.x()
+        first = True
+        for key , displayname in self.options.items():            
+            opte = Option(key, displayname, key == selectedkey)            
+            if first:
+                opte.ac(self.optionfirstclass)
+                first = False
+            else:                
+                opte.ac(self.optionclass)
+            self.select.a(opte)
+        return self
+
+SCHEMA_KINDS = {
+    "create" : "Create new",
+    "scalar" : "Scalar",
+    "list" : "List",
+    "dict" : "Dict"
+}
+
 class SchemaItem(e):
     def __init__(self, args):
         super().__init__("div")
@@ -297,6 +356,19 @@ class SchemaCollection(SchemaItem):
         self.name = content
         pass
 
+    def buildchilds(self):
+        self.childshook.x()
+        for child in self.childs:
+            self.childshook.a(child)
+
+    def createcallback(self, key):
+        self.createcombo.setoptions(SCHEMA_KINDS)
+        sch = SchemaCollection({})
+        if key == "scalar":
+            sch = SchemaItem({})
+        self.childs.append(sch)
+        self.buildchilds()
+
     def openchilds(self):
         if self.opened:
             self.opened = False
@@ -306,8 +378,14 @@ class SchemaCollection(SchemaItem):
         else:
             self.opened = True
             self.creatediv = Div().ac("schemaitem").ac("schemacreate")
+            self.createcombo = ComboBox({
+                "changecallback": self.createcallback
+            })
+            self.createcombo.setoptions(SCHEMA_KINDS)
+            self.creatediv.a(self.createcombo)
             self.createhook.a(self.creatediv)
             self.openbutton.ac("schemacollectionopenbuttondone")
+            self.buildchilds()
 
     def __init__(self, args):
         super().__init__(args)

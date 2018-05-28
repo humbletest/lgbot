@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-28 10:49:50
+// Transcrypt'ed from Python, 2018-05-28 13:28:58
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2334,6 +2334,28 @@ function app () {
 				self.sa ('type', kind);
 			});}
 		});
+		var Select = __class__ ('Select', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (Select, '__init__') (self, 'select');
+			});}
+		});
+		var Option = __class__ ('Option', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, key, displayname, selected) {
+				if (typeof selected == 'undefined' || (selected != null && selected .hasOwnProperty ("__kwargtrans__"))) {;
+					var selected = false;
+				};
+				__super__ (Option, '__init__') (self, 'option');
+				self.sa ('name', key);
+				self.sa ('id', key);
+				self.sv (key);
+				self.html (displayname);
+				if (selected) {
+					self.sa ('selected', true);
+				}
+			});}
+		});
 		var WINDOW_SAFETY_MARGIN = 10;
 		var Button = __class__ ('Button', [Input], {
 			__module__: __name__,
@@ -2514,6 +2536,60 @@ function app () {
 				return self;
 			});}
 		});
+		var ComboOption = __class__ ('ComboOption', [object], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, key, displayname) {
+				self.key = key;
+				self.displayname = displayname;
+			});}
+		});
+		var ComboBox = __class__ ('ComboBox', [e], {
+			__module__: __name__,
+			get selectchangecallback () {return __get__ (this, function (self) {
+				var key = self.select.v ();
+				if (!(self.changecallback === null)) {
+					self.changecallback (key);
+				}
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (ComboBox, '__init__') (self, 'div');
+				self.selectclass = args.py_get ('selectclass', 'comboboxselect');
+				self.optionfirstclass = args.py_get ('optionfirstclass', 'comboboxoptionfirst');
+				self.optionclass = args.py_get ('optionclass', 'comboboxoption');
+				self.changecallback = args.py_get ('changecallback', null);
+				self.options = list ([]);
+				self.container = Div ();
+				self.select = Select ().ac (self.selectclass);
+				self.select.ae ('change', self.selectchangecallback);
+				self.container.a (self.select);
+				self.a (self.container);
+			});},
+			get setoptions () {return __get__ (this, function (self, options, selectedkey) {
+				if (typeof selectedkey == 'undefined' || (selectedkey != null && selectedkey .hasOwnProperty ("__kwargtrans__"))) {;
+					var selectedkey = null;
+				};
+				self.options = options;
+				self.select.x ();
+				var first = true;
+				var __iterable0__ = self.options.py_items ();
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var __left0__ = __iterable0__ [__index0__];
+					var key = __left0__ [0];
+					var displayname = __left0__ [1];
+					var opte = Option (key, displayname, key == selectedkey);
+					if (first) {
+						opte.ac (self.optionfirstclass);
+						var first = false;
+					}
+					else {
+						opte.ac (self.optionclass);
+					}
+					self.select.a (opte);
+				}
+				return self;
+			});}
+		});
+		var SCHEMA_KINDS = dict ({'create': 'Create new', 'scalar': 'Scalar', 'list': 'List', 'dict': 'Dict'});
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, args) {
@@ -2528,6 +2604,23 @@ function app () {
 				self.py_name = content;
 				// pass;
 			});},
+			get buildchilds () {return __get__ (this, function (self) {
+				self.childshook.x ();
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					self.childshook.a (child);
+				}
+			});},
+			get createcallback () {return __get__ (this, function (self, key) {
+				self.createcombo.setoptions (SCHEMA_KINDS);
+				var sch = SchemaCollection (dict ({}));
+				if (key == 'scalar') {
+					var sch = SchemaItem (dict ({}));
+				}
+				self.childs.append (sch);
+				self.buildchilds ();
+			});},
 			get openchilds () {return __get__ (this, function (self) {
 				if (self.opened) {
 					self.opened = false;
@@ -2538,8 +2631,12 @@ function app () {
 				else {
 					self.opened = true;
 					self.creatediv = Div ().ac ('schemaitem').ac ('schemacreate');
+					self.createcombo = ComboBox (dict ({'changecallback': self.createcallback}));
+					self.createcombo.setoptions (SCHEMA_KINDS);
+					self.creatediv.a (self.createcombo);
 					self.createhook.a (self.creatediv);
 					self.openbutton.ac ('schemacollectionopenbuttondone');
+					self.buildchilds ();
 				}
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
@@ -2618,14 +2715,19 @@ function app () {
 		startup ();
 		__pragma__ ('<all>')
 			__all__.Button = Button;
+			__all__.ComboBox = ComboBox;
+			__all__.ComboOption = ComboOption;
 			__all__.Div = Div;
 			__all__.Input = Input;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
+			__all__.Option = Option;
 			__all__.RawTextInput = RawTextInput;
+			__all__.SCHEMA_KINDS = SCHEMA_KINDS;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.SchemaCollection = SchemaCollection;
 			__all__.SchemaItem = SchemaItem;
+			__all__.Select = Select;
 			__all__.Span = Span;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
