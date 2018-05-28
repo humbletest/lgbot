@@ -151,15 +151,37 @@ class SchemaCollection(SchemaItem):
         self.name = content
         pass
 
+    def openchilds(self):
+        if self.opened:
+            self.opened = False
+            self.createhook.x()
+            self.childshook.x()
+            self.openbutton.rc("schemacollectionopenbuttondone")
+        else:
+            self.opened = True
+            self.creatediv = Div().ac("schemaitem").ac("schemacreate")
+            self.createhook.a(self.creatediv)
+            self.openbutton.ac("schemacollectionopenbuttondone")
+
     def __init__(self, args):
         super().__init__(args)
         self.name = args.get("name", "SchemaCollection")
+        self.opened = args.get("opened", False)
+        self.childs = args.get("childs", [])
+        self.editmode = args.get("editmode", False)        
+        self.childseditable = args.get("childseditable", True)
         self.element.ac("schemacollection")
         args["keycallback"] = self.textchangedcallback
-        self.rawtextinput = RawTextInput(args).ac("schemacollectionrawtextinput").sv(self.name).disable()
-        self.openbutton = Div().ac("schemacollectionopenbutton")
+        self.rawtextinput = RawTextInput(args).ac("schemacollectionrawtextinput").sv(self.name).able(self.editmode)
+        self.openbutton = Div().ac("schemacollectionopenbutton").ae("mousedown", self.openchilds)
         self.element.aa([self.rawtextinput, self.openbutton])        
-        self.a(self.element)
+        self.createhook = Div()
+        self.childshook = Div()
+        self.opendiv = Div().ac("schemacollectionopendiv")
+        self.opendiv.aa([self.createhook, self.childshook])
+        self.container = Div()
+        self.container.aa([self.element, self.opendiv])
+        self.a(self.container)
 
 ######################################################
 

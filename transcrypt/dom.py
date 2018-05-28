@@ -124,6 +124,12 @@ class e:
     def enable(self):
         return self.sa("disabled", False)
 
+    # able
+    def able(self, able):
+        if able:
+            return self.enable()
+        return self.disable()
+
 class Div(e):
     def __init__(self):
         super().__init__("div")

@@ -71,6 +71,11 @@
     background-color: #d9e;
 }
 
+.schemacreate {
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #aaa;
+}
+
 .schemacollectionrawtextinput {
     font-size: 22px; padding: 2px; padding-left: 5px;
 }
@@ -78,4 +83,12 @@
 .schemacollectionopenbutton {
     width: 30px; height: 30px;
     background-color: #ee9; cursor: pointer;
+}
+
+.schemacollectionopenbuttondone {
+    background-color: #aaf;
+}
+
+.schemacollectionopendiv {
+    margin-left: 20px;
 }
