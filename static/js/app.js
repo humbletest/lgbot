@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-28 13:28:58
+// Transcrypt'ed from Python, 2018-05-28 18:31:46
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2232,6 +2232,10 @@ function app () {
 				self.e.setAttribute (key, value);
 				return self;
 			});},
+			get ra () {return __get__ (this, function (self, key) {
+				self.e.removeAttribute (key);
+				return self;
+			});},
 			get ga () {return __get__ (this, function (self, key) {
 				return self.e.getAttribute (key);
 			});},
@@ -2306,7 +2310,7 @@ function app () {
 				return self.sa ('disabled', true);
 			});},
 			get enable () {return __get__ (this, function (self) {
-				return self.sa ('disabled', false);
+				return self.ra ('disabled');
 			});},
 			get able () {return __get__ (this, function (self, able) {
 				if (able) {
@@ -2594,16 +2598,60 @@ function app () {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
+				self.kind = 'item';
 				self.element = Div ().ac ('schemaitem');
+				self.a (self.element);
+			});}
+		});
+		var NamedSchemaItem = __class__ ('NamedSchemaItem', [e], {
+			__module__: __name__,
+			get textchangedcallback () {return __get__ (this, function (self, keycode, content) {
+				self.py_name = content;
+			});},
+			get namedivclicked () {return __get__ (this, function (self) {
+				self.editmode = !(self.editmode);
+				self.rawtextinput.able (self.editmode);
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (NamedSchemaItem, '__init__') (self, 'div');
+				self.kind = 'nameditem';
+				self.py_name = args.py_get ('name', 'foo');
+				self.editmode = args.py_get ('editmode', false);
+				self.item = args.py_get ('item', SchemaItem (args));
+				self.element = Div ().ac ('namedschemaitem');
+				self.namediv = Div ().ac ('schemaitemname');
+				args ['keycallback'] = self.textchangedcallback;
+				self.rawtextinput = RawTextInput (args).ac ('namedschemaitemrawtextinput').sv (self.py_name).able (self.editmode);
+				self.namediv.a (self.rawtextinput);
+				self.namediv.ae ('mousedown', self.namedivclicked);
+				self.element.aa (list ([self.namediv, self.item]));
+				self.a (self.element);
+			});}
+		});
+		var SchemaScalar = __class__ ('SchemaScalar', [SchemaItem], {
+			__module__: __name__,
+			get textchangedcallback () {return __get__ (this, function (self, keycode, content) {
+				self.value = content;
+			});},
+			get divclicked () {return __get__ (this, function (self) {
+				self.editmode = !(self.editmode);
+				self.rawtextinput.able (self.editmode);
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (SchemaScalar, '__init__') (self, args);
+				self.kind = 'scalar';
+				self.value = args.py_get ('value', 'bar');
+				self.editmode = args.py_get ('editmode', false);
+				self.element.ac ('schemascalar');
+				args ['keycallback'] = self.textchangedcallback;
+				self.rawtextinput = RawTextInput (args).ac ('schemascalarrawtextinput').sv (self.value).able (self.editmode);
+				self.element.ae ('mousedown', self.divclicked);
+				self.element.aa (list ([self.rawtextinput]));
 				self.a (self.element);
 			});}
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
 			__module__: __name__,
-			get textchangedcallback () {return __get__ (this, function (self, keycode, content) {
-				self.py_name = content;
-				// pass;
-			});},
 			get buildchilds () {return __get__ (this, function (self) {
 				self.childshook.x ();
 				var __iterable0__ = self.childs;
@@ -2614,11 +2662,18 @@ function app () {
 			});},
 			get createcallback () {return __get__ (this, function (self, key) {
 				self.createcombo.setoptions (SCHEMA_KINDS);
-				var sch = SchemaCollection (dict ({}));
-				if (key == 'scalar') {
-					var sch = SchemaItem (dict ({}));
+				var sch = SchemaScalar (dict ({}));
+				if (key == 'list') {
+					var sch = SchemaList (dict ({}));
 				}
-				self.childs.append (sch);
+				else if (key == 'dict') {
+					var sch = SchemaDict (dict ({}));
+				}
+				var appendelement = sch;
+				if (self.kind == 'dict') {
+					var appendelement = NamedSchemaItem (dict ({'item': sch}));
+				}
+				self.childs.append (appendelement);
 				self.buildchilds ();
 			});},
 			get openchilds () {return __get__ (this, function (self) {
@@ -2641,16 +2696,15 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaCollection, '__init__') (self, args);
+				self.kind = 'collection';
 				self.py_name = args.py_get ('name', 'SchemaCollection');
 				self.opened = args.py_get ('opened', false);
 				self.childs = args.py_get ('childs', list ([]));
 				self.editmode = args.py_get ('editmode', false);
 				self.childseditable = args.py_get ('childseditable', true);
 				self.element.ac ('schemacollection');
-				args ['keycallback'] = self.textchangedcallback;
-				self.rawtextinput = RawTextInput (args).ac ('schemacollectionrawtextinput').sv (self.py_name).able (self.editmode);
 				self.openbutton = Div ().ac ('schemacollectionopenbutton').ae ('mousedown', self.openchilds);
-				self.element.aa (list ([self.rawtextinput, self.openbutton]));
+				self.element.aa (list ([self.openbutton]));
 				self.createhook = Div ();
 				self.childshook = Div ();
 				self.opendiv = Div ().ac ('schemacollectionopendiv');
@@ -2658,6 +2712,22 @@ function app () {
 				self.container = Div ();
 				self.container.aa (list ([self.element, self.opendiv]));
 				self.a (self.container);
+			});}
+		});
+		var SchemaList = __class__ ('SchemaList', [SchemaCollection], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (SchemaList, '__init__') (self, args);
+				self.kind = 'list';
+				self.element.ac ('schemalist');
+			});}
+		});
+		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (SchemaDict, '__init__') (self, args);
+				self.kind = 'dict';
+				self.element.ac ('schemadict');
 			});}
 		});
 		if (window.location.protocol == 'https:') {
@@ -2672,7 +2742,7 @@ function app () {
 		var mainlog = null;
 		var maintab = null;
 		var engineconsole = null;
-		var configschema = null;
+		var configschema = SchemaDict (dict ({}));
 		var docwln = function (content) {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			mainlog.log (li);
@@ -2684,7 +2754,6 @@ function app () {
 			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
 			mainlog = Log ();
 			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
-			var configschema = SchemaCollection (dict ({}));
 			var maintabpane = TabPane (dict ({'kind': 'main'}));
 			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', configschema), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
@@ -2721,12 +2790,16 @@ function app () {
 			__all__.Input = Input;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
+			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
 			__all__.RawTextInput = RawTextInput;
 			__all__.SCHEMA_KINDS = SCHEMA_KINDS;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.SchemaCollection = SchemaCollection;
+			__all__.SchemaDict = SchemaDict;
 			__all__.SchemaItem = SchemaItem;
+			__all__.SchemaList = SchemaList;
+			__all__.SchemaScalar = SchemaScalar;
 			__all__.Select = Select;
 			__all__.Span = Span;
 			__all__.Tab = Tab;

@@ -1,5 +1,5 @@
 {server.py: 1527496951.7673426, simple.py: 1527245383.1193473, static/css/app.css: 1527258978.6899326,
-  static/css/widgets.css: 1527505832.7703855, static/js/app.js: 1527506938.3528745,
-  templates/index.html: 1527253422.5379329, transcrypt/app.py: 1527506936.5148964,
-  transcrypt/client.py: 1527430617.5529726, transcrypt/dom.py: 1527505509.687083,
-  transcrypt/widgets.py: 1527506936.110597}
+  static/css/widgets.css: 1527525164.6161568, static/js/app.js: 1527525106.8362927,
+  templates/index.html: 1527253422.5379329, transcrypt/app.py: 1527525105.4424856,
+  transcrypt/client.py: 1527525104.8768806, transcrypt/dom.py: 1527523362.3689876,
+  transcrypt/widgets.py: 1527525023.5508742}
