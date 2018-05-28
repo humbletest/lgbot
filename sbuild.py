@@ -230,13 +230,12 @@ b = BDef().frompath()
 ###################################################
 
 def build_thread_func():
-    global browserinit
-    time.sleep(10)
+    global browserinit    
     while True:        
         somechange = b.build(loop = True)        
         if somechange or browserinit:
             if browserinit:
-                time.sleep(1)                
+                time.sleep(15)                
                 browser.get('http://localhost:5000')
                 browserinit = False
             else:                

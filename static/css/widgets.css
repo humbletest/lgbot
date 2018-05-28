@@ -92,3 +92,16 @@
 .schemacollectionopendiv {
     margin-left: 20px;
 }
+
+.comboboxselect {
+    font-size: 20px; font-weight: bold; padding: 2px;
+    border: solid 1px; border-radius: 5px;   
+}
+
+.comboboxoptionfirst {
+    font-weight: bold;
+}
+
+.comboboxoption {
+    font-weight: normal;
+}

@@ -142,5 +142,19 @@ class Input(e):
     def __init__(self, kind):
         super().__init__("input")
         self.sa("type",kind)
+
+class Select(e):
+    def __init__(self):
+        super().__init__("select")
+
+class Option(e):
+    def __init__(self, key, displayname, selected = False):
+        super().__init__("option")
+        self.sa("name", key)
+        self.sa("id", key)
+        self.sv(key)
+        self.html(displayname)
+        if selected:
+            self.sa("selected", True)
 ######################################################
 
