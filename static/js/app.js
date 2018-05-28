@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-27 16:43:47
+// Transcrypt'ed from Python, 2018-05-28 10:49:50
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2307,6 +2307,12 @@ function app () {
 			});},
 			get enable () {return __get__ (this, function (self) {
 				return self.sa ('disabled', false);
+			});},
+			get able () {return __get__ (this, function (self, able) {
+				if (able) {
+					return self.enable ();
+				}
+				return self.disable ();
 			});}
 		});
 		var Div = __class__ ('Div', [e], {
@@ -2522,15 +2528,39 @@ function app () {
 				self.py_name = content;
 				// pass;
 			});},
+			get openchilds () {return __get__ (this, function (self) {
+				if (self.opened) {
+					self.opened = false;
+					self.createhook.x ();
+					self.childshook.x ();
+					self.openbutton.rc ('schemacollectionopenbuttondone');
+				}
+				else {
+					self.opened = true;
+					self.creatediv = Div ().ac ('schemaitem').ac ('schemacreate');
+					self.createhook.a (self.creatediv);
+					self.openbutton.ac ('schemacollectionopenbuttondone');
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaCollection, '__init__') (self, args);
 				self.py_name = args.py_get ('name', 'SchemaCollection');
+				self.opened = args.py_get ('opened', false);
+				self.childs = args.py_get ('childs', list ([]));
+				self.editmode = args.py_get ('editmode', false);
+				self.childseditable = args.py_get ('childseditable', true);
 				self.element.ac ('schemacollection');
 				args ['keycallback'] = self.textchangedcallback;
-				self.rawtextinput = RawTextInput (args).ac ('schemacollectionrawtextinput').sv (self.py_name).disable ();
-				self.openbutton = Div ().ac ('schemacollectionopenbutton');
+				self.rawtextinput = RawTextInput (args).ac ('schemacollectionrawtextinput').sv (self.py_name).able (self.editmode);
+				self.openbutton = Div ().ac ('schemacollectionopenbutton').ae ('mousedown', self.openchilds);
 				self.element.aa (list ([self.rawtextinput, self.openbutton]));
-				self.a (self.element);
+				self.createhook = Div ();
+				self.childshook = Div ();
+				self.opendiv = Div ().ac ('schemacollectionopendiv');
+				self.opendiv.aa (list ([self.createhook, self.childshook]));
+				self.container = Div ();
+				self.container.aa (list ([self.element, self.opendiv]));
+				self.a (self.container);
 			});}
 		});
 		if (window.location.protocol == 'https:') {
