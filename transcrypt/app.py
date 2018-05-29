@@ -1,4 +1,46 @@
-######################################################
+__pragma__("jsiter")
+
+def putjsonbin(json, callback, id = None):
+    method = "POST"
+    url = "https://api.jsonbin.io/b"        
+    if not ( id is None ):
+        url = url + "/" + id        
+        method = "PUT"    
+    args = {
+        "method": method,
+        "headers": {
+            "Content-Type": "application/json",
+            "private": False
+        },
+        "body": json
+    }        
+    
+    fetch(url, args).then(
+        lambda response: response.text().then(
+            lambda content: callback(json, content),
+            lambda err: print(err)
+        ),
+        lambda err: print(err)
+        )
+    
+
+def getjsonbin(id, callback, version = "latest"):
+    args = {
+        "method": "GET",
+        "headers": {
+            "Content-Type": "application/json",
+            "private": False
+        }
+    }
+    fetch("https://api.jsonbin.io/b/" + id + "/" + version, args).then(
+        lambda response: response.text().then(
+            lambda content: callback(content),
+            lambda err: print(err)
+        ),
+        lambda err: print(err)
+        )
+
+__pragma__("nojsiter")######################################################
 # dom
 def ce(tag):
     return document.createElement(tag)
@@ -297,16 +339,32 @@ class TabPane(e):
             tab.tabelement.ae("mousedown", self.tabSelectedCallback.bind(self, tab))
         return self.selectByKey(key)
 
-    def selectByKey(self, key):
+    def getTabByKey(self, key, updateclass = False):
         if len(self.tabs) == 0:
-            self.seltab = None
-            return self
-        self.seltab = self.tabs[0]
+            return None
+        seltab = self.tabs[0]
         for tab in self.tabs:
-            tab.tabelement.rc("tabpaneseltab")
+            if updateclass:
+                tab.tabelement.rc("tabpaneseltab")
+                if tab.key == key:
+                    tab.tabelement.ac("tabpaneseltab")
             if tab.key == key:
-                self.seltab = tab                                
-                tab.tabelement.ac("tabpaneseltab")
+                seltab = tab        
+        return seltab
+
+    def setTabElementByKey(self, key, tabelement, show = True):
+        tab = self.getTabByKey(key)
+        if tab == None:
+            return self
+        tab.element = tabelement        
+        if show:
+            self.contentdiv.x().a(tab.element)    
+        return self
+
+    def selectByKey(self, key):
+        self.seltab = self.getTabByKey(key, True)
+        if self.seltab == None:
+            return self
         self.contentdiv.x().a(self.seltab.element)
         return self
 
@@ -357,7 +415,9 @@ SCHEMA_KINDS = {
 
 class SchemaItem(e):
     def toobj(self):
-        return {}
+        return {
+            "kind": "schemaitem"
+        }
 
     def __init__(self, args):
         super().__init__("div")
@@ -374,7 +434,11 @@ class NamedSchemaItem(e):
         self.rawtextinput.able(self.editmode)        
 
     def toobj(self):
-        return {self.name: self.item.toobj()}
+        return {
+            "kind": "namedschemaitem",
+            "name": self.name,
+            "item": self.item.toobj()
+        }
     
     def __init__(self, args):
         super().__init__("div")
@@ -400,7 +464,10 @@ class SchemaScalar(SchemaItem):
         self.rawtextinput.able(self.editmode)        
 
     def toobj(self):
-        return self.value
+        return {
+            "kind": "schemascalar",
+            "value": self.value
+        }
 
     def __init__(self, args):
         super().__init__(args)
@@ -477,7 +544,10 @@ class SchemaList(SchemaCollection):
         obj = []
         for item in self.childs:
             obj.append(item.toobj())
-        return obj
+        return {
+            "kind": "schemalist",
+            "items": obj
+        }
 
     def __init__(self, args):
         super().__init__(args)        
@@ -486,15 +556,53 @@ class SchemaList(SchemaCollection):
 
 class SchemaDict(SchemaCollection):
     def toobj(self):
-        obj = {}
+        obj = []
         for item in self.childs:
-            obj[item.name] = item.item.toobj()
-        return obj
+            sch = {
+                "name": item.name,
+                "item": item.item.toobj()
+            }
+            obj.append(sch)
+        return {
+            "kind": "schemadict",
+            "items": obj
+        }
 
     def __init__(self, args):
         super().__init__(args)        
         self.kind = "dict"
         self.element.ac("schemadict")
+
+def schemafromobj(obj):
+    kind = obj["kind"]
+    if kind == "schemascalar":        
+        return SchemaScalar({
+            "value": obj["value"]
+        })
+    elif kind == "schemalist":
+        items = obj["items"]
+        childs = []
+        for item in items:
+            sch = schemafromobj(item)
+            childs.append(sch)        
+        return SchemaList({
+            "childs": childs
+        })
+    elif kind == "schemadict":        
+        items = obj["items"]
+        childs = []
+        for itemobj in items:
+            name = itemobj["name"]
+            item = itemobj["item"]
+            sch = schemafromobj(item)
+            namedsch = NamedSchemaItem({
+                "name": name,
+                "item": sch
+            })
+            childs.append(namedsch)        
+        return SchemaDict({
+            "childs": childs
+        })
 
 ######################################################
 
@@ -510,16 +618,16 @@ else:
 
 SUBMIT_URL = ws_scheme + location.host
 
-queryParamsString = window.location.search
+queryparamsstring = window.location.search
 
-queryParams = {}
+queryparams = {}
 
-if len(queryParamsString) > 1:
-    queryParamsString = queryParamsString[1:]
-    mainparts = queryParamsString.split('&')
+if len(queryparamsstring) > 1:
+    queryparamsstring = queryparamsstring[1:]
+    mainparts = queryparamsstring.split('&')
     for mainpart in mainparts:
         parts = mainpart.split("=")
-        queryParams[parts[0]] = parts[1]
+        queryparams[parts[0]] = parts[1]
 ######################################################
 
 ######################################################
@@ -527,10 +635,32 @@ if len(queryParamsString) > 1:
 socket = None
 cmdinp = None
 mainlog = None
-maintab = None
+maintabpane = None
 engineconsole = None
 configschema = SchemaDict({})
+id = None
+
+def buildconfigdiv():    
+    global configschema
+    configdiv = Div().aa([
+        Button("Serialize", serializecallback).fs(24),
+        configschema
+    ])
+    return configdiv
+
+def getbincallback(content):
+    global configschema    
+    obj = JSON.parse(content)    
+    configschema = schemafromobj(obj)        
+    configschema.openchilds()
+    maintabpane.setTabElementByKey("config", buildconfigdiv())
+
+if "id" in queryparams:    
+    id = queryparams["id"]
+    getjsonbin(id, getbincallback)
+
 srcdiv = Div()
+schemajson = None
 ######################################################
 
 ######################################################
@@ -542,62 +672,44 @@ def docwln(content):
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
 
-__pragma__("jsiter")
-
-def putjsonbin(json, callback):
-    args = {
-        "method": "POST",
-        "headers": {
-            "Content-Type": "application/json",
-            "private": False
-        },
-        "body": json
-    }
-    fetch("https://api.jsonbin.io/b", args).then(
-        lambda response: response.text().then(
-            lambda content: callback(json, content),
-            lambda err: print(err)
-        ),
-        lambda err: print(err)
-        )
-
-__pragma__("nojsiter")
-
-def serializeputjsonbincallback(json, content):    
+def serializeputjsonbincallback(json, content):        
     try:
-        obj = JSON.parse(content)
-        id = obj["id"]        
-        srcdiv.html("<pre>" + json + "</pre><hr><a href='https://api.jsonbin.io/b/"+id+"'>"+id+"</a>")
+        obj = JSON.parse(content)        
+        binid = None
+        if "id" in obj:
+            binid = obj["id"]                
+        if "parentId" in obj:
+            binid = obj["parentId"]                
+        if binid is None:
+            print("no binid")
+        else:            
+            document.location.href = "http://localhost:5000/?id=" + binid
+            pass
     except:
         print("there was an error parsing json", content)
         return
 
 def serializecallback():
-    json = JSON.stringify(configschema.toobj(), None, 2)    
-    putjsonbin(json, serializeputjsonbincallback)
+    global id, maintabpane, configschema, schemajson        
+    schemajson = JSON.stringify(configschema.toobj(), None, 2)    
+    putjsonbin(schemajson, serializeputjsonbincallback, id)
 ######################################################
 
 ######################################################
 # app
 def build():
-    global cmdinp, mainlog, maintab, engineconsole
+    global cmdinp, mainlog, maintabpane, engineconsole
 
     cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
     mainlog = Log()
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
-    configdiv = Div().aa([
-        Button("Serialize", serializecallback).fs(24),
-        configschema
-    ])
-
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
-            Tab("config", "Config", configdiv),
-            Tab("src", "Src", srcdiv),
+            Tab("config", "Config", buildconfigdiv()),            
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
         ], "config"
     )    

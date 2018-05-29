@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-28 22:30:49
+// Transcrypt'ed from Python, 2018-05-29 08:42:14
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,42 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var putjsonbin = function (json, callback, id) {
+			if (typeof id == 'undefined' || (id != null && id .hasOwnProperty ("__kwargtrans__"))) {;
+				var id = null;
+			};
+			var method = 'POST';
+			var url = 'https://api.jsonbin.io/b';
+			if (!(id === null)) {
+				var url = (url + '/') + id;
+				var method = 'PUT';
+			}
+			var args = {'method': method, 'headers': {'Content-Type': 'application/json', 'private': false}, 'body': json};
+			fetch (url, args).then ((function __lambda__ (response) {
+				return response.text ().then ((function __lambda__ (content) {
+					return callback (json, content);
+				}), (function __lambda__ (err) {
+					return print (err);
+				}));
+			}), (function __lambda__ (err) {
+				return print (err);
+			}));
+		};
+		var getjsonbin = function (id, callback, version) {
+			if (typeof version == 'undefined' || (version != null && version .hasOwnProperty ("__kwargtrans__"))) {;
+				var version = 'latest';
+			};
+			var args = {'method': 'GET', 'headers': {'Content-Type': 'application/json', 'private': false}};
+			fetch ((('https://api.jsonbin.io/b/' + id) + '/') + version, args).then ((function __lambda__ (response) {
+				return response.text ().then ((function __lambda__ (content) {
+					return callback (content);
+				}), (function __lambda__ (err) {
+					return print (err);
+				}));
+			}), (function __lambda__ (err) {
+				return print (err);
+			}));
+		};
 		var ce = function (tag) {
 			return document.createElement (tag);
 		};
@@ -2525,20 +2561,47 @@ function app () {
 				}
 				return self.selectByKey (key);
 			});},
-			get selectByKey () {return __get__ (this, function (self, key) {
+			get getTabByKey () {return __get__ (this, function (self, key, updateclass) {
+				if (typeof updateclass == 'undefined' || (updateclass != null && updateclass .hasOwnProperty ("__kwargtrans__"))) {;
+					var updateclass = false;
+				};
 				if (len (self.tabs) == 0) {
-					self.seltab = null;
-					return self;
+					return null;
 				}
-				self.seltab = self.tabs [0];
+				var seltab = self.tabs [0];
 				var __iterable0__ = self.tabs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var tab = __iterable0__ [__index0__];
-					tab.tabelement.rc ('tabpaneseltab');
-					if (tab.key == key) {
-						self.seltab = tab;
-						tab.tabelement.ac ('tabpaneseltab');
+					if (updateclass) {
+						tab.tabelement.rc ('tabpaneseltab');
+						if (tab.key == key) {
+							tab.tabelement.ac ('tabpaneseltab');
+						}
 					}
+					if (tab.key == key) {
+						var seltab = tab;
+					}
+				}
+				return seltab;
+			});},
+			get setTabElementByKey () {return __get__ (this, function (self, key, tabelement, show) {
+				if (typeof show == 'undefined' || (show != null && show .hasOwnProperty ("__kwargtrans__"))) {;
+					var show = true;
+				};
+				var tab = self.getTabByKey (key);
+				if (tab == null) {
+					return self;
+				}
+				tab.element = tabelement;
+				if (show) {
+					self.contentdiv.x ().a (tab.element);
+				}
+				return self;
+			});},
+			get selectByKey () {return __get__ (this, function (self, key) {
+				self.seltab = self.getTabByKey (key, true);
+				if (self.seltab == null) {
+					return self;
 				}
 				self.contentdiv.x ().a (self.seltab.element);
 				return self;
@@ -2601,7 +2664,7 @@ function app () {
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
 			get toobj () {return __get__ (this, function (self) {
-				return dict ({});
+				return dict ({'kind': 'schemaitem'});
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
@@ -2620,7 +2683,7 @@ function app () {
 				self.rawtextinput.able (self.editmode);
 			});},
 			get toobj () {return __get__ (this, function (self) {
-				return dict ([[self.py_name, self.item.toobj ()]]);
+				return dict ({'kind': 'namedschemaitem', 'name': self.py_name, 'item': self.item.toobj ()});
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
@@ -2648,7 +2711,7 @@ function app () {
 				self.rawtextinput.able (self.editmode);
 			});},
 			get toobj () {return __get__ (this, function (self) {
-				return self.value;
+				return dict ({'kind': 'schemascalar', 'value': self.value});
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
@@ -2736,7 +2799,7 @@ function app () {
 					var item = __iterable0__ [__index0__];
 					obj.append (item.toobj ());
 				}
-				return obj;
+				return dict ({'kind': 'schemalist', 'items': obj});
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaList, '__init__') (self, args);
@@ -2747,13 +2810,14 @@ function app () {
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
 			__module__: __name__,
 			get toobj () {return __get__ (this, function (self) {
-				var obj = dict ({});
+				var obj = list ([]);
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					obj [item.py_name] = item.item.toobj ();
+					var sch = dict ({'name': item.py_name, 'item': item.item.toobj ()});
+					obj.append (sch);
 				}
-				return obj;
+				return dict ({'kind': 'schemadict', 'items': obj});
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaDict, '__init__') (self, args);
@@ -2761,6 +2825,37 @@ function app () {
 				self.element.ac ('schemadict');
 			});}
 		});
+		var schemafromobj = function (obj) {
+			var kind = obj ['kind'];
+			if (kind == 'schemascalar') {
+				return SchemaScalar (dict ({'value': obj ['value']}));
+			}
+			else if (kind == 'schemalist') {
+				var py_items = obj ['items'];
+				var childs = list ([]);
+				var __iterable0__ = py_items;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					var sch = schemafromobj (item);
+					childs.append (sch);
+				}
+				return SchemaList (dict ({'childs': childs}));
+			}
+			else if (kind == 'schemadict') {
+				var py_items = obj ['items'];
+				var childs = list ([]);
+				var __iterable0__ = py_items;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var itemobj = __iterable0__ [__index0__];
+					var py_name = itemobj ['name'];
+					var item = itemobj ['item'];
+					var sch = schemafromobj (item);
+					var namedsch = NamedSchemaItem (dict ({'name': py_name, 'item': sch}));
+					childs.append (namedsch);
+				}
+				return SchemaDict (dict ({'childs': childs}));
+			}
+		};
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
 		}
@@ -2768,25 +2863,41 @@ function app () {
 			var ws_scheme = 'ws://';
 		}
 		var SUBMIT_URL = ws_scheme + location.host;
-		var queryParamsString = window.location.search;
-		var queryParams = dict ({});
-		if (len (queryParamsString) > 1) {
-			var queryParamsString = queryParamsString.__getslice__ (1, null, 1);
-			var mainparts = queryParamsString.py_split ('&');
+		var queryparamsstring = window.location.search;
+		var queryparams = dict ({});
+		if (len (queryparamsstring) > 1) {
+			var queryparamsstring = queryparamsstring.__getslice__ (1, null, 1);
+			var mainparts = queryparamsstring.py_split ('&');
 			var __iterable0__ = mainparts;
 			for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 				var mainpart = __iterable0__ [__index0__];
 				var parts = mainpart.py_split ('=');
-				queryParams [parts [0]] = parts [1];
+				queryparams [parts [0]] = parts [1];
 			}
 		}
 		var socket = null;
 		var cmdinp = null;
 		var mainlog = null;
-		var maintab = null;
+		var maintabpane = null;
 		var engineconsole = null;
 		var configschema = SchemaDict (dict ({}));
+		var id = null;
+		var buildconfigdiv = function () {
+			var configdiv = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), configschema]));
+			return configdiv;
+		};
+		var getbincallback = function (content) {
+			var obj = JSON.parse (content);
+			configschema = schemafromobj (obj);
+			configschema.openchilds ();
+			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
+		};
+		if (__in__ ('id', queryparams)) {
+			var id = queryparams ['id'];
+			getjsonbin (id, getbincallback);
+		}
 		var srcdiv = Div ();
+		var schemajson = null;
 		var docwln = function (content) {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			mainlog.log (li);
@@ -2794,23 +2905,23 @@ function app () {
 		var cmdinpcallback = function (cmd) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
-		var putjsonbin = function (json, callback) {
-			var args = {'method': 'POST', 'headers': {'Content-Type': 'application/json', 'private': false}, 'body': json};
-			fetch ('https://api.jsonbin.io/b', args).then ((function __lambda__ (response) {
-				return response.text ().then ((function __lambda__ (content) {
-					return callback (json, content);
-				}), (function __lambda__ (err) {
-					return print (err);
-				}));
-			}), (function __lambda__ (err) {
-				return print (err);
-			}));
-		};
 		var serializeputjsonbincallback = function (json, content) {
 			try {
 				var obj = JSON.parse (content);
-				var id = obj ['id'];
-				srcdiv.html (((((('<pre>' + json) + "</pre><hr><a href='https://api.jsonbin.io/b/") + id) + "'>") + id) + '</a>');
+				var binid = null;
+				if (__in__ ('id', obj)) {
+					var binid = obj ['id'];
+				}
+				if (__in__ ('parentId', obj)) {
+					var binid = obj ['parentId'];
+				}
+				if (binid === null) {
+					print ('no binid');
+				}
+				else {
+					document.location.href = 'http://localhost:5000/?id=' + binid;
+					// pass;
+				}
 			}
 			catch (__except0__) {
 				print ('there was an error parsing json', content);
@@ -2818,16 +2929,15 @@ function app () {
 			}
 		};
 		var serializecallback = function () {
-			var json = JSON.stringify (configschema.toobj (), null, 2);
-			putjsonbin (json, serializeputjsonbincallback);
+			schemajson = JSON.stringify (configschema.toobj (), null, 2);
+			putjsonbin (schemajson, serializeputjsonbincallback, id);
 		};
 		var build = function () {
 			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
 			mainlog = Log ();
 			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
-			var configdiv = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), configschema]));
-			var maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', configdiv), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
+			maintabpane = TabPane (dict ({'kind': 'main'}));
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', buildconfigdiv ()), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -2881,6 +2991,7 @@ function app () {
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;
 			__all__.build = build;
+			__all__.buildconfigdiv = buildconfigdiv;
 			__all__.ce = ce;
 			__all__.cmdinp = cmdinp;
 			__all__.cmdinpcallback = cmdinpcallback;
@@ -2889,16 +3000,21 @@ function app () {
 			__all__.e = e;
 			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
+			__all__.getbincallback = getbincallback;
+			__all__.getjsonbin = getjsonbin;
+			__all__.id = id;
 			__all__.mainlog = mainlog;
 			__all__.mainpart = mainpart;
 			__all__.mainparts = mainparts;
-			__all__.maintab = maintab;
+			__all__.maintabpane = maintabpane;
 			__all__.onconnect = onconnect;
 			__all__.onevent = onevent;
 			__all__.parts = parts;
 			__all__.putjsonbin = putjsonbin;
-			__all__.queryParams = queryParams;
-			__all__.queryParamsString = queryParamsString;
+			__all__.queryparams = queryparams;
+			__all__.queryparamsstring = queryparamsstring;
+			__all__.schemafromobj = schemafromobj;
+			__all__.schemajson = schemajson;
 			__all__.serializecallback = serializecallback;
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
 			__all__.socket = socket;
