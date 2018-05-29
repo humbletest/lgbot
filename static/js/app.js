@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-29 08:42:14
+// Transcrypt'ed from Python, 2018-05-29 09:04:20
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2919,7 +2919,9 @@ function app () {
 					print ('no binid');
 				}
 				else {
-					document.location.href = 'http://localhost:5000/?id=' + binid;
+					var href = (((window.location.protocol + '//') + window.location.host) + '/?id=') + binid;
+					print ('href', href);
+					document.location.href = href;
 					// pass;
 				}
 			}
