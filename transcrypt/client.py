@@ -75,7 +75,9 @@ def serializeputjsonbincallback(json, content):
         if binid is None:
             print("no binid")
         else:            
-            document.location.href = "http://localhost:5000/?id=" + binid
+            href = window.location.protocol + "//" + window.location.host + "/?id=" + binid
+            print("href", href)
+            document.location.href = href
             pass
     except:
         print("there was an error parsing json", content)
