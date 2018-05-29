@@ -127,16 +127,32 @@ class TabPane(e):
             tab.tabelement.ae("mousedown", self.tabSelectedCallback.bind(self, tab))
         return self.selectByKey(key)
 
-    def selectByKey(self, key):
+    def getTabByKey(self, key, updateclass = False):
         if len(self.tabs) == 0:
-            self.seltab = None
-            return self
-        self.seltab = self.tabs[0]
+            return None
+        seltab = self.tabs[0]
         for tab in self.tabs:
-            tab.tabelement.rc("tabpaneseltab")
+            if updateclass:
+                tab.tabelement.rc("tabpaneseltab")
+                if tab.key == key:
+                    tab.tabelement.ac("tabpaneseltab")
             if tab.key == key:
-                self.seltab = tab                                
-                tab.tabelement.ac("tabpaneseltab")
+                seltab = tab        
+        return seltab
+
+    def setTabElementByKey(self, key, tabelement, show = True):
+        tab = self.getTabByKey(key)
+        if tab == None:
+            return self
+        tab.element = tabelement        
+        if show:
+            self.contentdiv.x().a(tab.element)    
+        return self
+
+    def selectByKey(self, key):
+        self.seltab = self.getTabByKey(key, True)
+        if self.seltab == None:
+            return self
         self.contentdiv.x().a(self.seltab.element)
         return self
 
@@ -187,7 +203,9 @@ SCHEMA_KINDS = {
 
 class SchemaItem(e):
     def toobj(self):
-        return {}
+        return {
+            "kind": "schemaitem"
+        }
 
     def __init__(self, args):
         super().__init__("div")
@@ -204,7 +222,11 @@ class NamedSchemaItem(e):
         self.rawtextinput.able(self.editmode)        
 
     def toobj(self):
-        return {self.name: self.item.toobj()}
+        return {
+            "kind": "namedschemaitem",
+            "name": self.name,
+            "item": self.item.toobj()
+        }
     
     def __init__(self, args):
         super().__init__("div")
@@ -230,7 +252,10 @@ class SchemaScalar(SchemaItem):
         self.rawtextinput.able(self.editmode)        
 
     def toobj(self):
-        return self.value
+        return {
+            "kind": "schemascalar",
+            "value": self.value
+        }
 
     def __init__(self, args):
         super().__init__(args)
@@ -307,7 +332,10 @@ class SchemaList(SchemaCollection):
         obj = []
         for item in self.childs:
             obj.append(item.toobj())
-        return obj
+        return {
+            "kind": "schemalist",
+            "items": obj
+        }
 
     def __init__(self, args):
         super().__init__(args)        
@@ -316,15 +344,53 @@ class SchemaList(SchemaCollection):
 
 class SchemaDict(SchemaCollection):
     def toobj(self):
-        obj = {}
+        obj = []
         for item in self.childs:
-            obj[item.name] = item.item.toobj()
-        return obj
+            sch = {
+                "name": item.name,
+                "item": item.item.toobj()
+            }
+            obj.append(sch)
+        return {
+            "kind": "schemadict",
+            "items": obj
+        }
 
     def __init__(self, args):
         super().__init__(args)        
         self.kind = "dict"
         self.element.ac("schemadict")
+
+def schemafromobj(obj):
+    kind = obj["kind"]
+    if kind == "schemascalar":        
+        return SchemaScalar({
+            "value": obj["value"]
+        })
+    elif kind == "schemalist":
+        items = obj["items"]
+        childs = []
+        for item in items:
+            sch = schemafromobj(item)
+            childs.append(sch)        
+        return SchemaList({
+            "childs": childs
+        })
+    elif kind == "schemadict":        
+        items = obj["items"]
+        childs = []
+        for itemobj in items:
+            name = itemobj["name"]
+            item = itemobj["item"]
+            sch = schemafromobj(item)
+            namedsch = NamedSchemaItem({
+                "name": name,
+                "item": sch
+            })
+            childs.append(namedsch)        
+        return SchemaDict({
+            "childs": childs
+        })
 
 ######################################################
 

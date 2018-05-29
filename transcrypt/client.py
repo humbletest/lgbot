@@ -10,16 +10,16 @@ else:
 
 SUBMIT_URL = ws_scheme + location.host
 
-queryParamsString = window.location.search
+queryparamsstring = window.location.search
 
-queryParams = {}
+queryparams = {}
 
-if len(queryParamsString) > 1:
-    queryParamsString = queryParamsString[1:]
-    mainparts = queryParamsString.split('&')
+if len(queryparamsstring) > 1:
+    queryparamsstring = queryparamsstring[1:]
+    mainparts = queryparamsstring.split('&')
     for mainpart in mainparts:
         parts = mainpart.split("=")
-        queryParams[parts[0]] = parts[1]
+        queryparams[parts[0]] = parts[1]
 ######################################################
 
 ######################################################
@@ -27,10 +27,32 @@ if len(queryParamsString) > 1:
 socket = None
 cmdinp = None
 mainlog = None
-maintab = None
+maintabpane = None
 engineconsole = None
 configschema = SchemaDict({})
+id = None
+
+def buildconfigdiv():    
+    global configschema
+    configdiv = Div().aa([
+        Button("Serialize", serializecallback).fs(24),
+        configschema
+    ])
+    return configdiv
+
+def getbincallback(content):
+    global configschema    
+    obj = JSON.parse(content)    
+    configschema = schemafromobj(obj)        
+    configschema.openchilds()
+    maintabpane.setTabElementByKey("config", buildconfigdiv())
+
+if "id" in queryparams:    
+    id = queryparams["id"]
+    getjsonbin(id, getbincallback)
+
 srcdiv = Div()
+schemajson = None
 ######################################################
 
 ######################################################
@@ -42,62 +64,44 @@ def docwln(content):
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
 
-__pragma__("jsiter")
-
-def putjsonbin(json, callback):
-    args = {
-        "method": "POST",
-        "headers": {
-            "Content-Type": "application/json",
-            "private": False
-        },
-        "body": json
-    }
-    fetch("https://api.jsonbin.io/b", args).then(
-        lambda response: response.text().then(
-            lambda content: callback(json, content),
-            lambda err: print(err)
-        ),
-        lambda err: print(err)
-        )
-
-__pragma__("nojsiter")
-
-def serializeputjsonbincallback(json, content):    
+def serializeputjsonbincallback(json, content):        
     try:
-        obj = JSON.parse(content)
-        id = obj["id"]        
-        srcdiv.html("<pre>" + json + "</pre><hr><a href='https://api.jsonbin.io/b/"+id+"'>"+id+"</a>")
+        obj = JSON.parse(content)        
+        binid = None
+        if "id" in obj:
+            binid = obj["id"]                
+        if "parentId" in obj:
+            binid = obj["parentId"]                
+        if binid is None:
+            print("no binid")
+        else:            
+            document.location.href = "http://localhost:5000/?id=" + binid
+            pass
     except:
         print("there was an error parsing json", content)
         return
 
 def serializecallback():
-    json = JSON.stringify(configschema.toobj(), None, 2)    
-    putjsonbin(json, serializeputjsonbincallback)
+    global id, maintabpane, configschema, schemajson        
+    schemajson = JSON.stringify(configschema.toobj(), None, 2)    
+    putjsonbin(schemajson, serializeputjsonbincallback, id)
 ######################################################
 
 ######################################################
 # app
 def build():
-    global cmdinp, mainlog, maintab, engineconsole
+    global cmdinp, mainlog, maintabpane, engineconsole
 
     cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
     mainlog = Log()
 
     engineconsole = Div().aa([cmdinp, mainlog])    
 
-    configdiv = Div().aa([
-        Button("Serialize", serializecallback).fs(24),
-        configschema
-    ])
-
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
-            Tab("config", "Config", configdiv),
-            Tab("src", "Src", srcdiv),
+            Tab("config", "Config", buildconfigdiv()),            
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
         ], "config"
     )    

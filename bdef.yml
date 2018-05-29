@@ -1,5 +1,6 @@
 apppy:
   deps:
+    - transcrypt/utils.py
     - transcrypt/dom.py
     - transcrypt/widgets.py
     - transcrypt/client.py
