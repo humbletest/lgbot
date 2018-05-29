@@ -193,7 +193,7 @@ class Span(e):
 class Input(e):
     def __init__(self, kind):
         super().__init__("input")
-        self.sa("type",kind)
+        self.sa("type", kind)
 
 class Select(e):
     def __init__(self):
@@ -208,6 +208,18 @@ class Option(e):
         self.html(displayname)
         if selected:
             self.sa("selected", True)
+
+class CheckBox(Input):
+    def setchecked(self, checked):
+        self.e.checked = checked
+        return self
+
+    def getchecked(self):
+        return self.e.checked
+
+    def __init__(self, checked = False):
+        super().__init__("checkbox")
+        self.setchecked(checked)
 ######################################################
 
 ######################################################
@@ -414,16 +426,38 @@ SCHEMA_KINDS = {
 }
 
 class SchemaItem(e):
-    def toobj(self):
-        return {
-            "kind": "schemaitem"
+    def baseobj(self):
+        obj = {
+            "kind": self.kind,
+            "enabled": self.enabled
         }
+        return obj
+
+    def toobj(self):
+        return self.baseobj()
+
+    def enablecallback(self):        
+        self.enabled = self.enablecheckbox.getchecked()
+
+    def setenabled(self, enabled):
+        self.enabled = enabled
+        self.enablecheckbox.setchecked(self.enabled)
 
     def __init__(self, args):
         super().__init__("div")
         self.kind = "item"
+        self.enabled = args.get("enabled", True)
         self.element = Div().ac("schemaitem")
-        self.a(self.element)
+        self.schemacontainer = Div().ac("schemacontainer")
+        self.enablebox = Div().ac("schemaenablebox")
+        self.enablecheckbox = CheckBox(self.enabled).ae("change", self.enablecallback)
+        self.enablebox.a(self.enablecheckbox)        
+        self.beforeelementhook = Div()
+        self.afterelementhook = Div()
+        self.elementcontainer = Div()
+        self.elementcontainer.aa([self.beforeelementhook, self.element, self.afterelementhook])
+        self.schemacontainer.aa([self.enablebox, self.elementcontainer])     
+        self.a(self.schemacontainer)
 
 class NamedSchemaItem(e):
     def textchangedcallback(self, keycode, content):        
@@ -433,9 +467,9 @@ class NamedSchemaItem(e):
         self.editmode = not self.editmode        
         self.rawtextinput.able(self.editmode)        
 
-    def toobj(self):
+    def toobj(self):        
         return {
-            "kind": "namedschemaitem",
+            "kind": "nameditem",
             "name": self.name,
             "item": self.item.toobj()
         }
@@ -446,14 +480,14 @@ class NamedSchemaItem(e):
         self.name = args.get("name", "foo")        
         self.item = args.get("item", SchemaItem(args))
         self.editmode = args.get("editmode", False)        
-        self.element = Div().ac("namedschemaitem")
+        self.namedcontainer = Div().ac("namedschemaitem")
         self.namediv = Div().ac("schemaitemname")
         args["keycallback"] = self.textchangedcallback        
         self.rawtextinput = RawTextInput(args).ac("namedschemaitemrawtextinput").sv(self.name).able(self.editmode)
         self.namediv.a(self.rawtextinput)
         self.namediv.ae("mousedown", self.namedivclicked)
-        self.element.aa([self.namediv, self.item])
-        self.a(self.element)
+        self.namedcontainer.aa([self.namediv, self.item])
+        self.a(self.namedcontainer)
 
 class SchemaScalar(SchemaItem):
     def textchangedcallback(self, keycode, content):        
@@ -464,10 +498,9 @@ class SchemaScalar(SchemaItem):
         self.rawtextinput.able(self.editmode)        
 
     def toobj(self):
-        return {
-            "kind": "schemascalar",
-            "value": self.value
-        }
+        obj = self.baseobj()
+        obj["value"] = self.value
+        return obj
 
     def __init__(self, args):
         super().__init__(args)
@@ -479,7 +512,6 @@ class SchemaScalar(SchemaItem):
         self.rawtextinput = RawTextInput(args).ac("schemascalarrawtextinput").sv(self.value).able(self.editmode)        
         self.element.ae("mousedown", self.divclicked)
         self.element.aa([self.rawtextinput])
-        self.a(self.element)
 
 class SchemaCollection(SchemaItem):
     def buildchilds(self):
@@ -534,20 +566,17 @@ class SchemaCollection(SchemaItem):
         self.createhook = Div()
         self.childshook = Div()
         self.opendiv = Div().ac("schemacollectionopendiv")
-        self.opendiv.aa([self.createhook, self.childshook])
-        self.container = Div()
-        self.container.aa([self.element, self.opendiv])
-        self.a(self.container)
+        self.opendiv.aa([self.createhook, self.childshook])        
+        self.afterelementhook.a(self.opendiv)
 
 class SchemaList(SchemaCollection):
     def toobj(self):
-        obj = []
+        listobj = []
         for item in self.childs:
-            obj.append(item.toobj())
-        return {
-            "kind": "schemalist",
-            "items": obj
-        }
+            listobj.append(item.toobj())
+        obj = self.baseobj()
+        obj["items"] = listobj
+        return obj
 
     def __init__(self, args):
         super().__init__(args)        
@@ -556,17 +585,16 @@ class SchemaList(SchemaCollection):
 
 class SchemaDict(SchemaCollection):
     def toobj(self):
-        obj = []
+        dictobj = []
         for item in self.childs:
             sch = {
                 "name": item.name,
                 "item": item.item.toobj()
             }
-            obj.append(sch)
-        return {
-            "kind": "schemadict",
-            "items": obj
-        }
+            dictobj.append(sch)
+        obj = self.baseobj()
+        obj["items"] = dictobj
+        return obj
 
     def __init__(self, args):
         super().__init__(args)        
@@ -575,20 +603,22 @@ class SchemaDict(SchemaCollection):
 
 def schemafromobj(obj):
     kind = obj["kind"]
-    if kind == "schemascalar":        
-        return SchemaScalar({
+    enabled = obj["enabled"]
+    returnobj = {}
+    if kind == "scalar":        
+        returnobj = SchemaScalar({
             "value": obj["value"]
         })
-    elif kind == "schemalist":
+    elif kind == "list":
         items = obj["items"]
         childs = []
         for item in items:
             sch = schemafromobj(item)
             childs.append(sch)        
-        return SchemaList({
+        returnobj = SchemaList({
             "childs": childs
         })
-    elif kind == "schemadict":        
+    elif kind == "dict":        
         items = obj["items"]
         childs = []
         for itemobj in items:
@@ -600,9 +630,11 @@ def schemafromobj(obj):
                 "item": sch
             })
             childs.append(namedsch)        
-        return SchemaDict({
+        returnobj = SchemaDict({
             "childs": childs
         })
+    returnobj.setenabled(enabled)
+    return returnobj
 
 ######################################################
 

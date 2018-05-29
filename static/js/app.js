@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-29 09:04:20
+// Transcrypt'ed from Python, 2018-05-29 16:26:32
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2400,6 +2400,23 @@ function app () {
 				}
 			});}
 		});
+		var CheckBox = __class__ ('CheckBox', [Input], {
+			__module__: __name__,
+			get setchecked () {return __get__ (this, function (self, checked) {
+				self.e.checked = checked;
+				return self;
+			});},
+			get getchecked () {return __get__ (this, function (self) {
+				return self.e.checked;
+			});},
+			get __init__ () {return __get__ (this, function (self, checked) {
+				if (typeof checked == 'undefined' || (checked != null && checked .hasOwnProperty ("__kwargtrans__"))) {;
+					var checked = false;
+				};
+				__super__ (CheckBox, '__init__') (self, 'checkbox');
+				self.setchecked (checked);
+			});}
+		});
 		var WINDOW_SAFETY_MARGIN = 10;
 		var Button = __class__ ('Button', [Input], {
 			__module__: __name__,
@@ -2663,14 +2680,35 @@ function app () {
 		var SCHEMA_KINDS = dict ({'create': 'Create new', 'scalar': 'Scalar', 'list': 'List', 'dict': 'Dict'});
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
+			get baseobj () {return __get__ (this, function (self) {
+				var obj = dict ({'kind': self.kind, 'enabled': self.enabled});
+				return obj;
+			});},
 			get toobj () {return __get__ (this, function (self) {
-				return dict ({'kind': 'schemaitem'});
+				return self.baseobj ();
+			});},
+			get enablecallback () {return __get__ (this, function (self) {
+				self.enabled = self.enablecheckbox.getchecked ();
+			});},
+			get setenabled () {return __get__ (this, function (self, enabled) {
+				self.enabled = enabled;
+				self.enablecheckbox.setchecked (self.enabled);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.kind = 'item';
+				self.enabled = args.py_get ('enabled', true);
 				self.element = Div ().ac ('schemaitem');
-				self.a (self.element);
+				self.schemacontainer = Div ().ac ('schemacontainer');
+				self.enablebox = Div ().ac ('schemaenablebox');
+				self.enablecheckbox = CheckBox (self.enabled).ae ('change', self.enablecallback);
+				self.enablebox.a (self.enablecheckbox);
+				self.beforeelementhook = Div ();
+				self.afterelementhook = Div ();
+				self.elementcontainer = Div ();
+				self.elementcontainer.aa (list ([self.beforeelementhook, self.element, self.afterelementhook]));
+				self.schemacontainer.aa (list ([self.enablebox, self.elementcontainer]));
+				self.a (self.schemacontainer);
 			});}
 		});
 		var NamedSchemaItem = __class__ ('NamedSchemaItem', [e], {
@@ -2683,7 +2721,7 @@ function app () {
 				self.rawtextinput.able (self.editmode);
 			});},
 			get toobj () {return __get__ (this, function (self) {
-				return dict ({'kind': 'namedschemaitem', 'name': self.py_name, 'item': self.item.toobj ()});
+				return dict ({'kind': 'nameditem', 'name': self.py_name, 'item': self.item.toobj ()});
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
@@ -2691,14 +2729,14 @@ function app () {
 				self.py_name = args.py_get ('name', 'foo');
 				self.item = args.py_get ('item', SchemaItem (args));
 				self.editmode = args.py_get ('editmode', false);
-				self.element = Div ().ac ('namedschemaitem');
+				self.namedcontainer = Div ().ac ('namedschemaitem');
 				self.namediv = Div ().ac ('schemaitemname');
 				args ['keycallback'] = self.textchangedcallback;
 				self.rawtextinput = RawTextInput (args).ac ('namedschemaitemrawtextinput').sv (self.py_name).able (self.editmode);
 				self.namediv.a (self.rawtextinput);
 				self.namediv.ae ('mousedown', self.namedivclicked);
-				self.element.aa (list ([self.namediv, self.item]));
-				self.a (self.element);
+				self.namedcontainer.aa (list ([self.namediv, self.item]));
+				self.a (self.namedcontainer);
 			});}
 		});
 		var SchemaScalar = __class__ ('SchemaScalar', [SchemaItem], {
@@ -2711,7 +2749,9 @@ function app () {
 				self.rawtextinput.able (self.editmode);
 			});},
 			get toobj () {return __get__ (this, function (self) {
-				return dict ({'kind': 'schemascalar', 'value': self.value});
+				var obj = self.baseobj ();
+				obj ['value'] = self.value;
+				return obj;
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
@@ -2723,7 +2763,6 @@ function app () {
 				self.rawtextinput = RawTextInput (args).ac ('schemascalarrawtextinput').sv (self.value).able (self.editmode);
 				self.element.ae ('mousedown', self.divclicked);
 				self.element.aa (list ([self.rawtextinput]));
-				self.a (self.element);
 			});}
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
@@ -2785,21 +2824,21 @@ function app () {
 				self.childshook = Div ();
 				self.opendiv = Div ().ac ('schemacollectionopendiv');
 				self.opendiv.aa (list ([self.createhook, self.childshook]));
-				self.container = Div ();
-				self.container.aa (list ([self.element, self.opendiv]));
-				self.a (self.container);
+				self.afterelementhook.a (self.opendiv);
 			});}
 		});
 		var SchemaList = __class__ ('SchemaList', [SchemaCollection], {
 			__module__: __name__,
 			get toobj () {return __get__ (this, function (self) {
-				var obj = list ([]);
+				var listobj = list ([]);
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					obj.append (item.toobj ());
+					listobj.append (item.toobj ());
 				}
-				return dict ({'kind': 'schemalist', 'items': obj});
+				var obj = self.baseobj ();
+				obj ['items'] = listobj;
+				return obj;
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaList, '__init__') (self, args);
@@ -2810,14 +2849,16 @@ function app () {
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
 			__module__: __name__,
 			get toobj () {return __get__ (this, function (self) {
-				var obj = list ([]);
+				var dictobj = list ([]);
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
 					var sch = dict ({'name': item.py_name, 'item': item.item.toobj ()});
-					obj.append (sch);
+					dictobj.append (sch);
 				}
-				return dict ({'kind': 'schemadict', 'items': obj});
+				var obj = self.baseobj ();
+				obj ['items'] = dictobj;
+				return obj;
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaDict, '__init__') (self, args);
@@ -2827,10 +2868,12 @@ function app () {
 		});
 		var schemafromobj = function (obj) {
 			var kind = obj ['kind'];
-			if (kind == 'schemascalar') {
-				return SchemaScalar (dict ({'value': obj ['value']}));
+			var enabled = obj ['enabled'];
+			var returnobj = dict ({});
+			if (kind == 'scalar') {
+				var returnobj = SchemaScalar (dict ({'value': obj ['value']}));
 			}
-			else if (kind == 'schemalist') {
+			else if (kind == 'list') {
 				var py_items = obj ['items'];
 				var childs = list ([]);
 				var __iterable0__ = py_items;
@@ -2839,9 +2882,9 @@ function app () {
 					var sch = schemafromobj (item);
 					childs.append (sch);
 				}
-				return SchemaList (dict ({'childs': childs}));
+				var returnobj = SchemaList (dict ({'childs': childs}));
 			}
-			else if (kind == 'schemadict') {
+			else if (kind == 'dict') {
 				var py_items = obj ['items'];
 				var childs = list ([]);
 				var __iterable0__ = py_items;
@@ -2853,8 +2896,10 @@ function app () {
 					var namedsch = NamedSchemaItem (dict ({'name': py_name, 'item': sch}));
 					childs.append (namedsch);
 				}
-				return SchemaDict (dict ({'childs': childs}));
+				var returnobj = SchemaDict (dict ({'childs': childs}));
 			}
+			returnobj.setenabled (enabled);
+			return returnobj;
 		};
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
@@ -2968,6 +3013,7 @@ function app () {
 		startup ();
 		__pragma__ ('<all>')
 			__all__.Button = Button;
+			__all__.CheckBox = CheckBox;
 			__all__.ComboBox = ComboBox;
 			__all__.ComboOption = ComboOption;
 			__all__.Div = Div;
