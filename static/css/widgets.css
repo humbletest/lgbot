@@ -66,9 +66,19 @@
     background-color: #ce9; width: 500px; height: 40px;
 }
 
+.schemacontainer {
+    display: flex;
+    margin: 1px;
+}
+
+.schemaenablebox {
+    display: flex; justify-content: space-around; align-items: center;
+    width: 40px; height: 40px; background-color: #999; margin-right: 2px;
+}
+
 .schemaitemname {
     display: flex; justify-content: space-around; align-items: center;
-    background-color: #cef; width: 150px; height: 40px;
+    background-color: #cef; width: 150px; height: 40px; margin: 1px;
 }
 
 .namedschemaitem {

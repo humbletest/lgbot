@@ -151,7 +151,7 @@ class Span(e):
 class Input(e):
     def __init__(self, kind):
         super().__init__("input")
-        self.sa("type",kind)
+        self.sa("type", kind)
 
 class Select(e):
     def __init__(self):
@@ -166,5 +166,17 @@ class Option(e):
         self.html(displayname)
         if selected:
             self.sa("selected", True)
+
+class CheckBox(Input):
+    def setchecked(self, checked):
+        self.e.checked = checked
+        return self
+
+    def getchecked(self):
+        return self.e.checked
+
+    def __init__(self, checked = False):
+        super().__init__("checkbox")
+        self.setchecked(checked)
 ######################################################
 
