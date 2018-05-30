@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-29 16:26:32
+// Transcrypt'ed from Python, 2018-05-30 13:55:06
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2694,6 +2694,17 @@ function app () {
 				self.enabled = enabled;
 				self.enablecheckbox.setchecked (self.enabled);
 			});},
+			get settingsboxclicked () {return __get__ (this, function (self) {
+				if (self.settingsopen) {
+					self.settingshook.x ();
+					self.settingsopen = false;
+				}
+				else {
+					self.settingsdiv = Div ().ac ('schemasettingsdiv').html ('settings');
+					self.settingshook.a (self.settingsdiv);
+					self.settingsopen = true;
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.kind = 'item';
@@ -2703,12 +2714,14 @@ function app () {
 				self.enablebox = Div ().ac ('schemaenablebox');
 				self.enablecheckbox = CheckBox (self.enabled).ae ('change', self.enablecallback);
 				self.enablebox.a (self.enablecheckbox);
-				self.beforeelementhook = Div ();
+				self.settingsbox = Div ().ac ('schemasettingsbox').ae ('mousedown', self.settingsboxclicked);
 				self.afterelementhook = Div ();
-				self.elementcontainer = Div ();
-				self.elementcontainer.aa (list ([self.beforeelementhook, self.element, self.afterelementhook]));
-				self.schemacontainer.aa (list ([self.enablebox, self.elementcontainer]));
-				self.a (self.schemacontainer);
+				self.settingsopen = args.py_get ('settingsopen', false);
+				self.settingshook = Div ();
+				self.schemacontainer.aa (list ([self.enablebox, self.element, self.settingsbox]));
+				self.itemcontainer = Div ();
+				self.itemcontainer.aa (list ([self.schemacontainer, self.settingshook, self.afterelementhook]));
+				self.a (self.itemcontainer);
 			});}
 		});
 		var NamedSchemaItem = __class__ ('NamedSchemaItem', [e], {

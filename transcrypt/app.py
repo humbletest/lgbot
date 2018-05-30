@@ -443,6 +443,15 @@ class SchemaItem(e):
         self.enabled = enabled
         self.enablecheckbox.setchecked(self.enabled)
 
+    def settingsboxclicked(self):
+        if self.settingsopen:
+            self.settingshook.x()
+            self.settingsopen = False
+        else:
+            self.settingsdiv = Div().ac("schemasettingsdiv").html("settings")
+            self.settingshook.a(self.settingsdiv)
+            self.settingsopen = True
+
     def __init__(self, args):
         super().__init__("div")
         self.kind = "item"
@@ -452,12 +461,14 @@ class SchemaItem(e):
         self.enablebox = Div().ac("schemaenablebox")
         self.enablecheckbox = CheckBox(self.enabled).ae("change", self.enablecallback)
         self.enablebox.a(self.enablecheckbox)        
-        self.beforeelementhook = Div()
+        self.settingsbox = Div().ac("schemasettingsbox").ae("mousedown", self.settingsboxclicked)        
         self.afterelementhook = Div()
-        self.elementcontainer = Div()
-        self.elementcontainer.aa([self.beforeelementhook, self.element, self.afterelementhook])
-        self.schemacontainer.aa([self.enablebox, self.elementcontainer])     
-        self.a(self.schemacontainer)
+        self.settingsopen = args.get("settingsopen", False)
+        self.settingshook = Div()        
+        self.schemacontainer.aa([self.enablebox, self.element, self.settingsbox])     
+        self.itemcontainer = Div()
+        self.itemcontainer.aa([self.schemacontainer, self.settingshook, self.afterelementhook])
+        self.a(self.itemcontainer)
 
 class NamedSchemaItem(e):
     def textchangedcallback(self, keycode, content):        
