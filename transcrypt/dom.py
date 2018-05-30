@@ -98,6 +98,12 @@ class e:
         self.e.classList.add(klass)
         return self
 
+    # add classes
+    def aac(self, klasses):
+        for klass in klasses:
+            self.e.classList.add(klass)
+        return self
+
     # remove class
     def rc(self, klass):
         self.e.classList.remove(klass)
