@@ -1,3 +1,12 @@
+:root {
+    --schemanamewidth: 200px;
+    --schemawidth: 500px;
+    --schemaitemheight: 40px;
+    --schemacontainermargin: 2px;
+    --schemasettingswidth: 300px;
+    --schemasettingspadding: 8px;
+}
+
 .logitemdiv {
     background-color:lightgray; white-space:nowrap;
     width: 575px; padding: 2px; margin: 2px;
@@ -63,7 +72,7 @@
 }
 
 .schemaitem {
-    background-color: #ce9; width: 500px; height: 40px;
+    background-color: #ce9; width: var(--schemawidth); height: var(--schemaitemheight);
 }
 
 .schemacontainer {
@@ -73,12 +82,23 @@
 
 .schemaenablebox {
     display: flex; justify-content: space-around; align-items: center;
-    width: 40px; height: 40px; background-color: #999; margin-right: 2px;
+    width: var(--schemaitemheight); height: var(--schemaitemheight); background-color: #bbb; margin-right: 2px;
+}
+
+.schemasettingsbox {    
+    width: var(--schemaitemheight); height: var(--schemaitemheight); background-color: #99f; margin-left: 2px;
+    cursor: pointer;
+}
+
+.schemasettingsdiv {
+    margin-left: calc( var(--schemawidth) - var(--schemasettingswidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
+    width: var(--schemasettingswidth); min-height: 100px;
+    background-color: #ace; padding: var(--schemasettingspadding);
 }
 
 .schemaitemname {
     display: flex; justify-content: space-around; align-items: center;
-    background-color: #cef; width: 150px; height: 40px; margin: 1px;
+    background-color: #cef; width: var(--schemanamewidth); height: var(--schemaitemheight); margin: 1px;
 }
 
 .namedschemaitem {
@@ -104,7 +124,7 @@
 }
 
 .schemascalarrawtextinput {
-    width: 400px; font-size: 22px; padding: 2px; padding-left: 5px;
+    width: calc( var(--schemawidth) - 80px ); font-size: 22px; padding: 2px; padding-left: 5px;
 }
 
 .schemacreate {
@@ -113,7 +133,7 @@
 }
 
 .namedschemaitemrawtextinput {
-    font-size: 22px; padding: 2px; padding-left: 5px; width: 100px;
+    font-size: 22px; padding: 2px; padding-left: 5px; width: calc( var(--schemanamewidth) - 40px );
 }
 
 .schemacollectionopenbutton {
@@ -126,7 +146,8 @@
 }
 
 .schemacollectionopendiv {
-    margin-left: 20px;
+    margin-left: calc( var(--schemaitemheight) + var(--schemacontainermargin) );
+    margin-top: var(--schemacontainermargin);
 }
 
 .comboboxselect {
