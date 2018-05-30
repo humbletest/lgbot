@@ -140,6 +140,12 @@ class e:
         self.e.classList.add(klass)
         return self
 
+    # add classes
+    def aac(self, klasses):
+        for klass in klasses:
+            self.e.classList.add(klass)
+        return self
+
     # remove class
     def rc(self, klass):
         self.e.classList.remove(klass)
@@ -452,6 +458,16 @@ class SchemaItem(e):
             self.settingshook.a(self.settingsdiv)
             self.settingsopen = True
 
+    def helpboxclicked(self, event):
+        event.stopPropagation()
+        if self.helpopen:
+            self.helphook.x()
+            self.helpopen = False
+        else:
+            self.helpdiv = Div().ac("schemahelpdiv").html("help")
+            self.helphook.a(self.helpdiv)
+            self.helpopen = True
+
     def __init__(self, args):
         super().__init__("div")
         self.kind = "item"
@@ -462,12 +478,16 @@ class SchemaItem(e):
         self.enablecheckbox = CheckBox(self.enabled).ae("change", self.enablecallback)
         self.enablebox.a(self.enablecheckbox)        
         self.settingsbox = Div().ac("schemasettingsbox").ae("mousedown", self.settingsboxclicked)        
+        self.helpbox = Div().aac(["schemahelpbox","noselect"]).ae("mousedown", self.helpboxclicked).html("?")
+        self.settingsbox.a(self.helpbox)
         self.afterelementhook = Div()
         self.settingsopen = args.get("settingsopen", False)
+        self.helpopen = args.get("helpopen", False)
         self.settingshook = Div()        
+        self.helphook = Div()        
         self.schemacontainer.aa([self.enablebox, self.element, self.settingsbox])     
         self.itemcontainer = Div()
-        self.itemcontainer.aa([self.schemacontainer, self.settingshook, self.afterelementhook])
+        self.itemcontainer.aa([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook])
         self.a(self.itemcontainer)
 
 class NamedSchemaItem(e):

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-30 13:55:06
+// Transcrypt'ed from Python, 2018-05-30 16:27:31
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2323,6 +2323,14 @@ function app () {
 				self.e.classList.add (klass);
 				return self;
 			});},
+			get aac () {return __get__ (this, function (self, klasses) {
+				var __iterable0__ = klasses;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var klass = __iterable0__ [__index0__];
+					self.e.classList.add (klass);
+				}
+				return self;
+			});},
 			get rc () {return __get__ (this, function (self, klass) {
 				self.e.classList.remove (klass);
 				return self;
@@ -2705,6 +2713,18 @@ function app () {
 					self.settingsopen = true;
 				}
 			});},
+			get helpboxclicked () {return __get__ (this, function (self, event) {
+				event.stopPropagation ();
+				if (self.helpopen) {
+					self.helphook.x ();
+					self.helpopen = false;
+				}
+				else {
+					self.helpdiv = Div ().ac ('schemahelpdiv').html ('help');
+					self.helphook.a (self.helpdiv);
+					self.helpopen = true;
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.kind = 'item';
@@ -2715,12 +2735,16 @@ function app () {
 				self.enablecheckbox = CheckBox (self.enabled).ae ('change', self.enablecallback);
 				self.enablebox.a (self.enablecheckbox);
 				self.settingsbox = Div ().ac ('schemasettingsbox').ae ('mousedown', self.settingsboxclicked);
+				self.helpbox = Div ().aac (list (['schemahelpbox', 'noselect'])).ae ('mousedown', self.helpboxclicked).html ('?');
+				self.settingsbox.a (self.helpbox);
 				self.afterelementhook = Div ();
 				self.settingsopen = args.py_get ('settingsopen', false);
+				self.helpopen = args.py_get ('helpopen', false);
 				self.settingshook = Div ();
+				self.helphook = Div ();
 				self.schemacontainer.aa (list ([self.enablebox, self.element, self.settingsbox]));
 				self.itemcontainer = Div ();
-				self.itemcontainer.aa (list ([self.schemacontainer, self.settingshook, self.afterelementhook]));
+				self.itemcontainer.aa (list ([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook]));
 				self.a (self.itemcontainer);
 			});}
 		});
