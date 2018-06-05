@@ -19,11 +19,16 @@ def getjsonbinfailed(err, callback):
     callback(getlocalcontent())
 
 def putjsonbin(json, callback, id = None):
+
     method = "POST"
     url = "https://api.jsonbin.io/b"        
-    if not ( id is None ):
+
+    if id == "local":
+        pass
+    elif not ( id is None ):
         url = url + "/" + id        
         method = "PUT"    
+    
     args = {
         "method": method,
         "headers": {
@@ -42,7 +47,7 @@ def putjsonbin(json, callback, id = None):
     )
     
 
-def getjsonbin(id, callback, version = "latest"):
+def getjsonbin(id, callback, errcallback, version = "latest"):
 
     if id == "local":
         callback(getlocalcontent())
@@ -55,12 +60,13 @@ def getjsonbin(id, callback, version = "latest"):
             "private": False
         }
     }
+
     fetch("https://api.jsonbin.io/b/" + id + "/" + version, args).then(
         lambda response: response.text().then(
             lambda content: callback(content),
-            lambda err: getjsonbinfailed(err, callback)
+            lambda err: errcalback(err)
         ),
-        lambda err: getjsonbinfailed(err, callback)
-        )
+        lambda err: errcallback(err)
+    )
 
 __pragma__("nojsiter")

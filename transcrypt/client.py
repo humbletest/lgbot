@@ -47,12 +47,19 @@ def getbincallback(content):
     configschema.openchilds()
     maintabpane.setTabElementByKey("config", buildconfigdiv())
 
+def getbinerrcallback(err):
+    print("get bin failed with",err)
+    loadlocal()
+
 srcdiv = Div()
 schemajson = None
 ######################################################
 
 ######################################################
 # client functions
+def loadlocal():
+    document.location.href="/?id=local"
+
 def docwln(content):    
     li = LogItem("<pre>" + content + "</pre>")
     mainlog.log(li)    
@@ -139,9 +146,9 @@ build()
 
 if "id" in queryparams:    
     id = queryparams["id"]
-    getjsonbin(id, getbincallback)
+    getjsonbin(id, getbincallback, getbinerrcallback)
 else:
-    document.location.href="/?id=local"
+    loadlocal()
 
 startup()
 

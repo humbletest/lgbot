@@ -8,6 +8,8 @@ from selenium import webdriver
 
 ###################################################
 
+import serverutils.process
+serverutils.process.VERBOSE = False
 from serverutils.process import PopenProcess
 
 ###################################################

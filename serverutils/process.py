@@ -7,6 +7,8 @@ import signal
 import platform
 import subprocess
 
+VERBOSE = True
+
 class PopenProcess(object):
     def __init__(self,
             command,
@@ -51,22 +53,28 @@ class PopenProcess(object):
         if self.ignore_cwd:
             cmdpath = command
 
-        print("popen", cmdpath, self.proc_args, popen_args)
+        if VERBOSE:
+            print("popen", cmdpath, self.proc_args, popen_args)
+        else:
+            print("popen", cmdpath, self.proc_args)
 
         if self.proc_args is None:
             self.process = subprocess.Popen(cmdpath, **popen_args)
         else:
             self.process = subprocess.Popen([cmdpath] + self.proc_args, **popen_args)
 
-        print("process opened")
+        if VERBOSE:
+            print("process opened")
 
         self._receiving_thread.start()
 
-        print("receiving thread started")
+        if VERBOSE:
+            print("receiving thread started")
 
         if not ( self._recerror_thread is None ):
             self._recerror_thread.start()
-            print("receiving error thread started")
+            if VERBOSE:
+                print("receiving error thread started")
 
     def _receiving_thread_target(self):
         while True:
@@ -106,7 +114,8 @@ class PopenProcess(object):
         self.process.kill()
 
     def send_line(self, string):
-        print("sending line",string)
+        if VERBOSE:
+            print("sending line",string)
         with self._stdin_lock:
             self.process.stdin.write(string + "\n")
             self.process.stdin.flush()
