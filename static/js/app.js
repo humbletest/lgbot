@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-05-30 16:27:31
+// Transcrypt'ed from Python, 2018-06-05 16:18:54
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,22 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var putjsonbinfailed = function (err, json, callback) {
+			print ('putjsonbin failed with', err);
+			print ('falling back to local storage');
+			localStorage.setItem ('jsonbin', json);
+			callback (json, json);
+		};
+		var getjsonbinfailed = function (err, callback) {
+			print ('getjsonbin failed with', err);
+			print ('falling back to local storage');
+			var content = localStorage.getItem ('jsonbin');
+			if (content == null) {
+				print ('no local jsonbin, falling back empty dict');
+				var content = '{"kind":"dict","enabled":true}';
+			}
+			callback (content);
+		};
 		var putjsonbin = function (json, callback, id) {
 			if (typeof id == 'undefined' || (id != null && id .hasOwnProperty ("__kwargtrans__"))) {;
 				var id = null;
@@ -2217,10 +2233,10 @@ function app () {
 				return response.text ().then ((function __lambda__ (content) {
 					return callback (json, content);
 				}), (function __lambda__ (err) {
-					return print (err);
+					return putjsonbinfailed (err, json, callback);
 				}));
 			}), (function __lambda__ (err) {
-				return print (err);
+				return putjsonbinfailed (err, json, callback);
 			}));
 		};
 		var getjsonbin = function (id, callback, version) {
@@ -2232,10 +2248,10 @@ function app () {
 				return response.text ().then ((function __lambda__ (content) {
 					return callback (content);
 				}), (function __lambda__ (err) {
-					return print (err);
+					return getjsonbinfailed (err, callback);
 				}));
 			}), (function __lambda__ (err) {
-				return print (err);
+				return getjsonbinfailed (err, callback);
 			}));
 		};
 		var ce = function (tag) {
@@ -2978,6 +2994,9 @@ function app () {
 			var id = queryparams ['id'];
 			getjsonbin (id, getbincallback);
 		}
+		else {
+			document.location.href = '/?id=local';
+		}
 		var srcdiv = Div ();
 		var schemajson = null;
 		var docwln = function (content) {
@@ -2998,14 +3017,11 @@ function app () {
 					var binid = obj ['parentId'];
 				}
 				if (binid === null) {
-					print ('no binid');
+					var binid = 'local';
 				}
-				else {
-					var href = (((window.location.protocol + '//') + window.location.host) + '/?id=') + binid;
-					print ('href', href);
-					document.location.href = href;
-					// pass;
-				}
+				var href = (((window.location.protocol + '//') + window.location.host) + '/?id=') + binid;
+				print ('href', href);
+				document.location.href = href;
 			}
 			catch (__except0__) {
 				print ('there was an error parsing json', content);
@@ -3087,6 +3103,7 @@ function app () {
 			__all__.ge = ge;
 			__all__.getbincallback = getbincallback;
 			__all__.getjsonbin = getjsonbin;
+			__all__.getjsonbinfailed = getjsonbinfailed;
 			__all__.id = id;
 			__all__.mainlog = mainlog;
 			__all__.mainpart = mainpart;
@@ -3096,6 +3113,7 @@ function app () {
 			__all__.onevent = onevent;
 			__all__.parts = parts;
 			__all__.putjsonbin = putjsonbin;
+			__all__.putjsonbinfailed = putjsonbinfailed;
 			__all__.queryparams = queryparams;
 			__all__.queryparamsstring = queryparamsstring;
 			__all__.schemafromobj = schemafromobj;
