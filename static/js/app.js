@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-05 16:46:43
+// Transcrypt'ed from Python, 2018-06-05 18:58:05
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2227,7 +2227,10 @@ function app () {
 			};
 			var method = 'POST';
 			var url = 'https://api.jsonbin.io/b';
-			if (!(id === null)) {
+			if (id == 'local') {
+				// pass;
+			}
+			else if (!(id === null)) {
 				var url = (url + '/') + id;
 				var method = 'PUT';
 			}
@@ -2242,7 +2245,7 @@ function app () {
 				return putjsonbinfailed (err, json, callback);
 			}));
 		};
-		var getjsonbin = function (id, callback, version) {
+		var getjsonbin = function (id, callback, errcallback, version) {
 			if (typeof version == 'undefined' || (version != null && version .hasOwnProperty ("__kwargtrans__"))) {;
 				var version = 'latest';
 			};
@@ -2255,10 +2258,10 @@ function app () {
 				return response.text ().then ((function __lambda__ (content) {
 					return callback (content);
 				}), (function __lambda__ (err) {
-					return getjsonbinfailed (err, callback);
+					return errcalback (err);
 				}));
 			}), (function __lambda__ (err) {
-				return getjsonbinfailed (err, callback);
+				return errcallback (err);
 			}));
 		};
 		var ce = function (tag) {
@@ -2997,8 +3000,15 @@ function app () {
 			configschema.openchilds ();
 			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
 		};
+		var getbinerrcallback = function (err) {
+			print ('get bin failed with', err);
+			loadlocal ();
+		};
 		var srcdiv = Div ();
 		var schemajson = null;
+		var loadlocal = function () {
+			document.location.href = '/?id=local';
+		};
 		var docwln = function (content) {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			mainlog.log (li);
@@ -3065,10 +3075,10 @@ function app () {
 		build ();
 		if (__in__ ('id', queryparams)) {
 			var id = queryparams ['id'];
-			getjsonbin (id, getbincallback);
+			getjsonbin (id, getbincallback, getbinerrcallback);
 		}
 		else {
-			document.location.href = '/?id=local';
+			loadlocal ();
 		}
 		startup ();
 		__pragma__ ('<all>')
@@ -3109,10 +3119,12 @@ function app () {
 			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
 			__all__.getbincallback = getbincallback;
+			__all__.getbinerrcallback = getbinerrcallback;
 			__all__.getjsonbin = getjsonbin;
 			__all__.getjsonbinfailed = getjsonbinfailed;
 			__all__.getlocalcontent = getlocalcontent;
 			__all__.id = id;
+			__all__.loadlocal = loadlocal;
 			__all__.mainlog = mainlog;
 			__all__.mainpart = mainpart;
 			__all__.mainparts = mainparts;
