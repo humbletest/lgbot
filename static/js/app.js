@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-05 16:18:54
+// Transcrypt'ed from Python, 2018-06-05 16:46:43
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2208,15 +2208,18 @@ function app () {
 			localStorage.setItem ('jsonbin', json);
 			callback (json, json);
 		};
-		var getjsonbinfailed = function (err, callback) {
-			print ('getjsonbin failed with', err);
-			print ('falling back to local storage');
+		var getlocalcontent = function () {
+			print ('getting local content');
 			var content = localStorage.getItem ('jsonbin');
 			if (content == null) {
-				print ('no local jsonbin, falling back empty dict');
+				print ('no local jsonbin, falling back to empty dict');
 				var content = '{"kind":"dict","enabled":true}';
 			}
-			callback (content);
+			return content;
+		};
+		var getjsonbinfailed = function (err, callback) {
+			print ('getjsonbin failed with', err);
+			callback (getlocalcontent ());
 		};
 		var putjsonbin = function (json, callback, id) {
 			if (typeof id == 'undefined' || (id != null && id .hasOwnProperty ("__kwargtrans__"))) {;
@@ -2243,6 +2246,10 @@ function app () {
 			if (typeof version == 'undefined' || (version != null && version .hasOwnProperty ("__kwargtrans__"))) {;
 				var version = 'latest';
 			};
+			if (id == 'local') {
+				callback (getlocalcontent ());
+				return ;
+			}
 			var args = {'method': 'GET', 'headers': {'Content-Type': 'application/json', 'private': false}};
 			fetch ((('https://api.jsonbin.io/b/' + id) + '/') + version, args).then ((function __lambda__ (response) {
 				return response.text ().then ((function __lambda__ (content) {
@@ -2990,13 +2997,6 @@ function app () {
 			configschema.openchilds ();
 			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
 		};
-		if (__in__ ('id', queryparams)) {
-			var id = queryparams ['id'];
-			getjsonbin (id, getbincallback);
-		}
-		else {
-			document.location.href = '/?id=local';
-		}
 		var srcdiv = Div ();
 		var schemajson = null;
 		var docwln = function (content) {
@@ -3063,6 +3063,13 @@ function app () {
 			addEventListener (window, 'resize', windowresizehandler);
 		};
 		build ();
+		if (__in__ ('id', queryparams)) {
+			var id = queryparams ['id'];
+			getjsonbin (id, getbincallback);
+		}
+		else {
+			document.location.href = '/?id=local';
+		}
 		startup ();
 		__pragma__ ('<all>')
 			__all__.Button = Button;
@@ -3104,6 +3111,7 @@ function app () {
 			__all__.getbincallback = getbincallback;
 			__all__.getjsonbin = getjsonbin;
 			__all__.getjsonbinfailed = getjsonbinfailed;
+			__all__.getlocalcontent = getlocalcontent;
 			__all__.id = id;
 			__all__.mainlog = mainlog;
 			__all__.mainpart = mainpart;
