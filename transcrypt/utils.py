@@ -6,14 +6,17 @@ def putjsonbinfailed(err, json, callback):
     localStorage.setItem("jsonbin",json)
     callback(json, json)
 
-def getjsonbinfailed(err, callback):
-    print("getjsonbin failed with",err)
-    print("falling back to local storage")
+def getlocalcontent():
+    print("getting local content")
     content = localStorage.getItem("jsonbin")
     if content == None:
-        print("no local jsonbin, falling back empty dict")
+        print("no local jsonbin, falling back to empty dict")
         content = '{"kind":"dict","enabled":true}'
-    callback(content)
+    return content
+
+def getjsonbinfailed(err, callback):
+    print("getjsonbin failed with",err)    
+    callback(getlocalcontent())
 
 def putjsonbin(json, callback, id = None):
     method = "POST"
@@ -40,6 +43,11 @@ def putjsonbin(json, callback, id = None):
     
 
 def getjsonbin(id, callback, version = "latest"):
+
+    if id == "local":
+        callback(getlocalcontent())
+        return
+
     args = {
         "method": "GET",
         "headers": {

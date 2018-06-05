@@ -47,12 +47,6 @@ def getbincallback(content):
     configschema.openchilds()
     maintabpane.setTabElementByKey("config", buildconfigdiv())
 
-if "id" in queryparams:    
-    id = queryparams["id"]
-    getjsonbin(id, getbincallback)
-else:
-    document.location.href="/?id=local"
-
 srcdiv = Div()
 schemajson = None
 ######################################################
@@ -142,6 +136,12 @@ def startup():
 ######################################################
 
 build()
+
+if "id" in queryparams:    
+    id = queryparams["id"]
+    getjsonbin(id, getbincallback)
+else:
+    document.location.href="/?id=local"
 
 startup()
 
