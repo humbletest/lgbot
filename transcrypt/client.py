@@ -50,6 +50,8 @@ def getbincallback(content):
 if "id" in queryparams:    
     id = queryparams["id"]
     getjsonbin(id, getbincallback)
+else:
+    document.location.href="/?id=local"
 
 srcdiv = Div()
 schemajson = None
@@ -73,12 +75,10 @@ def serializeputjsonbincallback(json, content):
         if "parentId" in obj:
             binid = obj["parentId"]                
         if binid is None:
-            print("no binid")
-        else:            
-            href = window.location.protocol + "//" + window.location.host + "/?id=" + binid
-            print("href", href)
-            document.location.href = href
-            pass
+            binid = "local"        
+        href = window.location.protocol + "//" + window.location.host + "/?id=" + binid
+        print("href", href)
+        document.location.href = href
     except:
         print("there was an error parsing json", content)
         return
