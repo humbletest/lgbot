@@ -195,8 +195,7 @@ class ComboBox(e):
         return self
 
 class LinkedCheckBox(Input):
-    def setchecked(self, checked):
-        print("setting checked", checked)
+    def setchecked(self, checked):        
         self.e.checked = checked
         return self
 
@@ -222,8 +221,9 @@ class LabeledLinkedCheckBox(e):
         self.lcb = LinkedCheckBox(parent, varname, args)
         self.container = Div().ac("labeledlinkedcheckboxcontainer")
         self.ldiv = Div().html(label)
-        self.container.aa([self.ldiv, self.lcb])
-        self.a(self.container)
+        self.container.aa([self.ldiv, self.lcb])                
+        patchclasses(self, args)
+        self.a(self.container).ac("labeledlinkedcheckbox")
 
 SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"addchild","display":"Add child","default":True},
@@ -243,13 +243,10 @@ class SchemaWritePreference:
 
     def form(self):
         formdiv = Div()
-        print("dict", self.__dict__)
-        fes = []        
 
         for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
-            fes.append(LabeledLinkedCheckBox(item["display"], self, item["key"]))        
+            formdiv.a(LabeledLinkedCheckBox(item["display"], self, item["key"], {"patchclasses":["container/a/schemawritepreferenceformsubdiv"]}))
 
-        formdiv.aa(fes)
         return formdiv
 
     def toobj(self):        
@@ -295,7 +292,7 @@ class SchemaItem(e):
         else:
             self.settingsdiv = Div().ac("schemasettingsdiv").a(self.writepreference.form())
             self.settingshook.a(self.settingsdiv)
-            self.settingsopen = True
+            self.settingsopen = True            
 
     def helpboxclicked(self, event):
         event.stopPropagation()
@@ -311,6 +308,7 @@ class SchemaItem(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.args = args
         self.kind = "item"
         self.enabled = args.get("enabled", DEFAULT_ENABLED)
         self.help = args.get("help", DEFAULT_HELP)
@@ -481,8 +479,7 @@ def schemawritepreferencefromobj(obj):
         swp[item["key"]] = getfromobj(obj, item["key"], item["default"])
     return swp
 
-def schemafromobj(obj):    
-    print("schema from obj", obj)
+def schemafromobj(obj):        
     kind = getfromobj(obj, "kind", "dict")
     enabled = getfromobj(obj, "enabled", DEFAULT_ENABLED)
     enabled = getfromobj(obj, "help", DEFAULT_HELP)

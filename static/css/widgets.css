@@ -114,6 +114,14 @@
     background-color: #ace; padding: var(--schemasettingspadding);
 }
 
+.labeledlinkedcheckbox:nth-of-type(odd) {
+    background-color: #dde;
+}
+
+.labeledlinkedcheckbox:nth-of-type(even) {
+    background-color: #ded;
+}
+
 .schemahelpdiv {    
     margin-left: calc( var(--schemawidth) - var(--schemahelpwidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
     width: var(--schemahelpwidth);
@@ -194,4 +202,13 @@
 .labeledlinkedcheckboxcontainer {
     display: flex; justify-content: space-between; align-items: center;
     width: 100%;
+}
+
+.schemawritepreferencecheckcontainer {
+    background-color: #eed;
+    margin-bottom: 1px;
+}
+
+.schemawritepreferenceformsubdiv {
+    margin-bottom: 2px;
 }

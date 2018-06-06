@@ -3,6 +3,18 @@ def getfromobj(obj, key, default):
         return obj[key]    
     return default    
 
+def patchclasses(selfref, args):
+    items = args.get("patchclasses", [])
+    for item in items:
+        parts = item.split("/")
+        membername = parts[0]
+        action = parts[1]
+        classname = parts[2]
+        if action == "a":
+            selfref[membername].ac(classname)
+        elif action == "r":
+            selfref[membername].rc(classname)
+
 __pragma__("jsiter")
 
 def putjsonbinfailed(err, json, callback):
