@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-06 08:54:04
+// Transcrypt'ed from Python, 2018-06-06 14:42:09
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,12 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var getfromobj = function (obj, key, py_default) {
+			if (__in__ (key, obj)) {
+				return obj [key];
+			}
+			return py_default;
+		};
 		var putjsonbinfailed = function (err, json, callback) {
 			print ('putjsonbin failed with', err);
 			print ('falling back to local storage');
@@ -2213,7 +2219,7 @@ function app () {
 			var content = localStorage.getItem ('jsonbin');
 			if (content == null) {
 				print ('no local jsonbin, falling back to empty dict');
-				var content = '{"kind":"dict","enabled":true}';
+				var content = '{}';
 			}
 			return content;
 		};
@@ -2711,11 +2717,86 @@ function app () {
 				return self;
 			});}
 		});
+		var LinkedCheckBox = __class__ ('LinkedCheckBox', [Input], {
+			__module__: __name__,
+			get setchecked () {return __get__ (this, function (self, checked) {
+				print ('setting checked', checked);
+				self.e.checked = checked;
+				return self;
+			});},
+			get getchecked () {return __get__ (this, function (self) {
+				return self.e.checked;
+			});},
+			get updatevar () {return __get__ (this, function (self) {
+				self.parent [self.varname] = self.getchecked ();
+			});},
+			get changed () {return __get__ (this, function (self) {
+				self.updatevar ();
+			});},
+			get __init__ () {return __get__ (this, function (self, parent, varname, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (LinkedCheckBox, '__init__') (self, 'checkbox');
+				self.parent = parent;
+				self.varname = varname;
+				self.setchecked (self.parent [self.varname]);
+				self.ae ('change', self.changed);
+			});}
+		});
+		var LabeledLinkedCheckBox = __class__ ('LabeledLinkedCheckBox', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, label, parent, varname, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (LabeledLinkedCheckBox, '__init__') (self, 'div');
+				self.lcb = LinkedCheckBox (parent, varname, args);
+				self.container = Div ().ac ('labeledlinkedcheckboxcontainer');
+				self.ldiv = Div ().html (label);
+				self.container.aa (list ([self.ldiv, self.lcb]));
+				self.a (self.container);
+			});}
+		});
+		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'removechild', 'display': 'Remove child', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'edithelp', 'display': 'Edit help', 'default': true}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
+		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					self [item ['key']] = item ['default'];
+				}
+			});},
+			get form () {return __get__ (this, function (self) {
+				var formdiv = Div ();
+				print ('dict', self.__dict__);
+				var fes = list ([]);
+				var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					fes.append (LabeledLinkedCheckBox (item ['display'], self, item ['key']));
+				}
+				formdiv.aa (fes);
+				return formdiv;
+			});},
+			get toobj () {return __get__ (this, function (self) {
+				var obj = dict ({});
+				var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					obj [item ['key']] = self [item ['key']];
+				}
+				return obj;
+			});}
+		});
 		var SCHEMA_KINDS = dict ({'create': 'Create new', 'scalar': 'Scalar', 'list': 'List', 'dict': 'Dict'});
+		var DEFAULT_HELP = 'No help available for this item.';
+		var DEFAULT_ENABLED = true;
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
 			get baseobj () {return __get__ (this, function (self) {
-				var obj = dict ({'kind': self.kind, 'enabled': self.enabled});
+				var obj = dict ({'kind': self.kind, 'enabled': self.enabled, 'help': self.help, 'writepreference': self.writepreference.toobj ()});
 				return obj;
 			});},
 			get toobj () {return __get__ (this, function (self) {
@@ -2734,7 +2815,7 @@ function app () {
 					self.settingsopen = false;
 				}
 				else {
-					self.settingsdiv = Div ().ac ('schemasettingsdiv').html ('settings');
+					self.settingsdiv = Div ().ac ('schemasettingsdiv').a (self.writepreference.form ());
 					self.settingshook.a (self.settingsdiv);
 					self.settingsopen = true;
 				}
@@ -2746,7 +2827,9 @@ function app () {
 					self.helpopen = false;
 				}
 				else {
-					self.helpdiv = Div ().ac ('schemahelpdiv').html ('help');
+					self.helpdiv = Div ().ac ('schemahelpdiv');
+					self.helpcontentdiv = Div ().ac ('schemahelpcontentdiv').html (self.help);
+					self.helpdiv.a (self.helpcontentdiv);
 					self.helphook.a (self.helpdiv);
 					self.helpopen = true;
 				}
@@ -2754,7 +2837,9 @@ function app () {
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.kind = 'item';
-				self.enabled = args.py_get ('enabled', true);
+				self.enabled = args.py_get ('enabled', DEFAULT_ENABLED);
+				self.help = args.py_get ('help', DEFAULT_HELP);
+				self.writepreference = SchemaWritePreference ();
 				self.element = Div ().ac ('schemaitem');
 				self.schemacontainer = Div ().ac ('schemacontainer');
 				self.enablebox = Div ().ac ('schemaenablebox');
@@ -2929,9 +3014,21 @@ function app () {
 				self.element.ac ('schemadict');
 			});}
 		});
+		var schemawritepreferencefromobj = function (obj) {
+			var swp = SchemaWritePreference ();
+			var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
+			for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+				var item = __iterable0__ [__index0__];
+				swp [item ['key']] = getfromobj (obj, item ['key'], item ['default']);
+			}
+			return swp;
+		};
 		var schemafromobj = function (obj) {
-			var kind = obj ['kind'];
-			var enabled = obj ['enabled'];
+			print ('schema from obj', obj);
+			var kind = getfromobj (obj, 'kind', 'dict');
+			var enabled = getfromobj (obj, 'enabled', DEFAULT_ENABLED);
+			var enabled = getfromobj (obj, 'help', DEFAULT_HELP);
+			var writepreference = schemawritepreferencefromobj (getfromobj (obj, 'writepreference', dict ({})));
 			var returnobj = dict ({});
 			if (kind == 'scalar') {
 				var returnobj = SchemaScalar (dict ({'value': obj ['value']}));
@@ -2962,6 +3059,7 @@ function app () {
 				var returnobj = SchemaDict (dict ({'childs': childs}));
 			}
 			returnobj.setenabled (enabled);
+			returnobj.writepreference = writepreference;
 			return returnobj;
 		};
 		if (window.location.protocol == 'https:') {
@@ -3017,6 +3115,7 @@ function app () {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
 		var serializeputjsonbincallback = function (json, content) {
+			print (json, content);
 			try {
 				var obj = JSON.parse (content);
 				var binid = null;
@@ -3089,20 +3188,26 @@ function app () {
 			__all__.CheckBox = CheckBox;
 			__all__.ComboBox = ComboBox;
 			__all__.ComboOption = ComboOption;
+			__all__.DEFAULT_ENABLED = DEFAULT_ENABLED;
+			__all__.DEFAULT_HELP = DEFAULT_HELP;
 			__all__.Div = Div;
 			__all__.Input = Input;
+			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
+			__all__.LinkedCheckBox = LinkedCheckBox;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
 			__all__.RawTextInput = RawTextInput;
 			__all__.SCHEMA_KINDS = SCHEMA_KINDS;
+			__all__.SCHEMA_WRITE_PREFERENCE_DEFAULTS = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.SchemaCollection = SchemaCollection;
 			__all__.SchemaDict = SchemaDict;
 			__all__.SchemaItem = SchemaItem;
 			__all__.SchemaList = SchemaList;
 			__all__.SchemaScalar = SchemaScalar;
+			__all__.SchemaWritePreference = SchemaWritePreference;
 			__all__.Select = Select;
 			__all__.Span = Span;
 			__all__.Tab = Tab;
@@ -3123,6 +3228,7 @@ function app () {
 			__all__.ge = ge;
 			__all__.getbincallback = getbincallback;
 			__all__.getbinerrcallback = getbinerrcallback;
+			__all__.getfromobj = getfromobj;
 			__all__.getjsonbin = getjsonbin;
 			__all__.getjsonbinfailed = getjsonbinfailed;
 			__all__.getlocalcontent = getlocalcontent;
@@ -3141,6 +3247,7 @@ function app () {
 			__all__.queryparamsstring = queryparamsstring;
 			__all__.schemafromobj = schemafromobj;
 			__all__.schemajson = schemajson;
+			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
 			__all__.serializecallback = serializecallback;
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
 			__all__.socket = socket;
