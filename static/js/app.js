@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-05 18:58:05
+// Transcrypt'ed from Python, 2018-06-06 08:54:04
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3028,6 +3028,9 @@ function app () {
 				}
 				if (binid === null) {
 					var binid = 'local';
+				}
+				else {
+					socket.emit ('sioreq', dict ({'kind': 'storebinid', 'data': binid}));
 				}
 				var href = (((window.location.protocol + '//') + window.location.host) + '/?id=') + binid;
 				print ('href', href);

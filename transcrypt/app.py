@@ -776,7 +776,10 @@ def serializeputjsonbincallback(json, content):
         if "parentId" in obj:
             binid = obj["parentId"]                
         if binid is None:
-            binid = "local"        
+            binid = "local"
+        else:
+            #store binid in binid.txt
+            socket.emit('sioreq', {"kind":"storebinid", "data": binid})
         href = window.location.protocol + "//" + window.location.host + "/?id=" + binid
         print("href", href)
         document.location.href = href
