@@ -1,8 +1,16 @@
+[remote "heroku"]
+	url = https://git.heroku.com/fhelloworld.git
+	fetch = +refs/heads/*:refs/remotes/heroku/*
 [user]
 	name = pythonflaskserverapps
 	email = pythonflaskserverapps@gmail.com
 	[credential "https://github.com/pythonflaskserverapps/helloworld"]
 		username = pythonflaskserverapps
+	[credential "https://gitlab.com/pythonflaskserverapps/helloworld.git"]
+		username = pythonflaskserverapps
 [remote "origin"]
 	url = https://github.com/pythonflaskserverapps/helloworld
 	fetch = +refs/heads/*:refs/remotes/origin/*
+[remote "gitlab"]
+	url = https://gitlab.com/pythonflaskserverapps/helloworld.git
+	fetch = +refs/heads/*:refs/remotes/gitlab/*
