@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-06 17:22:36
+// Transcrypt'ed from Python, 2018-06-06 18:23:54
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2474,6 +2474,19 @@ function app () {
 				self.setchecked (checked);
 			});}
 		});
+		var TextArea = __class__ ('TextArea', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (TextArea, '__init__') (self, 'textarea');
+			});},
+			get setText () {return __get__ (this, function (self, content) {
+				self.sv (content);
+				return self;
+			});},
+			get getText () {return __get__ (this, function (self) {
+				return self.v ();
+			});}
+		});
 		var WINDOW_SAFETY_MARGIN = 10;
 		var Button = __class__ ('Button', [Input], {
 			__module__: __name__,
@@ -2760,6 +2773,35 @@ function app () {
 				self.ae ('change', self.changed);
 			});}
 		});
+		var LinkedTextarea = __class__ ('LinkedTextarea', [e], {
+			__module__: __name__,
+			get updatevar () {return __get__ (this, function (self) {
+				self.parent [self.varname] = self.getText ();
+			});},
+			get keyup () {return __get__ (this, function (self) {
+				self.updatevar ();
+			});},
+			get setText () {return __get__ (this, function (self, content) {
+				self.textarea.setText (content);
+			});},
+			get getText () {return __get__ (this, function (self) {
+				return self.textarea.getText ();
+			});},
+			get __init__ () {return __get__ (this, function (self, parent, varname, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (LinkedTextarea, '__init__') (self, 'div');
+				self.parent = parent;
+				self.varname = varname;
+				self.textarea = TextArea ();
+				self.textarea.ae ('keyup', self.keyup);
+				self.text = args.py_get ('text', '');
+				self.setText (self.text);
+				patchclasses (self, args);
+				self.a (self.textarea);
+			});}
+		});
 		var LabeledLinkedCheckBox = __class__ ('LabeledLinkedCheckBox', [e], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, label, parent, varname, args) {
@@ -2786,7 +2828,7 @@ function app () {
 				}
 			});},
 			get form () {return __get__ (this, function (self) {
-				var formdiv = Div ();
+				var formdiv = Div ().ac ('noselect');
 				var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
@@ -2834,7 +2876,7 @@ function app () {
 					self.settingsopen = true;
 				}
 			});},
-			get helpboxclicked () {return __get__ (this, function (self, event) {
+			get helpboxclicked () {return __get__ (this, function (self) {
 				event.stopPropagation ();
 				if (self.helpopen) {
 					self.helphook.x ();
@@ -2842,8 +2884,16 @@ function app () {
 				}
 				else {
 					self.helpdiv = Div ().ac ('schemahelpdiv');
-					self.helpcontentdiv = Div ().ac ('schemahelpcontentdiv').html (self.help);
-					self.helpdiv.a (self.helpcontentdiv);
+					self.helpcontentdiv = Div ().aac (list (['schemahelpcontentdiv', 'noselect'])).html (self.help);
+					self.helpeditdiv = Div ().ac ('schemahelpeditdiv');
+					self.helpedittextarea = LinkedTextarea (self, 'help', dict ({'patchclasses': list (['textarea/a/schemahelpedittextarea']), 'text': self.help}));
+					self.helpeditdiv.a (self.helpedittextarea);
+					if (self.writepreference.showhelpashtml) {
+						self.helpdiv.a (self.helpcontentdiv);
+					}
+					else {
+						self.helpdiv.a (self.helpeditdiv);
+					}
 					self.helphook.a (self.helpdiv);
 					self.helpopen = true;
 				}
@@ -3041,7 +3091,7 @@ function app () {
 		var schemafromobj = function (obj) {
 			var kind = getfromobj (obj, 'kind', 'dict');
 			var enabled = getfromobj (obj, 'enabled', DEFAULT_ENABLED);
-			var enabled = getfromobj (obj, 'help', DEFAULT_HELP);
+			var help = getfromobj (obj, 'help', DEFAULT_HELP);
 			var writepreference = schemawritepreferencefromobj (getfromobj (obj, 'writepreference', dict ({})));
 			var returnobj = dict ({});
 			if (kind == 'scalar') {
@@ -3074,6 +3124,7 @@ function app () {
 			}
 			returnobj.setenabled (enabled);
 			returnobj.writepreference = writepreference;
+			returnobj.help = help;
 			return returnobj;
 		};
 		if (window.location.protocol == 'https:') {
@@ -3208,6 +3259,7 @@ function app () {
 			__all__.Input = Input;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
+			__all__.LinkedTextarea = LinkedTextarea;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
 			__all__.NamedSchemaItem = NamedSchemaItem;
@@ -3226,6 +3278,7 @@ function app () {
 			__all__.Span = Span;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
+			__all__.TextArea = TextArea;
 			__all__.TextInputWithButton = TextInputWithButton;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
