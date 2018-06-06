@@ -215,6 +215,30 @@ class LinkedCheckBox(Input):
         self.setchecked(self.parent[self.varname])
         self.ae("change", self.changed)
 
+class LinkedTextarea(e):
+    def updatevar(self):        
+        self.parent[self.varname] = self.getText()
+
+    def keyup(self):
+        self.updatevar()
+
+    def setText(self, content):
+        self.textarea.setText(content)
+
+    def getText(self):
+        return self.textarea.getText()
+
+    def __init__(self, parent, varname, args = {}):
+        super().__init__("div")
+        self.parent = parent
+        self.varname = varname        
+        self.textarea = TextArea()        
+        self.textarea.ae("keyup", self.keyup)
+        self.text = args.get("text", "")
+        self.setText(self.text)
+        patchclasses(self, args)
+        self.a(self.textarea)
+
 class LabeledLinkedCheckBox(e):
     def __init__(self, label, parent, varname, args = {}):
         super().__init__("div")
@@ -242,7 +266,7 @@ class SchemaWritePreference:
             self[item["key"]] = item["default"]
 
     def form(self):
-        formdiv = Div()
+        formdiv = Div().ac("noselect")
 
         for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
             formdiv.a(LabeledLinkedCheckBox(item["display"], self, item["key"], {"patchclasses":["container/a/schemawritepreferenceformsubdiv"]}))
@@ -294,15 +318,21 @@ class SchemaItem(e):
             self.settingshook.a(self.settingsdiv)
             self.settingsopen = True            
 
-    def helpboxclicked(self, event):
+    def helpboxclicked(self):
         event.stopPropagation()
         if self.helpopen:
             self.helphook.x()
             self.helpopen = False
         else:
             self.helpdiv = Div().ac("schemahelpdiv")
-            self.helpcontentdiv = Div().ac("schemahelpcontentdiv").html(self.help)
-            self.helpdiv.a(self.helpcontentdiv)
+            self.helpcontentdiv = Div().aac(["schemahelpcontentdiv","noselect"]).html(self.help)
+            self.helpeditdiv = Div().ac("schemahelpeditdiv")
+            self.helpedittextarea = LinkedTextarea(self, "help", {"patchclasses":["textarea/a/schemahelpedittextarea"],"text":self.help})
+            self.helpeditdiv.a(self.helpedittextarea)
+            if self.writepreference.showhelpashtml:                
+                self.helpdiv.a(self.helpcontentdiv)
+            else:
+                self.helpdiv.a(self.helpeditdiv)
             self.helphook.a(self.helpdiv)
             self.helpopen = True
 
@@ -482,7 +512,7 @@ def schemawritepreferencefromobj(obj):
 def schemafromobj(obj):        
     kind = getfromobj(obj, "kind", "dict")
     enabled = getfromobj(obj, "enabled", DEFAULT_ENABLED)
-    enabled = getfromobj(obj, "help", DEFAULT_HELP)
+    help = getfromobj(obj, "help", DEFAULT_HELP)
     writepreference = schemawritepreferencefromobj(getfromobj(obj, "writepreference", {}))
     returnobj = {}
     if kind == "scalar":        
@@ -515,6 +545,7 @@ def schemafromobj(obj):
         })
     returnobj.setenabled(enabled)
     returnobj.writepreference = writepreference
+    returnobj.help = help
     return returnobj
 
 ######################################################

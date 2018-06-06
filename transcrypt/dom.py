@@ -184,5 +184,16 @@ class CheckBox(Input):
     def __init__(self, checked = False):
         super().__init__("checkbox")
         self.setchecked(checked)
+
+class TextArea(e):
+    def __init__(self):
+        super().__init__("textarea")
+
+    def setText(self, content):
+        self.sv(content)
+        return self
+
+    def getText(self):
+        return self.v()
 ######################################################
 

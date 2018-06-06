@@ -132,6 +132,14 @@
     width: 100%; max-height: 150px; background-color: #eee; overflow: scroll;
 }
 
+.schemahelpeditdiv {
+    width: 100%; background-color: #ccc;
+}
+
+.schemahelpedittextarea {
+    width: calc( 100% - 6px ); height: 150px; margin-bottom: -3px;
+}
+
 .schemaitemname {
     display: flex; justify-content: space-around; align-items: center;
     background-color: #cef; width: var(--schemanamewidth); height: var(--schemaitemheight); margin: 1px;
