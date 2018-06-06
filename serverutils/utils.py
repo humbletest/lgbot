@@ -2,6 +2,7 @@ import threading
 import inspect
 import urllib3
 import json
+import os
 
 #############################################
 
@@ -53,3 +54,22 @@ def prettylog(lines):
     for line in lines:
         print("- " + line)
     print(SEP)
+
+#############################################
+# file utils
+
+def write_string_to_file(path, str, force = True):
+	if os.path.isfile(path) and not force:
+		return
+	with open(path,"w") as outfile:
+		outfile.write(str)
+	print("written file {} ( {} characters )".format(path,len(str)))
+
+def read_string_from_file(path, default):
+	try:
+		content = open(path).read()
+		return content
+	except:
+		return default
+
+#############################################

@@ -1,6 +1,6 @@
 #########################################################
 # flask imports
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 #########################################################
 
 #########################################################
@@ -21,6 +21,8 @@ import random
 from serverutils.utils import SafeLimitedUniqueQueueList
 from serverutils.utils import prettylog
 from serverutils.utils import geturl
+from serverutils.utils import write_string_to_file
+from serverutils.utils import read_string_from_file
 #########################################################
 
 #########################################################
@@ -95,6 +97,10 @@ class socket_handler:
                             rjson["status"] = geturl(SIMPLE_SERVER_URL + "/s")
                         else:
                             rjson["status"] = geturl(SIMPLE_SERVER_URL + "/" + quote(data))
+                elif kind == "storebinid":
+                    binid = json["data"]
+                    write_string_to_file("binid.txt", binid)
+
             emit('siores', {"request":json,"response":rjson})
             f(*args)
         return wrapped_f
@@ -107,6 +113,12 @@ def randurl():
 # app routes
 @app.route("/")
 def hello():
+    print("request root", request.full_path)
+    if request.full_path == "/?":
+        binid = read_string_from_file("binid.txt", "local")
+        rurl = "/?id=" + binid
+        print("redirecting root to",rurl)
+        return redirect(rurl)
     return render_template("index.html", randurl = randurl)
 
 @app.route("/read",methods=["POST"])

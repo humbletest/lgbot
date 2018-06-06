@@ -114,7 +114,7 @@ class BTask:
         pargs = []
         if len(self.cmds) > 1:
             pargs = self.cmds[1:]        
-        print(ANSI[self.color])
+        print("\n{}{}{} ".format(ANSI["BRIGHTRED"], "!", ANSI[self.color]), end = "")
         self.proc = PopenProcess(
             self.cmds[0],
             self.procreadline,
