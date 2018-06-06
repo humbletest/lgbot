@@ -116,8 +116,12 @@
 
 .schemahelpdiv {    
     margin-left: calc( var(--schemawidth) - var(--schemahelpwidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
-    width: var(--schemahelpwidth); min-height: 100px;
+    width: var(--schemahelpwidth);
     background-color: #cca; padding: var(--schemasettingspadding);
+}
+
+.schemahelpcontentdiv {
+    width: 100%; max-height: 150px; background-color: #eee; overflow: scroll;
 }
 
 .schemaitemname {
@@ -185,4 +189,9 @@
 
 .comboboxoption {
     font-weight: normal;
+}
+
+.labeledlinkedcheckboxcontainer {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%;
 }

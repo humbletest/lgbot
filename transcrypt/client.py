@@ -68,6 +68,7 @@ def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
 
 def serializeputjsonbincallback(json, content):        
+    print(json, content)
     try:
         obj = JSON.parse(content)        
         binid = None
@@ -89,7 +90,7 @@ def serializeputjsonbincallback(json, content):
 
 def serializecallback():
     global id, maintabpane, configschema, schemajson        
-    schemajson = JSON.stringify(configschema.toobj(), None, 2)    
+    schemajson = JSON.stringify(configschema.toobj(), None, 2)        
     putjsonbin(schemajson, serializeputjsonbincallback, id)
 ######################################################
 

@@ -17,3 +17,7 @@ pause
 
 git push origin master
 
+pause
+
+git push gitlab master
+

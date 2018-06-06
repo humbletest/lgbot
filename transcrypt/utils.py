@@ -1,3 +1,8 @@
+def getfromobj(obj, key, default):
+    if key in obj:
+        return obj[key]    
+    return default    
+
 __pragma__("jsiter")
 
 def putjsonbinfailed(err, json, callback):
@@ -11,7 +16,7 @@ def getlocalcontent():
     content = localStorage.getItem("jsonbin")
     if content == None:
         print("no local jsonbin, falling back to empty dict")
-        content = '{"kind":"dict","enabled":true}'
+        content = '{}'
     return content
 
 def getjsonbinfailed(err, callback):

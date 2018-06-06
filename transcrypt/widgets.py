@@ -194,6 +194,70 @@ class ComboBox(e):
             self.select.a(opte)
         return self
 
+class LinkedCheckBox(Input):
+    def setchecked(self, checked):
+        print("setting checked", checked)
+        self.e.checked = checked
+        return self
+
+    def getchecked(self):
+        return self.e.checked
+
+    def updatevar(self):        
+        self.parent[self.varname] = self.getchecked()
+
+    def changed(self):        
+        self.updatevar()
+
+    def __init__(self, parent, varname, args = {}):
+        super().__init__("checkbox")                                        
+        self.parent = parent
+        self.varname = varname
+        self.setchecked(self.parent[self.varname])
+        self.ae("change", self.changed)
+
+class LabeledLinkedCheckBox(e):
+    def __init__(self, label, parent, varname, args = {}):
+        super().__init__("div")
+        self.lcb = LinkedCheckBox(parent, varname, args)
+        self.container = Div().ac("labeledlinkedcheckboxcontainer")
+        self.ldiv = Div().html(label)
+        self.container.aa([self.ldiv, self.lcb])
+        self.a(self.container)
+
+SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
+    {"key":"addchild","display":"Add child","default":True},
+    {"key":"removechild","display":"Remove child","default":True},
+    {"key":"childsopened","display":"Childs opened","default":False},
+    {"key":"editenabled","display":"Edit enabled","default":True},
+    {"key":"editkey","display":"Edit key","default":True},
+    {"key":"editvalue","display":"Edit value","default":True},    
+    {"key":"edithelp","display":"Edit help","default":True},
+    {"key":"showhelpashtml","display":"Show help as HTML","default":True}
+]
+
+class SchemaWritePreference:
+    def __init__(self):
+        for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
+            self[item["key"]] = item["default"]
+
+    def form(self):
+        formdiv = Div()
+        print("dict", self.__dict__)
+        fes = []        
+
+        for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
+            fes.append(LabeledLinkedCheckBox(item["display"], self, item["key"]))        
+
+        formdiv.aa(fes)
+        return formdiv
+
+    def toobj(self):        
+        obj = {}
+        for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
+            obj[item["key"]] = self[item["key"]]
+        return obj
+
 SCHEMA_KINDS = {
     "create" : "Create new",
     "scalar" : "Scalar",
@@ -201,11 +265,16 @@ SCHEMA_KINDS = {
     "dict" : "Dict"
 }
 
+DEFAULT_HELP = "No help available for this item."
+DEFAULT_ENABLED = True
+
 class SchemaItem(e):
-    def baseobj(self):
+    def baseobj(self):        
         obj = {
             "kind": self.kind,
-            "enabled": self.enabled
+            "enabled": self.enabled,
+            "help": self.help,
+            "writepreference": self.writepreference.toobj()
         }
         return obj
 
@@ -224,7 +293,7 @@ class SchemaItem(e):
             self.settingshook.x()
             self.settingsopen = False
         else:
-            self.settingsdiv = Div().ac("schemasettingsdiv").html("settings")
+            self.settingsdiv = Div().ac("schemasettingsdiv").a(self.writepreference.form())
             self.settingshook.a(self.settingsdiv)
             self.settingsopen = True
 
@@ -234,14 +303,18 @@ class SchemaItem(e):
             self.helphook.x()
             self.helpopen = False
         else:
-            self.helpdiv = Div().ac("schemahelpdiv").html("help")
+            self.helpdiv = Div().ac("schemahelpdiv")
+            self.helpcontentdiv = Div().ac("schemahelpcontentdiv").html(self.help)
+            self.helpdiv.a(self.helpcontentdiv)
             self.helphook.a(self.helpdiv)
             self.helpopen = True
 
     def __init__(self, args):
         super().__init__("div")
         self.kind = "item"
-        self.enabled = args.get("enabled", True)
+        self.enabled = args.get("enabled", DEFAULT_ENABLED)
+        self.help = args.get("help", DEFAULT_HELP)
+        self.writepreference = SchemaWritePreference()
         self.element = Div().ac("schemaitem")
         self.schemacontainer = Div().ac("schemacontainer")
         self.enablebox = Div().ac("schemaenablebox")
@@ -402,9 +475,18 @@ class SchemaDict(SchemaCollection):
         self.kind = "dict"
         self.element.ac("schemadict")
 
-def schemafromobj(obj):
-    kind = obj["kind"]
-    enabled = obj["enabled"]
+def schemawritepreferencefromobj(obj):
+    swp = SchemaWritePreference()    
+    for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
+        swp[item["key"]] = getfromobj(obj, item["key"], item["default"])
+    return swp
+
+def schemafromobj(obj):    
+    print("schema from obj", obj)
+    kind = getfromobj(obj, "kind", "dict")
+    enabled = getfromobj(obj, "enabled", DEFAULT_ENABLED)
+    enabled = getfromobj(obj, "help", DEFAULT_HELP)
+    writepreference = schemawritepreferencefromobj(getfromobj(obj, "writepreference", {}))
     returnobj = {}
     if kind == "scalar":        
         returnobj = SchemaScalar({
@@ -435,6 +517,7 @@ def schemafromobj(obj):
             "childs": childs
         })
     returnobj.setenabled(enabled)
+    returnobj.writepreference = writepreference
     return returnobj
 
 ######################################################
