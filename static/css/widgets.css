@@ -71,7 +71,7 @@
 
 .tabpanetab {
     background-color: #ddd; border: solid 1px; border-radius: 5px;
-    padding: 5px;
+    padding: 5px; cursor: pointer;
 }
 
 .tabpaneseltab {
@@ -96,16 +96,16 @@
     width: var(--schemaitemheight); height: var(--schemaitemheight); background-color: #bbb; margin-right: 2px;
 }
 
-.schemasettingsbox {    
-    display: flex; justify-content: flex-end; align-items: flex-start;
-    width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
-    background-color: #99f; cursor: pointer;
-}
-
 .schemahelpbox {    
     display: flex; justify-content: space-around; align-items: center;
-    width: calc( var(--schemaitemheight) / 2 ); height: calc( var(--schemaitemheight) / 2 );
+    width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
     background-color: #ff9; cursor: pointer;
+}
+
+.schemasettingsbox {    
+    display: flex; justify-content: space-around; align-items: center;
+    width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
+    background-color: #dd7; cursor: pointer;
 }
 
 .schemasettingsdiv {
@@ -219,4 +219,12 @@
 
 .schemawritepreferenceformsubdiv {
     margin-bottom: 2px;
+}
+
+.defaultrawtextinput {
+    font-size: 14px;
+}
+
+.defaultlinkedtextinputtext {
+    font-size: 14px;
 }

@@ -67,8 +67,8 @@ def docwln(content):
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
 
-def serializeputjsonbincallback(json, content):        
-    print(json, content)
+def serializeputjsonbincallback(json, content):
+    #print(json);return;
     try:
         obj = JSON.parse(content)        
         binid = None
