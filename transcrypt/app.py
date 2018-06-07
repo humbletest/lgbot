@@ -309,10 +309,19 @@ class RawTextInput(Input):
                 if not ( self.keycallback is None ):
                     self.keycallback(ev.keyCode, self.v())
 
+    def setText(self, content):
+        self.sv(content)
+        return self
+
+    def getText(self):
+        return self.v()
+
     def __init__(self, args):
         super().__init__("text")                
         self.entercallback = args.get("entercallback", None)
         self.keycallback = args.get("keycallback", None)
+        self.cssclass = args.get("class", "defaultrawtextinput")
+        self.ac(self.cssclass)
         self.ae("keyup", self.keyup)
 
 class TextInputWithButton(e):
@@ -494,13 +503,48 @@ class LinkedCheckBox(Input):
 
     def changed(self):        
         self.updatevar()
+        if not ( self.changecallback is None):
+            self.changecallback()
 
     def __init__(self, parent, varname, args = {}):
         super().__init__("checkbox")                                        
         self.parent = parent
         self.varname = varname
         self.setchecked(self.parent[self.varname])
+        self.changecallback = args.get("changecallback", None)
         self.ae("change", self.changed)
+
+class LinkedTextInput(e):
+    def updatevar(self):        
+        self.parent[self.varname] = self.getText()
+
+    def keyup(self):
+        self.updatevar()
+
+    def setText(self, content):
+        self.rawtextinput.setText(content)
+        return self
+
+    def getText(self):
+        return self.rawtextinput.getText()
+
+    def able(self, enabled):
+        self.rawtextinput.able(enabled)
+        return self
+
+    def __init__(self, parent, varname, args = {}):
+        super().__init__("div")
+        self.parent = parent
+        self.varname = varname        
+        self.rawtextinputclass = args.get("textclass", "defaultlinkedtextinputtext")
+        self.rawtextinput = RawTextInput({
+            "keycallback": self.keyup,
+            "class": self.rawtextinputclass
+        })
+        self.text = args.get("text", "")        
+        self.setText(self.text)
+        patchclasses(self, args)
+        self.a(self.rawtextinput)
 
 class LinkedTextarea(e):
     def updatevar(self):        
@@ -547,16 +591,33 @@ SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"showhelpashtml","display":"Show help as HTML","default":True}
 ]
 
-class SchemaWritePreference:
+class SchemaWritePreference:    
     def __init__(self):
         for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
             self[item["key"]] = item["default"]
+        self.changecallback = None
+
+    def setchangecallback(self, changecallback):
+        self.changecallback = changecallback
+        return self
+
+    def changed(self):        
+        if not ( self.changecallback is None ):
+            self.changecallback()
+
+    def setdisabledlist(self, disabledlist):
+        self.disabledlist = disabledlist
+        return self
 
     def form(self):
         formdiv = Div().ac("noselect")
 
         for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
-            formdiv.a(LabeledLinkedCheckBox(item["display"], self, item["key"], {"patchclasses":["container/a/schemawritepreferenceformsubdiv"]}))
+            if not ( item["key"] in self.disabledlist ):
+                formdiv.a(LabeledLinkedCheckBox(item["display"], self, item["key"], {
+                    "patchclasses":["container/a/schemawritepreferenceformsubdiv"],
+                    "changecallback": self.changed
+                }))
 
         return formdiv
 
@@ -623,84 +684,89 @@ class SchemaItem(e):
             self.helphook.a(self.helpdiv)
             self.helpopen = True
 
+    def writepreferencechangedtask(self):
+        pass
+
+    def writepreferencechanged(self):
+        self.helpboxclicked()
+        self.helpboxclicked()
+        self.writepreferencechangedtask()
+        if not ( self.parent is None ):
+            self.parent.writepreferencechangedtask()
+
     def __init__(self, args):
         super().__init__("div")
+        self.parent = None
         self.args = args
         self.kind = "item"
         self.enabled = args.get("enabled", DEFAULT_ENABLED)
         self.help = args.get("help", DEFAULT_HELP)
-        self.writepreference = SchemaWritePreference()
+        self.writepreference = args.get("writepreference", SchemaWritePreference())
+        self.writepreference.setchangecallback(self.writepreferencechanged)
         self.element = Div().ac("schemaitem")
         self.schemacontainer = Div().ac("schemacontainer")
         self.enablebox = Div().ac("schemaenablebox")
         self.enablecheckbox = CheckBox(self.enabled).ae("change", self.enablecallback)
         self.enablebox.a(self.enablecheckbox)        
-        self.settingsbox = Div().ac("schemasettingsbox").ae("mousedown", self.settingsboxclicked)        
-        self.helpbox = Div().aac(["schemahelpbox","noselect"]).ae("mousedown", self.helpboxclicked).html("?")
-        self.settingsbox.a(self.helpbox)
+        self.settingsbox = Div().aac(["schemasettingsbox","noselect"]).ae("mousedown", self.settingsboxclicked).html("S")
+        self.helpbox = Div().aac(["schemahelpbox","noselect"]).ae("mousedown", self.helpboxclicked).html("?")        
         self.afterelementhook = Div()
         self.settingsopen = args.get("settingsopen", False)
         self.helpopen = args.get("helpopen", False)
         self.settingshook = Div()        
         self.helphook = Div()        
-        self.schemacontainer.aa([self.enablebox, self.element, self.settingsbox])     
+        self.schemacontainer.aa([self.enablebox, self.element, self.helpbox, self.settingsbox])
         self.itemcontainer = Div()
         self.itemcontainer.aa([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook])
         self.a(self.itemcontainer)
 
 class NamedSchemaItem(e):
-    def textchangedcallback(self, keycode, content):        
-        self.name = content
-
-    def namedivclicked(self):
-        self.editmode = not self.editmode        
-        self.rawtextinput.able(self.editmode)        
-
     def toobj(self):        
         return {
             "kind": "nameditem",
-            "name": self.name,
+            "key": self.key,
             "item": self.item.toobj()
         }
+
+    def writepreferencechangedtask(self):
+        self.linkedtextinput.able(self.item.writepreference.editkey)
     
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
-        self.name = args.get("name", "foo")        
-        self.item = args.get("item", SchemaItem(args))
-        self.editmode = args.get("editmode", False)        
+        self.key = args.get("key", "foo")        
+        self.item = args.get("item", SchemaItem(args))        
+        self.item.parent = self
         self.namedcontainer = Div().ac("namedschemaitem")
-        self.namediv = Div().ac("schemaitemname")
-        args["keycallback"] = self.textchangedcallback        
-        self.rawtextinput = RawTextInput(args).ac("namedschemaitemrawtextinput").sv(self.name).able(self.editmode)
-        self.namediv.a(self.rawtextinput)
-        self.namediv.ae("mousedown", self.namedivclicked)
+        self.namediv = Div().ac("schemaitemname")        
+        self.linkedtextinput = LinkedTextInput(self, "key", {"textclass":"namedschemaitemrawtextinput"})
+        self.linkedtextinput.setText(self.key)
+        self.linkedtextinput.able(self.item.writepreference.editkey)
+        self.namediv.a(self.linkedtextinput)        
         self.namedcontainer.aa([self.namediv, self.item])
         self.a(self.namedcontainer)
 
 class SchemaScalar(SchemaItem):
-    def textchangedcallback(self, keycode, content):        
-        self.value = content
-
-    def divclicked(self):
-        self.editmode = not self.editmode        
-        self.rawtextinput.able(self.editmode)        
-
     def toobj(self):
         obj = self.baseobj()
         obj["value"] = self.value
         return obj
 
+    def writepreferencechangedtask(self):
+        self.linkedtextinput.able(self.writepreference.editvalue)        
+
     def __init__(self, args):
         super().__init__(args)
         self.kind = "scalar"        
-        self.value = args.get("value", "bar")
-        self.editmode = args.get("editmode", False)                
+        self.value = args.get("value", "bar")        
         self.element.ac("schemascalar")
         args["keycallback"] = self.textchangedcallback
-        self.rawtextinput = RawTextInput(args).ac("schemascalarrawtextinput").sv(self.value).able(self.editmode)        
+        self.linkedtextinput = LinkedTextInput(self, "value", {"textclass":"schemascalarrawtextinput"})
+        self.linkedtextinput.setText(self.value)        
+        self.linkedtextinput.able(self.writepreference.editvalue)        
         self.element.ae("mousedown", self.divclicked)
-        self.element.aa([self.rawtextinput])
+        self.element.aa([self.linkedtextinput])
+        self.writepreference.setdisabledlist(["addchild","removechild","childsopened"])
 
 class SchemaCollection(SchemaItem):
     def buildchilds(self):
@@ -743,8 +809,7 @@ class SchemaCollection(SchemaItem):
 
     def __init__(self, args):
         super().__init__(args)
-        self.kind = "collection"
-        self.name = args.get("name", "SchemaCollection")
+        self.kind = "collection"        
         self.opened = args.get("opened", False)
         self.childs = args.get("childs", [])
         self.editmode = args.get("editmode", False)        
@@ -771,13 +836,14 @@ class SchemaList(SchemaCollection):
         super().__init__(args)        
         self.kind = "list"
         self.element.ac("schemalist")
+        self.writepreference.setdisabledlist(["editvalue"])
 
 class SchemaDict(SchemaCollection):
     def toobj(self):
         dictobj = []
         for item in self.childs:
             sch = {
-                "name": item.name,
+                "key": item.key,
                 "item": item.item.toobj()
             }
             dictobj.append(sch)
@@ -789,6 +855,7 @@ class SchemaDict(SchemaCollection):
         super().__init__(args)        
         self.kind = "dict"
         self.element.ac("schemadict")
+        self.writepreference.setdisabledlist(["editvalue"])
 
 def schemawritepreferencefromobj(obj):
     swp = SchemaWritePreference()    
@@ -804,7 +871,8 @@ def schemafromobj(obj):
     returnobj = {}
     if kind == "scalar":        
         returnobj = SchemaScalar({
-            "value": obj["value"]
+            "value": obj["value"],
+            "writepreference": writepreference
         })
     elif kind == "list":
         items = obj["items"]
@@ -813,26 +881,27 @@ def schemafromobj(obj):
             sch = schemafromobj(item)
             childs.append(sch)        
         returnobj = SchemaList({
-            "childs": childs
+            "childs": childs,
+            "writepreference": writepreference
         })
     elif kind == "dict":        
         items = obj["items"]
         childs = []
         for itemobj in items:
-            name = itemobj["name"]
+            key = itemobj["key"]
             item = itemobj["item"]
             sch = schemafromobj(item)
             namedsch = NamedSchemaItem({
-                "name": name,
-                "item": sch
+                "key": key,
+                "item": sch,
+                "writepreference": writepreference
             })
             childs.append(namedsch)        
         returnobj = SchemaDict({
             "childs": childs
         })
-    returnobj.setenabled(enabled)
-    returnobj.writepreference = writepreference
-    returnobj.help = help
+    returnobj.setenabled(enabled)    
+    returnobj.help = help    
     return returnobj
 
 ######################################################
@@ -906,8 +975,8 @@ def docwln(content):
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
 
-def serializeputjsonbincallback(json, content):        
-    print(json, content)
+def serializeputjsonbincallback(json, content):
+    #print(json);return;
     try:
         obj = JSON.parse(content)        
         binid = None

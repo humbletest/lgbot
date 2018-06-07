@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-06 18:23:54
+// Transcrypt'ed from Python, 2018-06-07 12:28:28
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2515,10 +2515,19 @@ function app () {
 					}
 				}
 			});},
+			get setText () {return __get__ (this, function (self, content) {
+				self.sv (content);
+				return self;
+			});},
+			get getText () {return __get__ (this, function (self) {
+				return self.v ();
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (RawTextInput, '__init__') (self, 'text');
 				self.entercallback = args.py_get ('entercallback', null);
 				self.keycallback = args.py_get ('keycallback', null);
+				self.cssclass = args.py_get ('class', 'defaultrawtextinput');
+				self.ac (self.cssclass);
 				self.ae ('keyup', self.keyup);
 			});}
 		});
@@ -2761,6 +2770,9 @@ function app () {
 			});},
 			get changed () {return __get__ (this, function (self) {
 				self.updatevar ();
+				if (!(self.changecallback === null)) {
+					self.changecallback ();
+				}
 			});},
 			get __init__ () {return __get__ (this, function (self, parent, varname, args) {
 				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
@@ -2770,7 +2782,42 @@ function app () {
 				self.parent = parent;
 				self.varname = varname;
 				self.setchecked (self.parent [self.varname]);
+				self.changecallback = args.py_get ('changecallback', null);
 				self.ae ('change', self.changed);
+			});}
+		});
+		var LinkedTextInput = __class__ ('LinkedTextInput', [e], {
+			__module__: __name__,
+			get updatevar () {return __get__ (this, function (self) {
+				self.parent [self.varname] = self.getText ();
+			});},
+			get keyup () {return __get__ (this, function (self) {
+				self.updatevar ();
+			});},
+			get setText () {return __get__ (this, function (self, content) {
+				self.rawtextinput.setText (content);
+				return self;
+			});},
+			get getText () {return __get__ (this, function (self) {
+				return self.rawtextinput.getText ();
+			});},
+			get able () {return __get__ (this, function (self, enabled) {
+				self.rawtextinput.able (enabled);
+				return self;
+			});},
+			get __init__ () {return __get__ (this, function (self, parent, varname, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (LinkedTextInput, '__init__') (self, 'div');
+				self.parent = parent;
+				self.varname = varname;
+				self.rawtextinputclass = args.py_get ('textclass', 'defaultlinkedtextinputtext');
+				self.rawtextinput = RawTextInput (dict ({'keycallback': self.keyup, 'class': self.rawtextinputclass}));
+				self.text = args.py_get ('text', '');
+				self.setText (self.text);
+				patchclasses (self, args);
+				self.a (self.rawtextinput);
 			});}
 		});
 		var LinkedTextarea = __class__ ('LinkedTextarea', [e], {
@@ -2826,13 +2873,29 @@ function app () {
 					var item = __iterable0__ [__index0__];
 					self [item ['key']] = item ['default'];
 				}
+				self.changecallback = null;
+			});},
+			get setchangecallback () {return __get__ (this, function (self, changecallback) {
+				self.changecallback = changecallback;
+				return self;
+			});},
+			get changed () {return __get__ (this, function (self) {
+				if (!(self.changecallback === null)) {
+					self.changecallback ();
+				}
+			});},
+			get setdisabledlist () {return __get__ (this, function (self, disabledlist) {
+				self.disabledlist = disabledlist;
+				return self;
 			});},
 			get form () {return __get__ (this, function (self) {
 				var formdiv = Div ().ac ('noselect');
 				var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					formdiv.a (LabeledLinkedCheckBox (item ['display'], self, item ['key'], dict ({'patchclasses': list (['container/a/schemawritepreferenceformsubdiv'])})));
+					if (!(__in__ (item ['key'], self.disabledlist))) {
+						formdiv.a (LabeledLinkedCheckBox (item ['display'], self, item ['key'], dict ({'patchclasses': list (['container/a/schemawritepreferenceformsubdiv']), 'changecallback': self.changed})));
+					}
 				}
 				return formdiv;
 			});},
@@ -2898,27 +2961,39 @@ function app () {
 					self.helpopen = true;
 				}
 			});},
+			get writepreferencechangedtask () {return __get__ (this, function (self) {
+				// pass;
+			});},
+			get writepreferencechanged () {return __get__ (this, function (self) {
+				self.helpboxclicked ();
+				self.helpboxclicked ();
+				self.writepreferencechangedtask ();
+				if (!(self.parent === null)) {
+					self.parent.writepreferencechangedtask ();
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
+				self.parent = null;
 				self.args = args;
 				self.kind = 'item';
 				self.enabled = args.py_get ('enabled', DEFAULT_ENABLED);
 				self.help = args.py_get ('help', DEFAULT_HELP);
-				self.writepreference = SchemaWritePreference ();
+				self.writepreference = args.py_get ('writepreference', SchemaWritePreference ());
+				self.writepreference.setchangecallback (self.writepreferencechanged);
 				self.element = Div ().ac ('schemaitem');
 				self.schemacontainer = Div ().ac ('schemacontainer');
 				self.enablebox = Div ().ac ('schemaenablebox');
 				self.enablecheckbox = CheckBox (self.enabled).ae ('change', self.enablecallback);
 				self.enablebox.a (self.enablecheckbox);
-				self.settingsbox = Div ().ac ('schemasettingsbox').ae ('mousedown', self.settingsboxclicked);
+				self.settingsbox = Div ().aac (list (['schemasettingsbox', 'noselect'])).ae ('mousedown', self.settingsboxclicked).html ('S');
 				self.helpbox = Div ().aac (list (['schemahelpbox', 'noselect'])).ae ('mousedown', self.helpboxclicked).html ('?');
-				self.settingsbox.a (self.helpbox);
 				self.afterelementhook = Div ();
 				self.settingsopen = args.py_get ('settingsopen', false);
 				self.helpopen = args.py_get ('helpopen', false);
 				self.settingshook = Div ();
 				self.helphook = Div ();
-				self.schemacontainer.aa (list ([self.enablebox, self.element, self.settingsbox]));
+				self.schemacontainer.aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox]));
 				self.itemcontainer = Div ();
 				self.itemcontainer.aa (list ([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook]));
 				self.a (self.itemcontainer);
@@ -2926,56 +3001,50 @@ function app () {
 		});
 		var NamedSchemaItem = __class__ ('NamedSchemaItem', [e], {
 			__module__: __name__,
-			get textchangedcallback () {return __get__ (this, function (self, keycode, content) {
-				self.py_name = content;
-			});},
-			get namedivclicked () {return __get__ (this, function (self) {
-				self.editmode = !(self.editmode);
-				self.rawtextinput.able (self.editmode);
-			});},
 			get toobj () {return __get__ (this, function (self) {
-				return dict ({'kind': 'nameditem', 'name': self.py_name, 'item': self.item.toobj ()});
+				return dict ({'kind': 'nameditem', 'key': self.key, 'item': self.item.toobj ()});
+			});},
+			get writepreferencechangedtask () {return __get__ (this, function (self) {
+				self.linkedtextinput.able (self.item.writepreference.editkey);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
 				self.kind = 'nameditem';
-				self.py_name = args.py_get ('name', 'foo');
+				self.key = args.py_get ('key', 'foo');
 				self.item = args.py_get ('item', SchemaItem (args));
-				self.editmode = args.py_get ('editmode', false);
+				self.item.parent = self;
 				self.namedcontainer = Div ().ac ('namedschemaitem');
 				self.namediv = Div ().ac ('schemaitemname');
-				args ['keycallback'] = self.textchangedcallback;
-				self.rawtextinput = RawTextInput (args).ac ('namedschemaitemrawtextinput').sv (self.py_name).able (self.editmode);
-				self.namediv.a (self.rawtextinput);
-				self.namediv.ae ('mousedown', self.namedivclicked);
+				self.linkedtextinput = LinkedTextInput (self, 'key', dict ({'textclass': 'namedschemaitemrawtextinput'}));
+				self.linkedtextinput.setText (self.key);
+				self.linkedtextinput.able (self.item.writepreference.editkey);
+				self.namediv.a (self.linkedtextinput);
 				self.namedcontainer.aa (list ([self.namediv, self.item]));
 				self.a (self.namedcontainer);
 			});}
 		});
 		var SchemaScalar = __class__ ('SchemaScalar', [SchemaItem], {
 			__module__: __name__,
-			get textchangedcallback () {return __get__ (this, function (self, keycode, content) {
-				self.value = content;
-			});},
-			get divclicked () {return __get__ (this, function (self) {
-				self.editmode = !(self.editmode);
-				self.rawtextinput.able (self.editmode);
-			});},
 			get toobj () {return __get__ (this, function (self) {
 				var obj = self.baseobj ();
 				obj ['value'] = self.value;
 				return obj;
 			});},
+			get writepreferencechangedtask () {return __get__ (this, function (self) {
+				self.linkedtextinput.able (self.writepreference.editvalue);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
 				self.kind = 'scalar';
 				self.value = args.py_get ('value', 'bar');
-				self.editmode = args.py_get ('editmode', false);
 				self.element.ac ('schemascalar');
 				args ['keycallback'] = self.textchangedcallback;
-				self.rawtextinput = RawTextInput (args).ac ('schemascalarrawtextinput').sv (self.value).able (self.editmode);
+				self.linkedtextinput = LinkedTextInput (self, 'value', dict ({'textclass': 'schemascalarrawtextinput'}));
+				self.linkedtextinput.setText (self.value);
+				self.linkedtextinput.able (self.writepreference.editvalue);
 				self.element.ae ('mousedown', self.divclicked);
-				self.element.aa (list ([self.rawtextinput]));
+				self.element.aa (list ([self.linkedtextinput]));
+				self.writepreference.setdisabledlist (list (['addchild', 'removechild', 'childsopened']));
 			});}
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
@@ -3025,7 +3094,6 @@ function app () {
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaCollection, '__init__') (self, args);
 				self.kind = 'collection';
-				self.py_name = args.py_get ('name', 'SchemaCollection');
 				self.opened = args.py_get ('opened', false);
 				self.childs = args.py_get ('childs', list ([]));
 				self.editmode = args.py_get ('editmode', false);
@@ -3057,6 +3125,7 @@ function app () {
 				__super__ (SchemaList, '__init__') (self, args);
 				self.kind = 'list';
 				self.element.ac ('schemalist');
+				self.writepreference.setdisabledlist (list (['editvalue']));
 			});}
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
@@ -3066,7 +3135,7 @@ function app () {
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					var sch = dict ({'name': item.py_name, 'item': item.item.toobj ()});
+					var sch = dict ({'key': item.key, 'item': item.item.toobj ()});
 					dictobj.append (sch);
 				}
 				var obj = self.baseobj ();
@@ -3077,6 +3146,7 @@ function app () {
 				__super__ (SchemaDict, '__init__') (self, args);
 				self.kind = 'dict';
 				self.element.ac ('schemadict');
+				self.writepreference.setdisabledlist (list (['editvalue']));
 			});}
 		});
 		var schemawritepreferencefromobj = function (obj) {
@@ -3095,7 +3165,7 @@ function app () {
 			var writepreference = schemawritepreferencefromobj (getfromobj (obj, 'writepreference', dict ({})));
 			var returnobj = dict ({});
 			if (kind == 'scalar') {
-				var returnobj = SchemaScalar (dict ({'value': obj ['value']}));
+				var returnobj = SchemaScalar (dict ({'value': obj ['value'], 'writepreference': writepreference}));
 			}
 			else if (kind == 'list') {
 				var py_items = obj ['items'];
@@ -3106,7 +3176,7 @@ function app () {
 					var sch = schemafromobj (item);
 					childs.append (sch);
 				}
-				var returnobj = SchemaList (dict ({'childs': childs}));
+				var returnobj = SchemaList (dict ({'childs': childs, 'writepreference': writepreference}));
 			}
 			else if (kind == 'dict') {
 				var py_items = obj ['items'];
@@ -3114,16 +3184,15 @@ function app () {
 				var __iterable0__ = py_items;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var itemobj = __iterable0__ [__index0__];
-					var py_name = itemobj ['name'];
+					var key = itemobj ['key'];
 					var item = itemobj ['item'];
 					var sch = schemafromobj (item);
-					var namedsch = NamedSchemaItem (dict ({'name': py_name, 'item': sch}));
+					var namedsch = NamedSchemaItem (dict ({'key': key, 'item': sch, 'writepreference': writepreference}));
 					childs.append (namedsch);
 				}
 				var returnobj = SchemaDict (dict ({'childs': childs}));
 			}
 			returnobj.setenabled (enabled);
-			returnobj.writepreference = writepreference;
 			returnobj.help = help;
 			return returnobj;
 		};
@@ -3180,7 +3249,6 @@ function app () {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
 		};
 		var serializeputjsonbincallback = function (json, content) {
-			print (json, content);
 			try {
 				var obj = JSON.parse (content);
 				var binid = null;
@@ -3259,6 +3327,7 @@ function app () {
 			__all__.Input = Input;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
+			__all__.LinkedTextInput = LinkedTextInput;
 			__all__.LinkedTextarea = LinkedTextarea;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
