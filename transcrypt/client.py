@@ -43,8 +43,7 @@ def buildconfigdiv():
 def getbincallback(content):
     global configschema    
     obj = JSON.parse(content)    
-    configschema = schemafromobj(obj)        
-    configschema.openchilds()
+    configschema = schemafromobj(obj)            
     maintabpane.setTabElementByKey("config", buildconfigdiv())
 
 def getbinerrcallback(err):

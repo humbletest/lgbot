@@ -108,6 +108,12 @@
     background-color: #dd7; cursor: pointer;
 }
 
+.schemaremovebox {    
+    display: flex; justify-content: space-around; align-items: center;
+    width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
+    background-color: #f77; cursor: pointer;
+}
+
 .schemasettingsdiv {
     margin-left: calc( var(--schemawidth) - var(--schemasettingswidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
     width: var(--schemasettingswidth); min-height: 100px;

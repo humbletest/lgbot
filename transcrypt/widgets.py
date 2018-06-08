@@ -299,8 +299,7 @@ SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"childsopened","display":"Childs opened","default":False},
     {"key":"editenabled","display":"Edit enabled","default":True},
     {"key":"editkey","display":"Edit key","default":True},
-    {"key":"editvalue","display":"Edit value","default":True},    
-    {"key":"edithelp","display":"Edit help","default":True},
+    {"key":"editvalue","display":"Edit value","default":True},        
     {"key":"showhelpashtml","display":"Show help as HTML","default":True}
 ]
 
@@ -308,7 +307,13 @@ class SchemaWritePreference:
     def __init__(self):
         for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
             self[item["key"]] = item["default"]
+        self.parent = None
         self.changecallback = None
+        self.disabledlist = []
+
+    def setparent(self, parent):
+        self.parent = parent
+        return self
 
     def setchangecallback(self, changecallback):
         self.changecallback = changecallback
@@ -325,8 +330,13 @@ class SchemaWritePreference:
     def form(self):
         formdiv = Div().ac("noselect")
 
+        mdl = self.disabledlist
+        if not ( self.parent is None ):
+            if self.parent.parent is None:
+                mdl = mdl + ["editkey"]
+
         for item in SCHEMA_WRITE_PREFERENCE_DEFAULTS:
-            if not ( item["key"] in self.disabledlist ):
+            if not ( item["key"] in mdl ):
                 formdiv.a(LabeledLinkedCheckBox(item["display"], self, item["key"], {
                     "patchclasses":["container/a/schemawritepreferenceformsubdiv"],
                     "changecallback": self.changed
@@ -370,15 +380,6 @@ class SchemaItem(e):
         self.enabled = enabled
         self.enablecheckbox.setchecked(self.enabled)
 
-    def settingsboxclicked(self):
-        if self.settingsopen:
-            self.settingshook.x()
-            self.settingsopen = False
-        else:
-            self.settingsdiv = Div().ac("schemasettingsdiv").a(self.writepreference.form())
-            self.settingshook.a(self.settingsdiv)
-            self.settingsopen = True            
-
     def helpboxclicked(self):
         event.stopPropagation()
         if self.helpopen:
@@ -396,6 +397,19 @@ class SchemaItem(e):
                 self.helpdiv.a(self.helpeditdiv)
             self.helphook.a(self.helpdiv)
             self.helpopen = True
+    
+    def settingsboxclicked(self):
+        if self.settingsopen:
+            self.settingshook.x()
+            self.settingsopen = False
+        else:
+            self.settingsdiv = Div().ac("schemasettingsdiv").a(self.writepreference.form())
+            self.settingshook.a(self.settingsdiv)
+            self.settingsopen = True            
+
+    def removeboxclicked(self):
+        self.childparent.remove(self)
+        pass
 
     def writepreferencechangedtask(self):
         pass
@@ -403,26 +417,39 @@ class SchemaItem(e):
     def writepreferencechanged(self):
         self.helpboxclicked()
         self.helpboxclicked()
+        self.enablecheckbox.able(self.writepreference.editenabled)
+        self.setchildparent(self.childparent)
         self.writepreferencechangedtask()
         if not ( self.parent is None ):
             self.parent.writepreferencechangedtask()
 
+    def setchildparent(self, childparent):
+        self.childparent = childparent
+        if ( not ( self.childparent is None ) ) and self.writepreference.removechild:
+            self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.settingsbox, self.removebox])
+        else:
+            self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.settingsbox])
+
     def __init__(self, args):
         super().__init__("div")
         self.parent = None
+        self.childparent = None
         self.args = args
         self.kind = "item"
         self.enabled = args.get("enabled", DEFAULT_ENABLED)
         self.help = args.get("help", DEFAULT_HELP)
         self.writepreference = args.get("writepreference", SchemaWritePreference())
-        self.writepreference.setchangecallback(self.writepreferencechanged)
+        self.writepreference.setparent(self)
+        self.writepreference.setchangecallback(self.writepreferencechanged)        
         self.element = Div().ac("schemaitem")
         self.schemacontainer = Div().ac("schemacontainer")
         self.enablebox = Div().ac("schemaenablebox")
         self.enablecheckbox = CheckBox(self.enabled).ae("change", self.enablecallback)
-        self.enablebox.a(self.enablecheckbox)        
-        self.settingsbox = Div().aac(["schemasettingsbox","noselect"]).ae("mousedown", self.settingsboxclicked).html("S")
+        self.enablecheckbox.able(self.writepreference.editenabled)
+        self.enablebox.a(self.enablecheckbox)                
         self.helpbox = Div().aac(["schemahelpbox","noselect"]).ae("mousedown", self.helpboxclicked).html("?")        
+        self.settingsbox = Div().aac(["schemasettingsbox","noselect"]).ae("mousedown", self.settingsboxclicked).html("S")
+        self.removebox = Div().aac(["schemaremovebox","noselect"]).ae("mousedown", self.removeboxclicked).html("X")        
         self.afterelementhook = Div()
         self.settingsopen = args.get("settingsopen", False)
         self.helpopen = args.get("helpopen", False)
@@ -487,6 +514,20 @@ class SchemaCollection(SchemaItem):
         for child in self.childs:
             self.childshook.a(child)
 
+    def remove(self, item):
+        newlist = []
+        for child in self.childs:
+            childeq = False
+            if child.kind == "nameditem":
+                childeq = ( child.item == item )
+            else:
+                childeq = ( child == item )
+            if not childeq:
+                newlist.append(child)
+        self.childs = newlist
+        self.openchilds()
+        self.openchilds()
+
     def createcallback(self, key):
         self.createcombo.setoptions(SCHEMA_KINDS)
         sch = SchemaScalar({})
@@ -494,6 +535,7 @@ class SchemaCollection(SchemaItem):
             sch = SchemaList({})
         elif key == "dict":
             sch = SchemaDict({})
+        sch.setchildparent(self)
         appendelement = sch
         if self.kind == "dict":
             appendelement = NamedSchemaItem({
@@ -516,14 +558,21 @@ class SchemaCollection(SchemaItem):
             })
             self.createcombo.setoptions(SCHEMA_KINDS)
             self.creatediv.a(self.createcombo)
-            self.createhook.a(self.creatediv)
+            if self.writepreference.addchild:
+                self.createhook.a(self.creatediv)
             self.openbutton.ac("schemacollectionopenbuttondone")
             self.buildchilds()
+
+    def writepreferencechangedtask(self):
+        self.opened = True
+        self.openchilds()
+        self.opened = not self.writepreference.childsopened
+        self.openchilds()
 
     def __init__(self, args):
         super().__init__(args)
         self.kind = "collection"        
-        self.opened = args.get("opened", False)
+        self.opened = False
         self.childs = args.get("childs", [])
         self.editmode = args.get("editmode", False)        
         self.childseditable = args.get("childseditable", True)
@@ -535,6 +584,8 @@ class SchemaCollection(SchemaItem):
         self.opendiv = Div().ac("schemacollectionopendiv")
         self.opendiv.aa([self.createhook, self.childshook])        
         self.afterelementhook.a(self.opendiv)
+        if self.writepreference.childsopened:
+            self.openchilds()
 
 class SchemaList(SchemaCollection):
     def toobj(self):
@@ -591,12 +642,14 @@ def schemafromobj(obj):
         items = obj["items"]
         childs = []
         for item in items:
-            sch = schemafromobj(item)
+            sch = schemafromobj(item)            
             childs.append(sch)        
         returnobj = SchemaList({
             "childs": childs,
             "writepreference": writepreference
         })
+        for child in returnobj.childs:
+            child.setchildparent(returnobj)
     elif kind == "dict":        
         items = obj["items"]
         childs = []
@@ -611,8 +664,11 @@ def schemafromobj(obj):
             })
             childs.append(namedsch)        
         returnobj = SchemaDict({
-            "childs": childs
+            "childs": childs,
+            "writepreference": writepreference
         })
+        for child in returnobj.childs:
+            child.item.setchildparent(returnobj)
     returnobj.setenabled(enabled)    
     returnobj.help = help    
     return returnobj
