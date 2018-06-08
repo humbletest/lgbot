@@ -58,13 +58,6 @@ class SchemaWritePreference:
             obj[item["key"]] = self[item["key"]]
         return obj
 
-SCHEMA_KINDS = {
-    "create" : "Create new",
-    "scalar" : "Scalar",
-    "list" : "List",
-    "dict" : "Dict"
-}
-
 DEFAULT_HELP = "No help available for this item."
 DEFAULT_ENABLED = True
 
@@ -178,16 +171,24 @@ class NamedSchemaItem(e):
 
     def writepreferencechangedtask(self):
         self.linkedtextinput.able(self.item.writepreference.editkey)
+
+    def keychanged(self):
+        if not ( self.keychangedcallback is None ):
+            self.keychangedcallback()
     
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
-        self.key = args.get("key", "foo")        
+        self.key = args.get("key", "#" + str(__new__(Date()).getTime()))
         self.item = args.get("item", SchemaItem(args))        
+        self.keychangedcallback = args.get("keychangedcallback", None)
         self.item.parent = self
         self.namedcontainer = Div().ac("namedschemaitem")
         self.namediv = Div().ac("schemaitemname")        
-        self.linkedtextinput = LinkedTextInput(self, "key", {"textclass":"namedschemaitemrawtextinput"})
+        self.linkedtextinput = LinkedTextInput(self, "key", {
+            "textclass": "namedschemaitemrawtextinput",
+            "keyupcallback": self.keychanged
+        })
         self.linkedtextinput.setText(self.key)
         self.linkedtextinput.able(self.item.writepreference.editkey)
         self.namediv.a(self.linkedtextinput)        
@@ -236,21 +237,56 @@ class SchemaCollection(SchemaItem):
         self.openchilds()
         self.openchilds()
 
+    def getschemakinds(self):
+        schemakinds = {
+            "create" : "Create new",
+            "scalar" : "Scalar",
+            "list" : "List",
+            "dict" : "Dict"
+        }        
+        if self.kind == "dict":
+            for nameditem in self.childs:
+                key = nameditem.key
+                if len(key) > 0:
+                    schemakinds["#" + key] = key
+        return schemakinds
+
+    def updatecreatecombo(self):
+        if not ( self.createcombo is None ):
+            self.createcombo.setoptions(self.getschemakinds())
+
+    def getchildbykey(self, key):
+        if not ( self.kind == "dict" ):
+            return None
+        for nameditem in self.childs:
+            if nameditem.key == key:
+                return nameditem.item
+        return None
+
     def createcallback(self, key):
-        self.createcombo.setoptions(SCHEMA_KINDS)
+        self.updatecreatecombo()
         sch = SchemaScalar({})
         if key == "list":
             sch = SchemaList({})
         elif key == "dict":
-            sch = SchemaDict({})
+            sch = SchemaDict({})        
+        if key[0] == "#":
+            truekey = key[1:]
+            titem = self.getchildbykey(truekey)
+            if titem == None:
+                print("error, no item with key", truekey)
+            else:
+                sch = schemafromobj(titem.toobj())
         sch.setchildparent(self)
         appendelement = sch
         if self.kind == "dict":
             appendelement = NamedSchemaItem({
-                "item": sch
+                "item": sch,
+                "keychangedcallback": self.updatecreatecombo
             })
         self.childs.append(appendelement)
-        self.buildchilds()
+        self.buildchilds()      
+        self.updatecreatecombo()          
 
     def openchilds(self):
         if self.opened:
@@ -264,7 +300,7 @@ class SchemaCollection(SchemaItem):
             self.createcombo = ComboBox({
                 "changecallback": self.createcallback
             })
-            self.createcombo.setoptions(SCHEMA_KINDS)
+            self.updatecreatecombo()
             self.creatediv.a(self.createcombo)
             if self.writepreference.addchild:
                 self.createhook.a(self.creatediv)
@@ -275,7 +311,7 @@ class SchemaCollection(SchemaItem):
         self.opened = True
         self.openchilds()
         self.opened = not self.writepreference.childsopened
-        self.openchilds()
+        self.openchilds()        
 
     def __init__(self, args):
         super().__init__(args)
@@ -287,6 +323,7 @@ class SchemaCollection(SchemaItem):
         self.element.ac("schemacollection")                
         self.openbutton = Div().ac("schemacollectionopenbutton").ae("mousedown", self.openchilds)
         self.element.aa([self.openbutton])        
+        self.createcombo = None
         self.createhook = Div()
         self.childshook = Div()
         self.opendiv = Div().ac("schemacollectionopendiv")

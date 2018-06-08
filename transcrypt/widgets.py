@@ -233,6 +233,8 @@ class LinkedTextInput(e):
 
     def keyup(self):
         self.updatevar()
+        if not ( self.keyupcallback is None ):
+            self.keyupcallback()
 
     def setText(self, content):
         self.rawtextinput.setText(content)
@@ -257,6 +259,7 @@ class LinkedTextInput(e):
         self.text = args.get("text", "")        
         self.setText(self.text)
         patchclasses(self, args)
+        self.keyupcallback = args.get("keyupcallback", None)
         self.a(self.rawtextinput)
 
 class LinkedTextarea(e):
