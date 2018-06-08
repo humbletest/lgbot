@@ -811,17 +811,12 @@ class SchemaScalar(SchemaItem):
 class SchemaCollection(SchemaItem):
     def setradio(self, item):
         for child in self.childs:
-            childeq = False
-            enablecheckbox = None
+            childitem = child
             if child.kind == "nameditem":
-                childeq = ( child.item == item )
-                enablecheckbox = child.item.enablecheckbox
-            else:
-                childeq = ( child == item )
-                enablecheckbox = child.enablecheckbox
-            child.enabled = childeq
-            if not ( enablecheckbox is None ):
-                enablecheckbox.setchecked(childeq)
+                childitem = child.item                
+            childeq = ( childitem == item )                
+            childitem.enabled = childeq            
+            childitem.enablecheckbox.setchecked(childeq)
 
     def buildchilds(self):
         self.childshook.x()

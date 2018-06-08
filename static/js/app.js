@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-08 19:07:50
+// Transcrypt'ed from Python, 2018-06-08 19:26:48
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3098,20 +3098,13 @@ function app () {
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var child = __iterable0__ [__index0__];
-					var childeq = false;
-					var enablecheckbox = null;
+					var childitem = child;
 					if (child.kind == 'nameditem') {
-						var childeq = child.item == item;
-						var enablecheckbox = child.item.enablecheckbox;
+						var childitem = child.item;
 					}
-					else {
-						var childeq = child == item;
-						var enablecheckbox = child.enablecheckbox;
-					}
-					child.enabled = childeq;
-					if (!(enablecheckbox === null)) {
-						enablecheckbox.setchecked (childeq);
-					}
+					var childeq = childitem == item;
+					childitem.enabled = childeq;
+					childitem.enablecheckbox.setchecked (childeq);
 				}
 			});},
 			get buildchilds () {return __get__ (this, function (self) {
