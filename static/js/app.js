@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-07 12:28:28
+// Transcrypt'ed from Python, 2018-06-08 09:53:55
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2864,7 +2864,7 @@ function app () {
 				self.a (self.container).ac ('labeledlinkedcheckbox');
 			});}
 		});
-		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'removechild', 'display': 'Remove child', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'edithelp', 'display': 'Edit help', 'default': true}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
+		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'removechild', 'display': 'Remove child', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self) {
@@ -2873,7 +2873,13 @@ function app () {
 					var item = __iterable0__ [__index0__];
 					self [item ['key']] = item ['default'];
 				}
+				self.parent = null;
 				self.changecallback = null;
+				self.disabledlist = list ([]);
+			});},
+			get setparent () {return __get__ (this, function (self, parent) {
+				self.parent = parent;
+				return self;
 			});},
 			get setchangecallback () {return __get__ (this, function (self, changecallback) {
 				self.changecallback = changecallback;
@@ -2890,10 +2896,16 @@ function app () {
 			});},
 			get form () {return __get__ (this, function (self) {
 				var formdiv = Div ().ac ('noselect');
+				var mdl = self.disabledlist;
+				if (!(self.parent === null)) {
+					if (self.parent.parent === null) {
+						var mdl = mdl + list (['editkey']);
+					}
+				}
 				var __iterable0__ = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					if (!(__in__ (item ['key'], self.disabledlist))) {
+					if (!(__in__ (item ['key'], mdl))) {
 						formdiv.a (LabeledLinkedCheckBox (item ['display'], self, item ['key'], dict ({'patchclasses': list (['container/a/schemawritepreferenceformsubdiv']), 'changecallback': self.changed})));
 					}
 				}
@@ -2928,17 +2940,6 @@ function app () {
 				self.enabled = enabled;
 				self.enablecheckbox.setchecked (self.enabled);
 			});},
-			get settingsboxclicked () {return __get__ (this, function (self) {
-				if (self.settingsopen) {
-					self.settingshook.x ();
-					self.settingsopen = false;
-				}
-				else {
-					self.settingsdiv = Div ().ac ('schemasettingsdiv').a (self.writepreference.form ());
-					self.settingshook.a (self.settingsdiv);
-					self.settingsopen = true;
-				}
-			});},
 			get helpboxclicked () {return __get__ (this, function (self) {
 				event.stopPropagation ();
 				if (self.helpopen) {
@@ -2961,33 +2962,63 @@ function app () {
 					self.helpopen = true;
 				}
 			});},
+			get settingsboxclicked () {return __get__ (this, function (self) {
+				if (self.settingsopen) {
+					self.settingshook.x ();
+					self.settingsopen = false;
+				}
+				else {
+					self.settingsdiv = Div ().ac ('schemasettingsdiv').a (self.writepreference.form ());
+					self.settingshook.a (self.settingsdiv);
+					self.settingsopen = true;
+				}
+			});},
+			get removeboxclicked () {return __get__ (this, function (self) {
+				self.childparent.remove (self);
+				// pass;
+			});},
 			get writepreferencechangedtask () {return __get__ (this, function (self) {
 				// pass;
 			});},
 			get writepreferencechanged () {return __get__ (this, function (self) {
 				self.helpboxclicked ();
 				self.helpboxclicked ();
+				self.enablecheckbox.able (self.writepreference.editenabled);
+				self.setchildparent (self.childparent);
 				self.writepreferencechangedtask ();
 				if (!(self.parent === null)) {
 					self.parent.writepreferencechangedtask ();
 				}
 			});},
+			get setchildparent () {return __get__ (this, function (self, childparent) {
+				self.childparent = childparent;
+				if (!(self.childparent === null) && self.writepreference.removechild) {
+					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox, self.removebox]));
+				}
+				else {
+					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox]));
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
+				self.childparent = null;
 				self.args = args;
 				self.kind = 'item';
 				self.enabled = args.py_get ('enabled', DEFAULT_ENABLED);
 				self.help = args.py_get ('help', DEFAULT_HELP);
 				self.writepreference = args.py_get ('writepreference', SchemaWritePreference ());
+				self.writepreference.setparent (self);
 				self.writepreference.setchangecallback (self.writepreferencechanged);
 				self.element = Div ().ac ('schemaitem');
 				self.schemacontainer = Div ().ac ('schemacontainer');
 				self.enablebox = Div ().ac ('schemaenablebox');
 				self.enablecheckbox = CheckBox (self.enabled).ae ('change', self.enablecallback);
+				self.enablecheckbox.able (self.writepreference.editenabled);
 				self.enablebox.a (self.enablecheckbox);
-				self.settingsbox = Div ().aac (list (['schemasettingsbox', 'noselect'])).ae ('mousedown', self.settingsboxclicked).html ('S');
 				self.helpbox = Div ().aac (list (['schemahelpbox', 'noselect'])).ae ('mousedown', self.helpboxclicked).html ('?');
+				self.settingsbox = Div ().aac (list (['schemasettingsbox', 'noselect'])).ae ('mousedown', self.settingsboxclicked).html ('S');
+				self.removebox = Div ().aac (list (['schemaremovebox', 'noselect'])).ae ('mousedown', self.removeboxclicked).html ('X');
 				self.afterelementhook = Div ();
 				self.settingsopen = args.py_get ('settingsopen', false);
 				self.helpopen = args.py_get ('helpopen', false);
@@ -3057,6 +3088,26 @@ function app () {
 					self.childshook.a (child);
 				}
 			});},
+			get remove () {return __get__ (this, function (self, item) {
+				var newlist = list ([]);
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					var childeq = false;
+					if (child.kind == 'nameditem') {
+						var childeq = child.item == item;
+					}
+					else {
+						var childeq = child == item;
+					}
+					if (!(childeq)) {
+						newlist.append (child);
+					}
+				}
+				self.childs = newlist;
+				self.openchilds ();
+				self.openchilds ();
+			});},
 			get createcallback () {return __get__ (this, function (self, key) {
 				self.createcombo.setoptions (SCHEMA_KINDS);
 				var sch = SchemaScalar (dict ({}));
@@ -3066,6 +3117,7 @@ function app () {
 				else if (key == 'dict') {
 					var sch = SchemaDict (dict ({}));
 				}
+				sch.setchildparent (self);
 				var appendelement = sch;
 				if (self.kind == 'dict') {
 					var appendelement = NamedSchemaItem (dict ({'item': sch}));
@@ -3086,15 +3138,23 @@ function app () {
 					self.createcombo = ComboBox (dict ({'changecallback': self.createcallback}));
 					self.createcombo.setoptions (SCHEMA_KINDS);
 					self.creatediv.a (self.createcombo);
-					self.createhook.a (self.creatediv);
+					if (self.writepreference.addchild) {
+						self.createhook.a (self.creatediv);
+					}
 					self.openbutton.ac ('schemacollectionopenbuttondone');
 					self.buildchilds ();
 				}
 			});},
+			get writepreferencechangedtask () {return __get__ (this, function (self) {
+				self.opened = true;
+				self.openchilds ();
+				self.opened = !(self.writepreference.childsopened);
+				self.openchilds ();
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaCollection, '__init__') (self, args);
 				self.kind = 'collection';
-				self.opened = args.py_get ('opened', false);
+				self.opened = false;
 				self.childs = args.py_get ('childs', list ([]));
 				self.editmode = args.py_get ('editmode', false);
 				self.childseditable = args.py_get ('childseditable', true);
@@ -3106,6 +3166,9 @@ function app () {
 				self.opendiv = Div ().ac ('schemacollectionopendiv');
 				self.opendiv.aa (list ([self.createhook, self.childshook]));
 				self.afterelementhook.a (self.opendiv);
+				if (self.writepreference.childsopened) {
+					self.openchilds ();
+				}
 			});}
 		});
 		var SchemaList = __class__ ('SchemaList', [SchemaCollection], {
@@ -3177,6 +3240,11 @@ function app () {
 					childs.append (sch);
 				}
 				var returnobj = SchemaList (dict ({'childs': childs, 'writepreference': writepreference}));
+				var __iterable0__ = returnobj.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					child.setchildparent (returnobj);
+				}
 			}
 			else if (kind == 'dict') {
 				var py_items = obj ['items'];
@@ -3190,7 +3258,12 @@ function app () {
 					var namedsch = NamedSchemaItem (dict ({'key': key, 'item': sch, 'writepreference': writepreference}));
 					childs.append (namedsch);
 				}
-				var returnobj = SchemaDict (dict ({'childs': childs}));
+				var returnobj = SchemaDict (dict ({'childs': childs, 'writepreference': writepreference}));
+				var __iterable0__ = returnobj.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					child.item.setchildparent (returnobj);
+				}
 			}
 			returnobj.setenabled (enabled);
 			returnobj.help = help;
@@ -3229,7 +3302,6 @@ function app () {
 		var getbincallback = function (content) {
 			var obj = JSON.parse (content);
 			configschema = schemafromobj (obj);
-			configschema.openchilds ();
 			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
 		};
 		var getbinerrcallback = function (err) {
