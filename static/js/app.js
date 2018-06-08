@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-08 09:53:55
+// Transcrypt'ed from Python, 2018-06-08 11:57:49
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3295,21 +3295,37 @@ function app () {
 		var engineconsole = null;
 		var configschema = SchemaDict (dict ({}));
 		var id = null;
+		var srcdiv = Div ();
+		var schemajson = null;
+		var showsrc = function () {
+			var srcjsoncontent = JSON.stringify (serializeconfig (), null, 2);
+			srcdiv.html (('<pre>' + srcjsoncontent) + '</pre>');
+			maintabpane.selectByKey ('src');
+		};
+		var serializeconfig = function () {
+			var obj = dict ({'config': dict ({}), 'configschema': configschema.toobj ()});
+			return obj;
+		};
+		var deserializeconfig = function (obj) {
+			var schemaobj = dict ({});
+			if (__in__ ('configschema', obj)) {
+				var schemaobj = obj ['configschema'];
+			}
+			configschema = schemafromobj (schemaobj);
+		};
 		var buildconfigdiv = function () {
-			var configdiv = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), configschema]));
+			var configdiv = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Show source', showsrc).fs (16), configschema]));
 			return configdiv;
 		};
 		var getbincallback = function (content) {
 			var obj = JSON.parse (content);
-			configschema = schemafromobj (obj);
+			deserializeconfig (obj);
 			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
 		};
 		var getbinerrcallback = function (err) {
 			print ('get bin failed with', err);
 			loadlocal ();
 		};
-		var srcdiv = Div ();
-		var schemajson = null;
 		var loadlocal = function () {
 			document.location.href = '/?id=local';
 		};
@@ -3337,7 +3353,6 @@ function app () {
 					socket.emit ('sioreq', dict ({'kind': 'storebinid', 'data': binid}));
 				}
 				var href = (((window.location.protocol + '//') + window.location.host) + '/?id=') + binid;
-				print ('href', href);
 				document.location.href = href;
 			}
 			catch (__except0__) {
@@ -3346,15 +3361,15 @@ function app () {
 			}
 		};
 		var serializecallback = function () {
-			schemajson = JSON.stringify (configschema.toobj (), null, 2);
-			putjsonbin (schemajson, serializeputjsonbincallback, id);
+			var json = JSON.stringify (serializeconfig (), null, 2);
+			putjsonbin (json, serializeputjsonbincallback, id);
 		};
 		var build = function () {
 			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
 			mainlog = Log ();
 			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
 			maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', buildconfigdiv ()), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -3430,6 +3445,7 @@ function app () {
 			__all__.cmdinp = cmdinp;
 			__all__.cmdinpcallback = cmdinpcallback;
 			__all__.configschema = configschema;
+			__all__.deserializeconfig = deserializeconfig;
 			__all__.docwln = docwln;
 			__all__.e = e;
 			__all__.engineconsole = engineconsole;
@@ -3458,7 +3474,9 @@ function app () {
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
 			__all__.serializecallback = serializecallback;
+			__all__.serializeconfig = serializeconfig;
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
+			__all__.showsrc = showsrc;
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
 			__all__.startup = startup;
