@@ -31,31 +31,49 @@ maintabpane = None
 engineconsole = None
 configschema = SchemaDict({})
 id = None
-
-def buildconfigdiv():    
-    global configschema
-    configdiv = Div().aa([
-        Button("Serialize", serializecallback).fs(24),
-        configschema
-    ])
-    return configdiv
-
-def getbincallback(content):
-    global configschema    
-    obj = JSON.parse(content)    
-    configschema = schemafromobj(obj)            
-    maintabpane.setTabElementByKey("config", buildconfigdiv())
-
-def getbinerrcallback(err):
-    print("get bin failed with",err)
-    loadlocal()
-
 srcdiv = Div()
 schemajson = None
 ######################################################
 
 ######################################################
 # client functions
+def showsrc():
+    srcjsoncontent = JSON.stringify(serializeconfig(), None, 2)
+    srcdiv.html("<pre>" + srcjsoncontent + "</pre>")
+    maintabpane.selectByKey("src")
+
+def serializeconfig():
+    obj = {
+        "config": {},
+        "configschema": configschema.toobj()
+    }
+    return obj
+
+def deserializeconfig(obj):
+    global configschema
+    schemaobj = {}
+    if "configschema" in obj:
+        schemaobj = obj["configschema"]    
+    configschema = schemafromobj(schemaobj)
+
+def buildconfigdiv():    
+    global configschema
+    configdiv = Div().aa([
+        Button("Serialize", serializecallback).fs(24),
+        Button("Show source", showsrc).fs(16),
+        configschema
+    ])
+    return configdiv
+
+def getbincallback(content):    
+    obj = JSON.parse(content)    
+    deserializeconfig(obj)
+    maintabpane.setTabElementByKey("config", buildconfigdiv())
+
+def getbinerrcallback(err):
+    print("get bin failed with",err)
+    loadlocal()
+
 def loadlocal():
     document.location.href="/?id=local"
 
@@ -80,8 +98,7 @@ def serializeputjsonbincallback(json, content):
         else:
             #store binid in binid.txt
             socket.emit('sioreq', {"kind":"storebinid", "data": binid})
-        href = window.location.protocol + "//" + window.location.host + "/?id=" + binid
-        print("href", href)
+        href = window.location.protocol + "//" + window.location.host + "/?id=" + binid        
         document.location.href = href
     except:
         print("there was an error parsing json", content)
@@ -89,8 +106,8 @@ def serializeputjsonbincallback(json, content):
 
 def serializecallback():
     global id, maintabpane, configschema, schemajson        
-    schemajson = JSON.stringify(configschema.toobj(), None, 2)        
-    putjsonbin(schemajson, serializeputjsonbincallback, id)
+    json = JSON.stringify(serializeconfig(), None, 2)        
+    putjsonbin(json, serializeputjsonbincallback, id)
 ######################################################
 
 ######################################################
@@ -107,7 +124,8 @@ def build():
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", engineconsole),
-            Tab("config", "Config", buildconfigdiv()),            
+            Tab("config", "Config", buildconfigdiv()),
+            Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
         ], "config"
     )    
