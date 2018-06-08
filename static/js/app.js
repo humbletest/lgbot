@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-08 16:33:58
+// Transcrypt'ed from Python, 2018-06-08 19:07:50
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2868,7 +2868,7 @@ function app () {
 				self.a (self.container).ac ('labeledlinkedcheckbox');
 			});}
 		});
-		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'removechild', 'display': 'Remove child', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
+		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'removechild', 'display': 'Remove child', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self) {
@@ -2938,6 +2938,11 @@ function app () {
 			});},
 			get enablecallback () {return __get__ (this, function (self) {
 				self.enabled = self.enablecheckbox.getchecked ();
+				if (!(self.childparent === null)) {
+					if (self.childparent.writepreference.radio) {
+						self.childparent.setradio (self);
+					}
+				}
 			});},
 			get setenabled () {return __get__ (this, function (self, enabled) {
 				self.enabled = enabled;
@@ -3016,7 +3021,7 @@ function app () {
 				self.element = Div ().ac ('schemaitem');
 				self.schemacontainer = Div ().ac ('schemacontainer');
 				self.enablebox = Div ().ac ('schemaenablebox');
-				self.enablecheckbox = CheckBox (self.enabled).ae ('change', self.enablecallback);
+				self.enablecheckbox = CheckBox (self.enabled).ac ('schemaenablecheckbox').ae ('change', self.enablecallback);
 				self.enablecheckbox.able (self.writepreference.editenabled);
 				self.enablebox.a (self.enablecheckbox);
 				self.helpbox = Div ().aac (list (['schemahelpbox', 'noselect'])).ae ('mousedown', self.helpboxclicked).html ('?');
@@ -3084,11 +3089,31 @@ function app () {
 				self.linkedtextinput.able (self.writepreference.editvalue);
 				self.element.ae ('mousedown', self.divclicked);
 				self.element.aa (list ([self.linkedtextinput]));
-				self.writepreference.setdisabledlist (list (['addchild', 'removechild', 'childsopened']));
+				self.writepreference.setdisabledlist (list (['addchild', 'removechild', 'childsopened', 'radio']));
 			});}
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
 			__module__: __name__,
+			get setradio () {return __get__ (this, function (self, item) {
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					var childeq = false;
+					var enablecheckbox = null;
+					if (child.kind == 'nameditem') {
+						var childeq = child.item == item;
+						var enablecheckbox = child.item.enablecheckbox;
+					}
+					else {
+						var childeq = child == item;
+						var enablecheckbox = child.enablecheckbox;
+					}
+					child.enabled = childeq;
+					if (!(enablecheckbox === null)) {
+						enablecheckbox.setchecked (childeq);
+					}
+				}
+			});},
 			get buildchilds () {return __get__ (this, function (self) {
 				self.childshook.x ();
 				var __iterable0__ = self.childs;
@@ -3198,9 +3223,7 @@ function app () {
 				}
 			});},
 			get writepreferencechangedtask () {return __get__ (this, function (self) {
-				self.opened = true;
 				self.openchilds ();
-				self.opened = !(self.writepreference.childsopened);
 				self.openchilds ();
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
