@@ -8,6 +8,7 @@ SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"editenabled","display":"Edit enabled","default":True},
     {"key":"editkey","display":"Edit key","default":True},
     {"key":"editvalue","display":"Edit value","default":True},        
+    {"key":"radio","display":"Radio","default":False},        
     {"key":"showhelpashtml","display":"Show help as HTML","default":True}
 ]
 
@@ -76,6 +77,9 @@ class SchemaItem(e):
 
     def enablecallback(self):        
         self.enabled = self.enablecheckbox.getchecked()
+        if not ( self.childparent is None ):
+            if self.childparent.writepreference.radio:
+                self.childparent.setradio(self)
 
     def setenabled(self, enabled):
         self.enabled = enabled
@@ -145,7 +149,7 @@ class SchemaItem(e):
         self.element = Div().ac("schemaitem")
         self.schemacontainer = Div().ac("schemacontainer")
         self.enablebox = Div().ac("schemaenablebox")
-        self.enablecheckbox = CheckBox(self.enabled).ae("change", self.enablecallback)
+        self.enablecheckbox = CheckBox(self.enabled).ac("schemaenablecheckbox").ae("change", self.enablecallback)
         self.enablecheckbox.able(self.writepreference.editenabled)
         self.enablebox.a(self.enablecheckbox)                
         self.helpbox = Div().aac(["schemahelpbox","noselect"]).ae("mousedown", self.helpboxclicked).html("?")        
@@ -215,9 +219,23 @@ class SchemaScalar(SchemaItem):
         self.linkedtextinput.able(self.writepreference.editvalue)        
         self.element.ae("mousedown", self.divclicked)
         self.element.aa([self.linkedtextinput])
-        self.writepreference.setdisabledlist(["addchild","removechild","childsopened"])
+        self.writepreference.setdisabledlist(["addchild","removechild","childsopened","radio"])
 
 class SchemaCollection(SchemaItem):
+    def setradio(self, item):
+        for child in self.childs:
+            childeq = False
+            enablecheckbox = None
+            if child.kind == "nameditem":
+                childeq = ( child.item == item )
+                enablecheckbox = child.item.enablecheckbox
+            else:
+                childeq = ( child == item )
+                enablecheckbox = child.enablecheckbox
+            child.enabled = childeq
+            if not ( enablecheckbox is None ):
+                enablecheckbox.setchecked(childeq)
+
     def buildchilds(self):
         self.childshook.x()
         for child in self.childs:
@@ -307,10 +325,8 @@ class SchemaCollection(SchemaItem):
             self.openbutton.ac("schemacollectionopenbuttondone")
             self.buildchilds()
 
-    def writepreferencechangedtask(self):
-        self.opened = True
-        self.openchilds()
-        self.opened = not self.writepreference.childsopened
+    def writepreferencechangedtask(self):        
+        self.openchilds()        
         self.openchilds()        
 
     def __init__(self, args):

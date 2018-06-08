@@ -96,6 +96,10 @@
     width: var(--schemaitemheight); height: var(--schemaitemheight); background-color: #bbb; margin-right: 2px;
 }
 
+.schemaenablecheckbox {
+    width: calc( var(--schemaitemheight) / 2 ); height: calc( var(--schemaitemheight) / 2 );
+}
+
 .schemahelpbox {    
     display: flex; justify-content: space-around; align-items: center;
     width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
@@ -116,7 +120,7 @@
 
 .schemasettingsdiv {
     margin-left: calc( var(--schemawidth) - var(--schemasettingswidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
-    width: var(--schemasettingswidth); min-height: 100px;
+    width: var(--schemasettingswidth);
     background-color: #ace; padding: var(--schemasettingspadding);
 }
 
