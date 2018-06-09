@@ -240,3 +240,11 @@
 .defaultlinkedtextinputtext {
     font-size: 14px;
 }
+
+.splitpanecontrolpanel {
+    overflow: hidden;
+}
+
+.splitpanecontentdiv {
+    overflow: scroll;
+}

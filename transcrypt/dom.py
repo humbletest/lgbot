@@ -1,5 +1,7 @@
 ######################################################
 # dom
+SCROLL_BAR_WIDTH = getScrollBarWidth()
+
 def ce(tag):
     return document.createElement(tag)
 

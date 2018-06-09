@@ -58,12 +58,16 @@ def deserializeconfig(obj):
 
 def buildconfigdiv():    
     global configschema
-    configdiv = Div().aa([
+    configsplitpane = SplitPane({
+        "controlheight": 50
+    })
+    controlpanel = Div().aa([
         Button("Serialize", serializecallback).fs(24),
-        Button("Show source", showsrc).fs(16),
-        configschema
+        Button("Show source", showsrc).fs(16)
     ])
-    return configdiv
+    configsplitpane.controldiv.a(controlpanel)
+    configsplitpane.contentdiv.a(configschema)
+    return configsplitpane
 
 def getbincallback(content):    
     obj = JSON.parse(content)    
@@ -172,4 +176,3 @@ else:
     loadlocal()
 
 startup()
-

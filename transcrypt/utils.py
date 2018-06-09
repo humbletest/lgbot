@@ -1,3 +1,28 @@
+# https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
+def getScrollBarWidth():
+    outer = document.createElement("div")
+    outer.style.visibility = "hidden"
+    outer.style.width = "100px"
+    outer.style.msOverflowStyle = "scrollbar" # needed for WinJS apps
+
+    document.body.appendChild(outer)
+
+    widthNoScroll = outer.offsetWidth
+    # force scrollbars
+    outer.style.overflow = "scroll"
+
+    # add innerdiv
+    inner = document.createElement("div")
+    inner.style.width = "100%"
+    outer.appendChild(inner)       
+
+    widthWithScroll = inner.offsetWidth
+
+    # remove divs
+    outer.parentNode.removeChild(outer)
+
+    return widthNoScroll - widthWithScroll
+
 def randint(range):
     return int(Math.random()*range)
 
