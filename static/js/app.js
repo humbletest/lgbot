@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-09 16:23:00
+// Transcrypt'ed from Python, 2018-06-09 19:15:43
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,21 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var getScrollBarWidth = function () {
+			var outer = document.createElement ('div');
+			outer.style.visibility = 'hidden';
+			outer.style.width = '100px';
+			outer.style.msOverflowStyle = 'scrollbar';
+			document.body.appendChild (outer);
+			var widthNoScroll = outer.offsetWidth;
+			outer.style.overflow = 'scroll';
+			var inner = document.createElement ('div');
+			inner.style.width = '100%';
+			outer.appendChild (inner);
+			var widthWithScroll = inner.offsetWidth;
+			outer.parentNode.removeChild (outer);
+			return widthNoScroll - widthWithScroll;
+		};
 		var randint = function (range) {
 			return int (Math.random () * range);
 		};
@@ -2307,6 +2322,7 @@ function app () {
 				return errcallback (err);
 			}));
 		};
+		var SCROLL_BAR_WIDTH = getScrollBarWidth ();
 		var ce = function (tag) {
 			return document.createElement (tag);
 		};
@@ -2704,6 +2720,20 @@ function app () {
 				}
 				return seltab;
 			});},
+			get innercontentheight () {return __get__ (this, function (self) {
+				return self.contentheight - SCROLL_BAR_WIDTH;
+			});},
+			get innercontentwidth () {return __get__ (this, function (self) {
+				return self.width - SCROLL_BAR_WIDTH;
+			});},
+			get resizecontent () {return __get__ (this, function (self, element) {
+				try {
+					element.resize (self.innercontentwidth (), self.innercontentheight ());
+				}
+				catch (__except0__) {
+					// pass;
+				}
+			});},
 			get setTabElementByKey () {return __get__ (this, function (self, key, tabelement, show) {
 				if (typeof show == 'undefined' || (show != null && show .hasOwnProperty ("__kwargtrans__"))) {;
 					var show = true;
@@ -2716,6 +2746,7 @@ function app () {
 				if (show) {
 					self.contentdiv.x ().a (tab.element);
 				}
+				self.resizecontent (tab.element);
 				return self;
 			});},
 			get selectByKey () {return __get__ (this, function (self, key) {
@@ -2723,7 +2754,9 @@ function app () {
 				if (self.seltab == null) {
 					return self;
 				}
-				self.contentdiv.x ().a (self.seltab.element);
+				var element = self.seltab.element;
+				self.contentdiv.x ().a (element);
+				self.resizecontent (element);
 				return self;
 			});}
 		});
@@ -2890,6 +2923,34 @@ function app () {
 				self.container.aa (list ([self.ldiv, self.lcb]));
 				patchclasses (self, args);
 				self.a (self.container).ac ('labeledlinkedcheckbox');
+			});}
+		});
+		var SplitPane = __class__ ('SplitPane', [e], {
+			__module__: __name__,
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.width = width;
+				self.height = height;
+				self.controldiv.w (self.width).h (self.controlheight);
+				var cdh = self.height - self.controlheight;
+				if (cdh < self.mincontentheight) {
+					var cdh = self.mincontentheight;
+				}
+				self.contentdiv.w (self.width).h (cdh);
+				self.w (self.width).h (self.height);
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (SplitPane, '__init__') (self, 'div');
+				self.width = args.py_get ('width', 600);
+				self.height = args.py_get ('height', 400);
+				self.controlheight = args.py_get ('controlheight', 100);
+				self.mincontentheight = args.py_get ('mincontentheight', 100);
+				self.controldiv = Div ().ac ('splitpanecontrolpanel');
+				self.contentdiv = Div ().ac ('splitpanecontentdiv');
+				self.resize (self.width, self.height);
+				self.aa (list ([self.controldiv, self.contentdiv]));
 			});}
 		});
 		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
@@ -3465,8 +3526,11 @@ function app () {
 			configschema = schemafromobj (schemaobj);
 		};
 		var buildconfigdiv = function () {
-			var configdiv = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Show source', showsrc).fs (16), configschema]));
-			return configdiv;
+			var configsplitpane = SplitPane (dict ({'controlheight': 50}));
+			var controlpanel = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Show source', showsrc).fs (16)]));
+			configsplitpane.controldiv.a (controlpanel);
+			configsplitpane.contentdiv.a (configschema);
+			return configsplitpane;
 		};
 		var getbincallback = function (content) {
 			var obj = JSON.parse (content);
@@ -3573,6 +3637,7 @@ function app () {
 			__all__.Option = Option;
 			__all__.RawTextInput = RawTextInput;
 			__all__.SCHEMA_WRITE_PREFERENCE_DEFAULTS = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
+			__all__.SCROLL_BAR_WIDTH = SCROLL_BAR_WIDTH;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.SchemaCollection = SchemaCollection;
 			__all__.SchemaDict = SchemaDict;
@@ -3582,6 +3647,7 @@ function app () {
 			__all__.SchemaWritePreference = SchemaWritePreference;
 			__all__.Select = Select;
 			__all__.Span = Span;
+			__all__.SplitPane = SplitPane;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
 			__all__.TextArea = TextArea;
@@ -3600,6 +3666,7 @@ function app () {
 			__all__.e = e;
 			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
+			__all__.getScrollBarWidth = getScrollBarWidth;
 			__all__.getbincallback = getbincallback;
 			__all__.getbinerrcallback = getbinerrcallback;
 			__all__.getfromobj = getfromobj;

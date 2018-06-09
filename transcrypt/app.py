@@ -1,3 +1,28 @@
+# https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
+def getScrollBarWidth():
+    outer = document.createElement("div")
+    outer.style.visibility = "hidden"
+    outer.style.width = "100px"
+    outer.style.msOverflowStyle = "scrollbar" # needed for WinJS apps
+
+    document.body.appendChild(outer)
+
+    widthNoScroll = outer.offsetWidth
+    # force scrollbars
+    outer.style.overflow = "scroll"
+
+    # add innerdiv
+    inner = document.createElement("div")
+    inner.style.width = "100%"
+    outer.appendChild(inner)       
+
+    widthWithScroll = inner.offsetWidth
+
+    # remove divs
+    outer.parentNode.removeChild(outer)
+
+    return widthNoScroll - widthWithScroll
+
 def randint(range):
     return int(Math.random()*range)
 
@@ -105,6 +130,8 @@ def getjsonbin(id, callback, errcallback, version = "latest"):
 
 __pragma__("nojsiter")######################################################
 # dom
+SCROLL_BAR_WIDTH = getScrollBarWidth()
+
 def ce(tag):
     return document.createElement(tag)
 
@@ -458,20 +485,35 @@ class TabPane(e):
                 seltab = tab        
         return seltab
 
+    def innercontentheight(self):
+        return self.contentheight - SCROLL_BAR_WIDTH
+
+    def innercontentwidth(self):
+        return self.width - SCROLL_BAR_WIDTH
+
+    def resizecontent(self, element):
+        try:
+            element.resize(self.innercontentwidth(), self.innercontentheight())
+        except:
+            pass
+
     def setTabElementByKey(self, key, tabelement, show = True):
         tab = self.getTabByKey(key)
         if tab == None:
             return self
         tab.element = tabelement        
         if show:
-            self.contentdiv.x().a(tab.element)    
+            self.contentdiv.x().a(tab.element)
+        self.resizecontent(tab.element)
         return self
 
     def selectByKey(self, key):
         self.seltab = self.getTabByKey(key, True)
         if self.seltab == None:
             return self
-        self.contentdiv.x().a(self.seltab.element)
+        element = self.seltab.element
+        self.contentdiv.x().a(element)
+        self.resizecontent(element)       
         return self
 
 class ComboOption:
@@ -604,6 +646,28 @@ class LabeledLinkedCheckBox(e):
         self.container.aa([self.ldiv, self.lcb])                
         patchclasses(self, args)
         self.a(self.container).ac("labeledlinkedcheckbox")
+
+class SplitPane(e):
+    def resize(self, width, height):
+        self.width = width
+        self.height = height
+        self.controldiv.w(self.width).h(self.controlheight)
+        cdh = self.height - self.controlheight
+        if cdh < self.mincontentheight:
+            cdh = self.mincontentheight
+        self.contentdiv.w(self.width).h(cdh)
+        self.w(self.width).h(self.height)
+
+    def __init__(self, args = {}):
+        super().__init__("div")
+        self.width = args.get("width", 600)
+        self.height = args.get("height", 400)
+        self.controlheight = args.get("controlheight", 100)
+        self.mincontentheight = args.get("mincontentheight", 100)
+        self.controldiv = Div().ac("splitpanecontrolpanel")
+        self.contentdiv = Div().ac("splitpanecontentdiv")
+        self.resize(self.width, self.height)        
+        self.aa([self.controldiv, self.contentdiv])
 
 ######################################################
 
@@ -1138,12 +1202,16 @@ def deserializeconfig(obj):
 
 def buildconfigdiv():    
     global configschema
-    configdiv = Div().aa([
+    configsplitpane = SplitPane({
+        "controlheight": 50
+    })
+    controlpanel = Div().aa([
         Button("Serialize", serializecallback).fs(24),
-        Button("Show source", showsrc).fs(16),
-        configschema
+        Button("Show source", showsrc).fs(16)
     ])
-    return configdiv
+    configsplitpane.controldiv.a(controlpanel)
+    configsplitpane.contentdiv.a(configschema)
+    return configsplitpane
 
 def getbincallback(content):    
     obj = JSON.parse(content)    
@@ -1252,4 +1320,3 @@ else:
     loadlocal()
 
 startup()
-
