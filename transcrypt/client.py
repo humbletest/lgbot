@@ -31,7 +31,7 @@ maintabpane = None
 engineconsole = None
 configschema = SchemaDict({})
 id = None
-srcdiv = Div()
+srcdiv = Div().ms().fs(20)
 schemajson = None
 ######################################################
 
@@ -44,7 +44,7 @@ def showsrc():
 
 def serializeconfig():
     obj = {
-        "config": {},
+        "config": configschema.topureobj(),
         "configschema": configschema.toobj()
     }
     return obj

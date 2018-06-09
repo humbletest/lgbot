@@ -13,6 +13,11 @@ class e:
     def __init__(self, tag):
         self.e = ce(tag)
 
+    # monospace
+    def ms(self):
+        self.e.style.fontFamily = "monospace"
+        return self
+
     # append element
     def a(self, e):
         self.e.appendChild(e.e)

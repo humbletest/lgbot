@@ -179,6 +179,7 @@
 
 .schemascalarrawtextinput {
     width: calc( var(--schemawidth) - 80px ); font-size: 22px; padding: 2px; padding-left: 5px;
+    font-family: monospace;
 }
 
 .schemacreate {
@@ -188,6 +189,7 @@
 
 .namedschemaitemrawtextinput {
     font-size: 22px; padding: 2px; padding-left: 5px; width: calc( var(--schemanamewidth) - 40px );
+    font-family: monospace;
 }
 
 .schemacollectionopenbutton {

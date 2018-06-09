@@ -3,7 +3,7 @@
 
 SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"addchild","display":"Add child","default":True},
-    {"key":"removechild","display":"Remove child","default":True},
+    {"key":"remove","display":"Remove","default":True},
     {"key":"childsopened","display":"Childs opened","default":False},
     {"key":"editenabled","display":"Edit enabled","default":True},
     {"key":"editkey","display":"Edit key","default":True},
@@ -75,6 +75,10 @@ class SchemaItem(e):
     def toobj(self):
         return self.baseobj()
 
+    def topureobj(self):
+        pureobj = {}
+        return pureobj
+
     def enablecallback(self):        
         self.enabled = self.enablecheckbox.getchecked()
         if not ( self.childparent is None ):
@@ -130,7 +134,7 @@ class SchemaItem(e):
 
     def setchildparent(self, childparent):
         self.childparent = childparent
-        if ( not ( self.childparent is None ) ) and self.writepreference.removechild:
+        if ( not ( self.childparent is None ) ) and self.writepreference.remove:
             self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.settingsbox, self.removebox])
         else:
             self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.settingsbox])
@@ -183,7 +187,7 @@ class NamedSchemaItem(e):
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
-        self.key = args.get("key", "#" + str(__new__(Date()).getTime()))
+        self.key = args.get("key", uid())
         self.item = args.get("item", SchemaItem(args))        
         self.keychangedcallback = args.get("keychangedcallback", None)
         self.item.parent = self
@@ -205,13 +209,17 @@ class SchemaScalar(SchemaItem):
         obj["value"] = self.value
         return obj
 
+    def topureobj(self):
+        obj = self.value
+        return obj
+
     def writepreferencechangedtask(self):
         self.linkedtextinput.able(self.writepreference.editvalue)        
 
     def __init__(self, args):
         super().__init__(args)
         self.kind = "scalar"        
-        self.value = args.get("value", "bar")        
+        self.value = args.get("value", randscalarvalue(2, 8))
         self.element.ac("schemascalar")
         args["keycallback"] = self.textchangedcallback
         self.linkedtextinput = LinkedTextInput(self, "value", {"textclass":"schemascalarrawtextinput"})
@@ -219,9 +227,39 @@ class SchemaScalar(SchemaItem):
         self.linkedtextinput.able(self.writepreference.editvalue)        
         self.element.ae("mousedown", self.divclicked)
         self.element.aa([self.linkedtextinput])
-        self.writepreference.setdisabledlist(["addchild","removechild","childsopened","radio"])
+        self.writepreference.setdisabledlist(["addchild","remove","childsopened","radio"])
 
 class SchemaCollection(SchemaItem):
+    def topureobj(self):
+        pureobj = {}
+        if self.writepreference.radio:
+            if self.kind == "dict":
+                pureobj = ["", {}]
+                for nameditem in self.childs:
+                    key = nameditem.key
+                    item = nameditem.item
+                    if item.enabled:
+                        pureobj = [key, item.topureobj()]
+                        break
+            elif self.kind == "list":                
+                for item in self.childs:
+                    if item.enabled:
+                        pureobj = item.topureobj()
+                        break
+        else:
+            if self.kind == "dict":
+                for nameditem in self.childs:
+                    key = nameditem.key
+                    item = nameditem.item
+                    if item.enabled:
+                        pureobj[key] = item.topureobj()
+            elif self.kind == "list":
+                pureobj = []
+                for item in self.childs:
+                    if item.enabled:
+                        pureobj.append(item.topureobj())
+        return pureobj
+
     def setradio(self, item):
         for child in self.childs:
             childitem = child

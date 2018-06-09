@@ -1,3 +1,20 @@
+def randint(range):
+    return int(Math.random()*range)
+
+def randscalarvalue(baselen, pluslen):
+    len = baselen + randint(pluslen)
+    buff = ""
+    for i in range(len):
+        if (i % 2) == 1:        
+            buff += ["a", "e", "i", "o", "u"][randint(5)]
+        else:
+            buff += ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z"][randint(21)]
+    return buff
+
+def uid():
+    uid = randscalarvalue(8, 0)
+    return uid
+
 def getfromobj(obj, key, default):
     if key in obj:
         return obj[key]    
