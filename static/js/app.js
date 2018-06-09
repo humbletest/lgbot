@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-08 19:26:48
+// Transcrypt'ed from Python, 2018-06-09 16:23:00
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,26 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var randint = function (range) {
+			return int (Math.random () * range);
+		};
+		var randscalarvalue = function (baselen, pluslen) {
+			var len = baselen + randint (pluslen);
+			var buff = '';
+			for (var i = 0; i < len; i++) {
+				if (__mod__ (i, 2) == 1) {
+					buff += list (['a', 'e', 'i', 'o', 'u']) [randint (5)];
+				}
+				else {
+					buff += list (['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z']) [randint (21)];
+				}
+			}
+			return buff;
+		};
+		var uid = function () {
+			var uid = randscalarvalue (8, 0);
+			return uid;
+		};
 		var getfromobj = function (obj, key, py_default) {
 			if (__in__ (key, obj)) {
 				return obj [key];
@@ -2300,6 +2320,10 @@ function app () {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, tag) {
 				self.e = ce (tag);
+			});},
+			get ms () {return __get__ (this, function (self) {
+				self.e.style.fontFamily = 'monospace';
+				return self;
 			});},
 			get a () {return __get__ (this, function (self, e) {
 				self.e.appendChild (e.e);
@@ -2868,7 +2892,7 @@ function app () {
 				self.a (self.container).ac ('labeledlinkedcheckbox');
 			});}
 		});
-		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'removechild', 'display': 'Remove child', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
+		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self) {
@@ -2936,6 +2960,10 @@ function app () {
 			get toobj () {return __get__ (this, function (self) {
 				return self.baseobj ();
 			});},
+			get topureobj () {return __get__ (this, function (self) {
+				var pureobj = dict ({});
+				return pureobj;
+			});},
 			get enablecallback () {return __get__ (this, function (self) {
 				self.enabled = self.enablecheckbox.getchecked ();
 				if (!(self.childparent === null)) {
@@ -3000,7 +3028,7 @@ function app () {
 			});},
 			get setchildparent () {return __get__ (this, function (self, childparent) {
 				self.childparent = childparent;
-				if (!(self.childparent === null) && self.writepreference.removechild) {
+				if (!(self.childparent === null) && self.writepreference.remove) {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox, self.removebox]));
 				}
 				else {
@@ -3054,7 +3082,7 @@ function app () {
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
 				self.kind = 'nameditem';
-				self.key = args.py_get ('key', '#' + str (new Date ().getTime ()));
+				self.key = args.py_get ('key', uid ());
 				self.item = args.py_get ('item', SchemaItem (args));
 				self.keychangedcallback = args.py_get ('keychangedcallback', null);
 				self.item.parent = self;
@@ -3075,13 +3103,17 @@ function app () {
 				obj ['value'] = self.value;
 				return obj;
 			});},
+			get topureobj () {return __get__ (this, function (self) {
+				var obj = self.value;
+				return obj;
+			});},
 			get writepreferencechangedtask () {return __get__ (this, function (self) {
 				self.linkedtextinput.able (self.writepreference.editvalue);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
 				self.kind = 'scalar';
-				self.value = args.py_get ('value', 'bar');
+				self.value = args.py_get ('value', randscalarvalue (2, 8));
 				self.element.ac ('schemascalar');
 				args ['keycallback'] = self.textchangedcallback;
 				self.linkedtextinput = LinkedTextInput (self, 'value', dict ({'textclass': 'schemascalarrawtextinput'}));
@@ -3089,11 +3121,61 @@ function app () {
 				self.linkedtextinput.able (self.writepreference.editvalue);
 				self.element.ae ('mousedown', self.divclicked);
 				self.element.aa (list ([self.linkedtextinput]));
-				self.writepreference.setdisabledlist (list (['addchild', 'removechild', 'childsopened', 'radio']));
+				self.writepreference.setdisabledlist (list (['addchild', 'remove', 'childsopened', 'radio']));
 			});}
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
 			__module__: __name__,
+			get topureobj () {return __get__ (this, function (self) {
+				var pureobj = dict ({});
+				if (self.writepreference.radio) {
+					if (self.kind == 'dict') {
+						var pureobj = list (['', dict ({})]);
+						var __iterable0__ = self.childs;
+						for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+							var nameditem = __iterable0__ [__index0__];
+							var key = nameditem.key;
+							var item = nameditem.item;
+							if (item.enabled) {
+								var pureobj = list ([key, item.topureobj ()]);
+								break;
+							}
+						}
+					}
+					else if (self.kind == 'list') {
+						var __iterable0__ = self.childs;
+						for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+							var item = __iterable0__ [__index0__];
+							if (item.enabled) {
+								var pureobj = item.topureobj ();
+								break;
+							}
+						}
+					}
+				}
+				else if (self.kind == 'dict') {
+					var __iterable0__ = self.childs;
+					for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+						var nameditem = __iterable0__ [__index0__];
+						var key = nameditem.key;
+						var item = nameditem.item;
+						if (item.enabled) {
+							pureobj [key] = item.topureobj ();
+						}
+					}
+				}
+				else if (self.kind == 'list') {
+					var pureobj = list ([]);
+					var __iterable0__ = self.childs;
+					for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+						var item = __iterable0__ [__index0__];
+						if (item.enabled) {
+							pureobj.append (item.topureobj ());
+						}
+					}
+				}
+				return pureobj;
+			});},
 			get setradio () {return __get__ (this, function (self, item) {
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
@@ -3364,7 +3446,7 @@ function app () {
 		var engineconsole = null;
 		var configschema = SchemaDict (dict ({}));
 		var id = null;
-		var srcdiv = Div ();
+		var srcdiv = Div ().ms ().fs (20);
 		var schemajson = null;
 		var showsrc = function () {
 			var srcjsoncontent = JSON.stringify (serializeconfig (), null, 2);
@@ -3372,7 +3454,7 @@ function app () {
 			maintabpane.selectByKey ('src');
 		};
 		var serializeconfig = function () {
-			var obj = dict ({'config': dict ({}), 'configschema': configschema.toobj ()});
+			var obj = dict ({'config': configschema.topureobj (), 'configschema': configschema.toobj ()});
 			return obj;
 		};
 		var deserializeconfig = function (obj) {
@@ -3538,6 +3620,8 @@ function app () {
 			__all__.putjsonbinfailed = putjsonbinfailed;
 			__all__.queryparams = queryparams;
 			__all__.queryparamsstring = queryparamsstring;
+			__all__.randint = randint;
+			__all__.randscalarvalue = randscalarvalue;
 			__all__.schemafromobj = schemafromobj;
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
@@ -3548,6 +3632,7 @@ function app () {
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
 			__all__.startup = startup;
+			__all__.uid = uid;
 			__all__.windowresizehandler = windowresizehandler;
 			__all__.ws_scheme = ws_scheme;
 		__pragma__ ('</all>')
