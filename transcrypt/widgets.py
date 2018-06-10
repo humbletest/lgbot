@@ -365,5 +365,15 @@ class SplitPane(e):
         self.resize(self.width, self.height)        
         self.aa([self.controldiv, self.contentdiv])
 
+class ProcessConsole(SplitPane):
+    def __init__(self, args = {}):
+        args["controlheight"] = 80
+        super().__init__(args)
+        self.cmdinpcallback = args.get("cmdinpcallback", None)
+        self.cmdinp = TextInputWithButton({"submitcallback": self.cmdinpcallback})
+        self.controldiv.a(self.cmdinp)
+        self.log = Log({})
+        self.setcontent(self.log)
+
 ######################################################
 

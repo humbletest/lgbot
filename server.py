@@ -92,11 +92,22 @@ class socket_handler:
                         data = json["data"]
                         rjson["rcvd"] = data
                         if data == "r":
-                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/r")
+                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/startengine")
                         elif data == "s":
-                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/s")
+                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/stopengine")
                         else:
-                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/" + quote(data))
+                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/e" + quote(data))
+                if kind == "botcmd":
+                    rjson["kind"] = "ackbotcmd"
+                    if "data" in json:
+                        data = json["data"]
+                        rjson["rcvd"] = data
+                        if data == "r":
+                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/startbot")
+                        elif data == "s":
+                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/stopbot")
+                        else:
+                            rjson["status"] = geturl(SIMPLE_SERVER_URL + "/b" + quote(data))
                 elif kind == "storebinid":
                     binid = json["data"]
                     write_string_to_file("binid.txt", binid)

@@ -16,31 +16,60 @@ FLASK_SERVER_URL = os.environ["FLASK_SERVER_URL"]
 SIMPLE_ENGINE_PATH = os.path.join("engines", os.environ["SIMPLE_ENGINE_NAME"])
 PROCESS_READ_CALLBACK_URL = FLASK_SERVER_URL + "/read"
 
-bp = None
+engineprocess = None
+botprocess = None
 
 def read_line_callback(sline):
-    print(sline)
+    print("engine:",sline)
     postjson(PROCESS_READ_CALLBACK_URL, {"line": sline})
 
+def bot_read_line_callback(sline):
+    print("bot:",sline)
+    postjson(PROCESS_READ_CALLBACK_URL, {"botline": sline})
+
 def startengine():
-    global bp    
-    if bp is None:
-        bp = process.PopenProcess(SIMPLE_ENGINE_PATH, read_line_callback)
+    global engineprocess    
+    if engineprocess is None:
+        engineprocess = process.PopenProcess(SIMPLE_ENGINE_PATH, read_line_callback)
         print("engine started")
         return("starting engine")        
     else:        
         return("engine already running")
 
+def startbot():
+    global botprocess    
+    if botprocess is None:
+        botprocess = process.PopenProcess(
+            "python",
+            bot_read_line_callback,
+            proc_args = ["-u", "bot.py"],
+            ignore_cwd = True
+        )
+        print("bot started")
+        return("starting bot")        
+    else:        
+        return("bot already running")
+
 def stopengine():
-    global bp
-    if bp is None:        
+    global engineprocess
+    if engineprocess is None:        
         return("engine already stopped")        
     else:
-        #bp.send_line("quit")
-        bp.kill()
-        bp = None    
+        #engineprocess.send_line("quit")
+        engineprocess.kill()
+        engineprocess = None    
         print("engine stopped")
         return("stopping engine")
+
+def stopbot():
+    global botprocess
+    if botprocess is None:        
+        return("bot already stopped")        
+    else:        
+        botprocess.kill()
+        botprocess = None    
+        print("bot stopped")
+        return("stopping bot")
 
 #############################################
  
@@ -53,22 +82,36 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
         message = "nop"
 
-        if self.path == "/r":
+        if self.path == "/startengine":
             message = startengine()            
 
-        elif self.path == "/s":
+        elif self.path == "/startbot":
+            message = startbot()
+
+        elif self.path == "/stopengine":
             message = stopengine()
 
-        else:
-            if not ( bp is None ):
-                if len(self.path) > 1:
-                    line = unquote( self.path[1:] )
-                    bp.send_line(line)
-                    message = "sent: " + line
-                else:
-                    message = "empty command"
+        elif self.path == "/stopbot":
+            message = stopbot()
+
+        else:            
+            if len(self.path) > 2:
+                dest = self.path[1]
+                line = unquote( self.path[2:] )
+                if dest == "e":
+                    if not ( engineprocess is None ):
+                        engineprocess.send_line(line)
+                        message = "sent engine: " + line
+                    else:
+                        message = "engine missing"
+                elif dest == "b":
+                    if not ( botprocess is None ):
+                        botprocess.send_line(line)
+                        message = "sent bot: " + line
+                    else:
+                        message = "bot missing"
             else:
-                message = "engine missing"
+                message = "empty command"
 
         self.wfile.write(bytes(message, "utf8"))
 
