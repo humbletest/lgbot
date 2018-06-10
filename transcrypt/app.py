@@ -714,6 +714,16 @@ class SplitPane(e):
         self.resize(self.width, self.height)        
         self.aa([self.controldiv, self.contentdiv])
 
+class ProcessConsole(SplitPane):
+    def __init__(self, args = {}):
+        args["controlheight"] = 80
+        super().__init__(args)
+        self.cmdinpcallback = args.get("cmdinpcallback", None)
+        self.cmdinp = TextInputWithButton({"submitcallback": self.cmdinpcallback})
+        self.controldiv.a(self.cmdinp)
+        self.log = Log({})
+        self.setcontent(self.log)
+
 ######################################################
 
 ######################################################
@@ -1214,8 +1224,10 @@ if len(queryparamsstring) > 1:
 ######################################################
 # app globals
 socket = None
-cmdinp = None
-mainlog = None
+processconsoles = {
+    "engine": None,
+    "bot": None
+}
 maintabpane = None
 engineconsole = None
 configschema = SchemaDict({})
@@ -1269,12 +1281,15 @@ def getbinerrcallback(err):
 def loadlocal():
     document.location.href="/?id=local"
 
-def docwln(content):    
+def log(content, dest = "engine"):    
     li = LogItem("<pre>" + content + "</pre>")
-    mainlog.log(li)    
+    processconsoles[dest].log.log(li)
 
 def cmdinpcallback(cmd):
     socket.emit('sioreq', {"kind":"cmd", "data": cmd})
+
+def botcmdinpcallback(cmd):
+    socket.emit('sioreq', {"kind":"botcmd", "data": cmd})
 
 def serializeputjsonbincallback(json, content):
     #print(json);return;
@@ -1305,22 +1320,21 @@ def serializecallback():
 ######################################################
 # app
 def build():
-    global cmdinp, mainlog, maintabpane, engineconsole
+    global processconsoles, maintabpane, engineconsole
 
-    cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
-    mainlog = Log({})
-
-    engineconsole = configsplitpane = SplitPane({
-        "controlheight": 80
+    processconsoles["engine"] = ProcessConsole({
+        "cmdinpcallback": cmdinpcallback
     })
 
-    engineconsole.controldiv.a(cmdinp)
-    engineconsole.setcontent(mainlog)
+    processconsoles["bot"] = ProcessConsole({
+        "cmdinpcallback": botcmdinpcallback
+    })
 
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
         [
-            Tab("engineconsole", "Engine console", engineconsole),
+            Tab("engineconsole", "Engine console", processconsoles["engine"]),
+            Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("config", "Config", buildconfigdiv()),
             Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
@@ -1334,11 +1348,20 @@ def build():
 ######################################################
 # socket handler
 def onconnect():    
-    docwln("socket connected ok")    
+    log("socket connected ok")    
     socket.emit('sioreq', {"data": "socket connected"})
 
 def onevent(json):
-    docwln("socket received event " + JSON.stringify(json, null, 2))    
+    dest = "engine"
+    if "botline" in json:
+        dest = "bot"
+    if "response" in json:
+        response = json["response"]
+        if "kind" in response:
+            kind = response["kind"]
+            if kind == "ackbotcmd":
+                dest = "bot"
+    log("socket received event " + JSON.stringify(json, null, 2), dest)    
 
 def windowresizehandler():
     maintabpane.resize()
@@ -1346,13 +1369,11 @@ def windowresizehandler():
 def startup():
     global socket
 
-    docwln("creating socket for submit url [ " + SUBMIT_URL + " ]")
+    log("creating socket for submit url [ " + SUBMIT_URL + " ]")
 
     socket = io.connect(SUBMIT_URL)
 
-    docwln("socket created ok")
-
-    cmdinp.focus()
+    log("socket created ok")
 
     socket.on('connect', onconnect)
     socket.on('siores', lambda json: onevent(json))

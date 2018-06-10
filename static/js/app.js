@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-10 08:20:01
+// Transcrypt'ed from Python, 2018-06-10 17:19:22
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2998,6 +2998,21 @@ function app () {
 				self.aa (list ([self.controldiv, self.contentdiv]));
 			});}
 		});
+		var ProcessConsole = __class__ ('ProcessConsole', [SplitPane], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				args ['controlheight'] = 80;
+				__super__ (ProcessConsole, '__init__') (self, args);
+				self.cmdinpcallback = args.py_get ('cmdinpcallback', null);
+				self.cmdinp = TextInputWithButton (dict ({'submitcallback': self.cmdinpcallback}));
+				self.controldiv.a (self.cmdinp);
+				self.log = Log (dict ({}));
+				self.setcontent (self.log);
+			});}
+		});
 		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
@@ -3546,8 +3561,7 @@ function app () {
 			}
 		}
 		var socket = null;
-		var cmdinp = null;
-		var mainlog = null;
+		var processconsoles = dict ({'engine': null, 'bot': null});
 		var maintabpane = null;
 		var engineconsole = null;
 		var configschema = SchemaDict (dict ({}));
@@ -3588,12 +3602,18 @@ function app () {
 		var loadlocal = function () {
 			document.location.href = '/?id=local';
 		};
-		var docwln = function (content) {
+		var log = function (content, dest) {
+			if (typeof dest == 'undefined' || (dest != null && dest .hasOwnProperty ("__kwargtrans__"))) {;
+				var dest = 'engine';
+			};
 			var li = LogItem (('<pre>' + content) + '</pre>');
-			mainlog.log (li);
+			processconsoles [dest].log.log (li);
 		};
 		var cmdinpcallback = function (cmd) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
+		};
+		var botcmdinpcallback = function (cmd) {
+			socket.emit ('sioreq', dict ({'kind': 'botcmd', 'data': cmd}));
 		};
 		var serializeputjsonbincallback = function (json, content) {
 			try {
@@ -3624,33 +3644,40 @@ function app () {
 			putjsonbin (json, serializeputjsonbincallback, id);
 		};
 		var build = function () {
-			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
-			mainlog = Log (dict ({}));
-			var __left0__ = SplitPane (dict ({'controlheight': 80}));
-			engineconsole = __left0__;
-			var configsplitpane = __left0__;
-			engineconsole.controldiv.a (cmdinp);
-			engineconsole.setcontent (mainlog);
+			processconsoles ['engine'] = ProcessConsole (dict ({'cmdinpcallback': cmdinpcallback}));
+			processconsoles ['bot'] = ProcessConsole (dict ({'cmdinpcallback': botcmdinpcallback}));
 			maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
 		var onconnect = function () {
-			docwln ('socket connected ok');
+			log ('socket connected ok');
 			socket.emit ('sioreq', dict ({'data': 'socket connected'}));
 		};
 		var onevent = function (json) {
-			docwln ('socket received event ' + JSON.stringify (json, null, 2));
+			var dest = 'engine';
+			if (__in__ ('botline', json)) {
+				var dest = 'bot';
+			}
+			if (__in__ ('response', json)) {
+				var response = json ['response'];
+				if (__in__ ('kind', response)) {
+					var kind = response ['kind'];
+					if (kind == 'ackbotcmd') {
+						var dest = 'bot';
+					}
+				}
+			}
+			log ('socket received event ' + JSON.stringify (json, null, 2), dest);
 		};
 		var windowresizehandler = function () {
 			maintabpane.resize ();
 		};
 		var startup = function () {
-			docwln (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');
+			log (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');
 			socket = io.connect (SUBMIT_URL);
-			docwln ('socket created ok');
-			cmdinp.focus ();
+			log ('socket created ok');
 			socket.on ('connect', onconnect);
 			socket.on ('siores', (function __lambda__ (json) {
 				return onevent (json);
@@ -3683,6 +3710,7 @@ function app () {
 			__all__.LogItem = LogItem;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
+			__all__.ProcessConsole = ProcessConsole;
 			__all__.RawTextInput = RawTextInput;
 			__all__.SCHEMA_WRITE_PREFERENCE_DEFAULTS = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 			__all__.SCROLL_BAR_WIDTH = SCROLL_BAR_WIDTH;
@@ -3703,14 +3731,13 @@ function app () {
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;
+			__all__.botcmdinpcallback = botcmdinpcallback;
 			__all__.build = build;
 			__all__.buildconfigdiv = buildconfigdiv;
 			__all__.ce = ce;
-			__all__.cmdinp = cmdinp;
 			__all__.cmdinpcallback = cmdinpcallback;
 			__all__.configschema = configschema;
 			__all__.deserializeconfig = deserializeconfig;
-			__all__.docwln = docwln;
 			__all__.e = e;
 			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
@@ -3723,7 +3750,7 @@ function app () {
 			__all__.getlocalcontent = getlocalcontent;
 			__all__.id = id;
 			__all__.loadlocal = loadlocal;
-			__all__.mainlog = mainlog;
+			__all__.log = log;
 			__all__.mainpart = mainpart;
 			__all__.mainparts = mainparts;
 			__all__.maintabpane = maintabpane;
@@ -3731,6 +3758,7 @@ function app () {
 			__all__.onevent = onevent;
 			__all__.parts = parts;
 			__all__.patchclasses = patchclasses;
+			__all__.processconsoles = processconsoles;
 			__all__.putjsonbin = putjsonbin;
 			__all__.putjsonbinfailed = putjsonbinfailed;
 			__all__.queryparams = queryparams;
