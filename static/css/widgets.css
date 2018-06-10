@@ -20,7 +20,7 @@
 
 .logitemdiv {
     background-color:lightgray; white-space:nowrap;
-    width: 575px; padding: 2px; margin: 2px;
+    width: calc(100% - 8px); padding: 2px; margin: 2px;
 }
 
 .logtimediv {
@@ -32,31 +32,25 @@
 .logcontentdiv {
     background-color: aliceblue; font-size: 10px;
     display: inline-block; vertical-align: middle;    
-    width: 450px; padding: 2px; margin: 2px;
+    width: calc(100% - 120px); padding: 2px; margin: 2px;
 }
 
 .logdiv {
-    background-color: #bbb; overflow: scroll;
-    width: 600px; height: 400px; padding: 5px; margin: 5px;
-}
-
-.curlyborder {
-    border: solid 1px; border-radius: 5px;
+    background-color: #bbb;
 }
 
 .textinputcontainer {    
     display: flex; justify-content: space-around; align-items: center;
-    background-color: #ace; border: solid 1px; border-radius: 5px;
-    width: 500px; padding: 5px; margin: 5px;
+    background-color: #ccc; width: 550px; padding: 5px; margin: 5px;
 }
 
 .textinputtext {
-    font-size: 24px; background-color: yellowgreen; border: solid 1px; border-radius: 5px;
-    width: 300px; padding: 5px; margin: 5px;
+    font-size: 24px; background-color: #eee;
+    width: 350px; padding: 5px; margin: 5px; font-weight: bold;
 }
 
 .textinputbutton {
-    font-size: 18px; background-color: yellowgreen; border: solid 1px; border-radius: 5px;
+    font-size: 18px; background-color: #ddd;
     padding: 5px; margin: 3px;
 }
 
@@ -65,17 +59,25 @@
 }
 
 .tabpanetabsdiv {
-    background-color: #dfe;
+    background-color: #ccc;
     display: flex; justify-content: space-around; align-items: center;
 }
 
 .tabpanetab {
-    background-color: #ddd; border: solid 1px; border-radius: 5px;
+    background-color: #ddd;
     padding: 5px; cursor: pointer;
+}
+
+.tabpanetab:hover {
+    background-color: #eee;
 }
 
 .tabpaneseltab {
     background-color: #dfd;        
+}
+
+.tabpaneseltab:hover {
+    background-color: #efe;        
 }
 
 .tabpanecontentdiv {
@@ -207,8 +209,7 @@
 }
 
 .comboboxselect {
-    font-size: 20px; font-weight: bold; padding: 2px;
-    border: solid 1px; border-radius: 5px;   
+    font-size: 20px; font-weight: bold; padding: 2px;    
 }
 
 .comboboxoptionfirst {
@@ -242,6 +243,7 @@
 }
 
 .splitpanecontrolpanel {
+    display: flex; justify-content: space-around; align-items: center;
     overflow: hidden;
 }
 

@@ -61,12 +61,11 @@ def buildconfigdiv():
     configsplitpane = SplitPane({
         "controlheight": 50
     })
-    controlpanel = Div().aa([
+    configsplitpane.controldiv.aa([
         Button("Serialize", serializecallback).fs(24),
         Button("Show source", showsrc).fs(16)
-    ])
-    configsplitpane.controldiv.a(controlpanel)
-    configsplitpane.contentdiv.a(configschema)
+    ]).bc("#ddd")
+    configsplitpane.setcontent(configschema)
     return configsplitpane
 
 def getbincallback(content):    
@@ -120,9 +119,14 @@ def build():
     global cmdinp, mainlog, maintabpane, engineconsole
 
     cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
-    mainlog = Log()
+    mainlog = Log({})
 
-    engineconsole = Div().aa([cmdinp, mainlog])    
+    engineconsole = configsplitpane = SplitPane({
+        "controlheight": 80
+    })
+
+    engineconsole.controldiv.a(cmdinp)
+    engineconsole.setcontent(mainlog)
 
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
@@ -148,7 +152,7 @@ def onevent(json):
     docwln("socket received event " + JSON.stringify(json, null, 2))    
 
 def windowresizehandler():
-    build()
+    maintabpane.resize()
 
 def startup():
     global socket

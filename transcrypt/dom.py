@@ -15,6 +15,11 @@ class e:
     def __init__(self, tag):
         self.e = ce(tag)
 
+    # background color
+    def bc(self, color):
+        self.e.style.backgroundColor = color
+        return self
+
     # monospace
     def ms(self):
         self.e.style.fontFamily = "monospace"
@@ -65,9 +70,17 @@ class e:
         self.e.style.width = w + "px"
         return self
 
+    def mw(self, w):
+        self.e.style.minWidth = w + "px"
+        return self
+
     # height
     def h(self, h):
         self.e.style.height = h + "px"
+        return self
+
+    def mh(self, h):
+        self.e.style.minHeight = h + "px"
         return self
 
     # top
