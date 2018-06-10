@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-10 08:00:08
+// Transcrypt'ed from Python, 2018-06-10 08:20:01
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2902,7 +2902,7 @@ function app () {
 				self.parent = parent;
 				self.varname = varname;
 				self.rawtextinputclass = args.py_get ('textclass', 'defaultlinkedtextinputtext');
-				self.rawtextinput = RawTextInput (dict ({'keycallback': self.keyup, 'class': self.rawtextinputclass}));
+				self.rawtextinput = RawTextInput (dict ({'keycallback': self.keyup, 'tinpclass': self.rawtextinputclass}));
 				self.text = args.py_get ('text', '');
 				self.setText (self.text);
 				patchclasses (self, args);
