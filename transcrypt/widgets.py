@@ -287,7 +287,7 @@ class LinkedTextInput(e):
         self.rawtextinputclass = args.get("textclass", "defaultlinkedtextinputtext")
         self.rawtextinput = RawTextInput({
             "keycallback": self.keyup,
-            "class": self.rawtextinputclass
+            "tinpclass": self.rawtextinputclass
         })
         self.text = args.get("text", "")        
         self.setText(self.text)
