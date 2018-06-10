@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-09 19:15:43
+// Transcrypt'ed from Python, 2018-06-10 08:00:08
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2337,6 +2337,10 @@ function app () {
 			get __init__ () {return __get__ (this, function (self, tag) {
 				self.e = ce (tag);
 			});},
+			get bc () {return __get__ (this, function (self, color) {
+				self.e.style.backgroundColor = color;
+				return self;
+			});},
 			get ms () {return __get__ (this, function (self) {
 				self.e.style.fontFamily = 'monospace';
 				return self;
@@ -2380,8 +2384,16 @@ function app () {
 				self.e.style.width = w + 'px';
 				return self;
 			});},
+			get mw () {return __get__ (this, function (self, w) {
+				self.e.style.minWidth = w + 'px';
+				return self;
+			});},
 			get h () {return __get__ (this, function (self, h) {
 				self.e.style.height = h + 'px';
+				return self;
+			});},
+			get mh () {return __get__ (this, function (self, h) {
+				self.e.style.minHeight = h + 'px';
 				return self;
 			});},
 			get t () {return __get__ (this, function (self, t) {
@@ -2566,7 +2578,7 @@ function app () {
 				__super__ (RawTextInput, '__init__') (self, 'text');
 				self.entercallback = args.py_get ('entercallback', null);
 				self.keycallback = args.py_get ('keycallback', null);
-				self.cssclass = args.py_get ('class', 'defaultrawtextinput');
+				self.cssclass = args.py_get ('tinpclass', 'defaultrawtextinput');
 				self.ac (self.cssclass);
 				self.ae ('keyup', self.keyup);
 			});}
@@ -2586,12 +2598,12 @@ function app () {
 				};
 				__super__ (TextInputWithButton, '__init__') (self, 'div');
 				var contclass = args.py_get ('contclass', 'textinputcontainer');
-				var tinpclass = args.py_get ('tinpclass', 'textinputtext');
+				args ['tinpclass'] = args.py_get ('tinpclass', 'textinputtext');
 				var sbtnclass = args.py_get ('sbtnclass', 'textinputbutton');
 				self.container = Div ().ac (contclass);
 				self.onsubmitcallback = args.py_get ('submitcallback', null);
 				args ['entercallback'] = self.submitcallback;
-				self.tinp = RawTextInput (args).ac (tinpclass);
+				self.tinp = RawTextInput (args);
 				self.sbtn = Button ('Submit', self.submitcallback).ac (sbtnclass);
 				self.container.aa (list ([self.tinp, self.sbtn]));
 				self.a (self.container);
@@ -2617,22 +2629,27 @@ function app () {
 		});
 		var Log = __class__ ('Log', [e], {
 			__module__: __name__,
-			get __init__ () {return __get__ (this, function (self, maxitems) {
-				if (typeof maxitems == 'undefined' || (maxitems != null && maxitems .hasOwnProperty ("__kwargtrans__"))) {;
-					var maxitems = 25;
-				};
+			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Log, '__init__') (self, 'div');
-				self.ldiv = Div ().ac ('logdiv');
-				self.maxitems = maxitems;
+				self.width = args.py_get ('width', 600);
+				self.height = args.py_get ('height', 400);
+				self.maxitems = args.py_get ('maxitems', 25);
+				self.ac ('logdiv');
 				self.py_items = list ([]);
-				self.a (self.ldiv);
+				self.resize (self.width, self.height);
+			});},
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.width = width;
+				self.height = height;
+				self.w (self.width).mh (self.height);
+				return self;
 			});},
 			get build () {return __get__ (this, function (self) {
-				self.ldiv.x ();
+				self.x ();
 				var __iterable0__ = py_reversed (self.py_items);
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					self.ldiv.a (item);
+					self.a (item);
 				}
 			});},
 			get add () {return __get__ (this, function (self, item) {
@@ -2665,6 +2682,16 @@ function app () {
 				self.marginleft = args.py_get ('marginleft', 0);
 				self.margintop = args.py_get ('margintop', 0);
 				self.tabsheight = args.py_get ('tabsheight', 40);
+				self.tabsdiv = Div ().ac ('tabpanetabsdiv');
+				self.contentdiv = Div ().ac ('tabpanecontentdiv');
+				self.container = Div ().ac ('tabpanecontainer');
+				self.container.aa (list ([self.tabsdiv, self.contentdiv]));
+				self.a (self.container);
+				self.tabs = list ([]);
+				self.seltab = null;
+				self.resize ();
+			});},
+			get resize () {return __get__ (this, function (self) {
 				if (self.kind == 'main') {
 					self.width = window.innerWidth - 2 * WINDOW_SAFETY_MARGIN;
 					self.height = window.innerHeight - 2 * WINDOW_SAFETY_MARGIN;
@@ -2672,13 +2699,15 @@ function app () {
 					self.margintop = WINDOW_SAFETY_MARGIN;
 				}
 				self.contentheight = self.height - self.tabsheight;
-				self.tabsdiv = Div ().ac ('tabpanetabsdiv').w (self.width).h (self.tabsheight);
-				self.contentdiv = Div ().ac ('tabpanecontentdiv').w (self.width).h (self.contentheight);
-				self.container = Div ().ac ('tabpanecontainer').w (self.width).h (self.height).ml (self.marginleft).mt (self.margintop);
-				self.container.aa (list ([self.tabsdiv, self.contentdiv]));
-				self.a (self.container);
-				self.tabs = list ([]);
-				self.seltab = null;
+				self.tabsdiv.w (self.width).h (self.tabsheight);
+				self.contentdiv.w (self.width).h (self.contentheight);
+				self.container.w (self.width).h (self.height).ml (self.marginleft).mt (self.margintop);
+				try {
+					self.resizecontent (self.seltab.element);
+				}
+				catch (__except0__) {
+					// pass;
+				}
 			});},
 			get tabSelectedCallback () {return __get__ (this, function (self, tab) {
 				self.selectByKey (tab.key);
@@ -2931,12 +2960,28 @@ function app () {
 				self.width = width;
 				self.height = height;
 				self.controldiv.w (self.width).h (self.controlheight);
-				var cdh = self.height - self.controlheight;
-				if (cdh < self.mincontentheight) {
-					var cdh = self.mincontentheight;
+				self.contentheight = self.height - self.controlheight;
+				if (self.contentheight < self.mincontentheight) {
+					self.contentheight = self.mincontentheight;
 				}
-				self.contentdiv.w (self.width).h (cdh);
+				self.contentdiv.w (self.width).h (self.contentheight);
 				self.w (self.width).h (self.height);
+				try {
+					self.content.resize (self.innercontentwidth (), self.innercontentheight ());
+				}
+				catch (__except0__) {
+					// pass;
+				}
+			});},
+			get innercontentheight () {return __get__ (this, function (self) {
+				return self.contentheight - SCROLL_BAR_WIDTH;
+			});},
+			get innercontentwidth () {return __get__ (this, function (self) {
+				return self.width - SCROLL_BAR_WIDTH;
+			});},
+			get setcontent () {return __get__ (this, function (self, element) {
+				self.content = element;
+				self.contentdiv.x ().a (self.content);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
@@ -3527,9 +3572,8 @@ function app () {
 		};
 		var buildconfigdiv = function () {
 			var configsplitpane = SplitPane (dict ({'controlheight': 50}));
-			var controlpanel = Div ().aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Show source', showsrc).fs (16)]));
-			configsplitpane.controldiv.a (controlpanel);
-			configsplitpane.contentdiv.a (configschema);
+			configsplitpane.controldiv.aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Show source', showsrc).fs (16)])).bc ('#ddd');
+			configsplitpane.setcontent (configschema);
 			return configsplitpane;
 		};
 		var getbincallback = function (content) {
@@ -3581,8 +3625,12 @@ function app () {
 		};
 		var build = function () {
 			cmdinp = TextInputWithButton (dict ({'submitcallback': cmdinpcallback}));
-			mainlog = Log ();
-			engineconsole = Div ().aa (list ([cmdinp, mainlog]));
+			mainlog = Log (dict ({}));
+			var __left0__ = SplitPane (dict ({'controlheight': 80}));
+			engineconsole = __left0__;
+			var configsplitpane = __left0__;
+			engineconsole.controldiv.a (cmdinp);
+			engineconsole.setcontent (mainlog);
 			maintabpane = TabPane (dict ({'kind': 'main'}));
 			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', engineconsole), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
@@ -3596,7 +3644,7 @@ function app () {
 			docwln ('socket received event ' + JSON.stringify (json, null, 2));
 		};
 		var windowresizehandler = function () {
-			build ();
+			maintabpane.resize ();
 		};
 		var startup = function () {
 			docwln (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');

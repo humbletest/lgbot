@@ -1,6 +1,6 @@
 {server.py: 1528269218.7350614, simple.py: 1527245383.1193473, static/css/app.css: 1527258978.6899326,
-  static/css/widgets.css: 1528561877.6350045, static/js/app.js: 1528564543.3735652,
-  templates/index.html: 1527253422.5379329, transcrypt/app.py: 1528564539.0334196,
-  transcrypt/client.py: 1528564382.4310615, transcrypt/dom.py: 1528564370.3831148,
+  static/css/widgets.css: 1528610766.565718, static/js/app.js: 1528610408.7660897,
+  templates/index.html: 1527253422.5379329, transcrypt/app.py: 1528610403.7913854,
+  transcrypt/client.py: 1528609373.2889297, transcrypt/dom.py: 1528608695.9667432,
   transcrypt/schemawidgets.py: 1528553770.1972957, transcrypt/utils.py: 1528564280.7487645,
-  transcrypt/widgets.py: 1528564538.2013156}
+  transcrypt/widgets.py: 1528610402.7898276}

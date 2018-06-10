@@ -145,6 +145,11 @@ class e:
     def __init__(self, tag):
         self.e = ce(tag)
 
+    # background color
+    def bc(self, color):
+        self.e.style.backgroundColor = color
+        return self
+
     # monospace
     def ms(self):
         self.e.style.fontFamily = "monospace"
@@ -195,9 +200,17 @@ class e:
         self.e.style.width = w + "px"
         return self
 
+    def mw(self, w):
+        self.e.style.minWidth = w + "px"
+        return self
+
     # height
     def h(self, h):
         self.e.style.height = h + "px"
+        return self
+
+    def mh(self, h):
+        self.e.style.minHeight = h + "px"
         return self
 
     # top
@@ -369,7 +382,7 @@ class RawTextInput(Input):
         super().__init__("text")                
         self.entercallback = args.get("entercallback", None)
         self.keycallback = args.get("keycallback", None)
-        self.cssclass = args.get("class", "defaultrawtextinput")
+        self.cssclass = args.get("tinpclass", "defaultrawtextinput")
         self.ac(self.cssclass)
         self.ae("keyup", self.keyup)
 
@@ -383,12 +396,12 @@ class TextInputWithButton(e):
     def __init__(self, args = {}):
         super().__init__("div")
         contclass = args.get("contclass", "textinputcontainer")
-        tinpclass = args.get("tinpclass", "textinputtext")
+        args["tinpclass"] = args.get("tinpclass", "textinputtext")
         sbtnclass = args.get("sbtnclass", "textinputbutton")
         self.container = Div().ac(contclass)
         self.onsubmitcallback = args.get("submitcallback", None)
         args["entercallback"] = self.submitcallback
-        self.tinp = RawTextInput(args).ac(tinpclass)
+        self.tinp = RawTextInput(args)
         self.sbtn = Button("Submit", self.submitcallback).ac(sbtnclass)        
         self.container.aa([self.tinp, self.sbtn])
         self.a(self.container)
@@ -407,17 +420,25 @@ class LogItem(e):
         self.a(idiv)
 
 class Log(e):
-    def __init__(self, maxitems = 25):        
+    def __init__(self, args):
         super().__init__("div")
-        self.ldiv = Div().ac("logdiv")
-        self.maxitems = maxitems
-        self.items = []
-        self.a(self.ldiv)
+        self.width = args.get("width", 600)
+        self.height = args.get("height", 400)
+        self.maxitems = args.get("maxitems", 25)
+        self.ac("logdiv")
+        self.items = []        
+        self.resize(self.width, self.height)
+
+    def resize(self, width, height):
+        self.width = width
+        self.height = height
+        self.w(self.width).mh(self.height)
+        return self
 
     def build(self):
-        self.ldiv.x()
+        self.x()
         for item in reversed(self.items):
-            self.ldiv.a(item)
+            self.a(item)
 
     def add(self, item):
         self.items.append(item)        
@@ -443,20 +464,30 @@ class TabPane(e):
         self.height = args.get("height", 400)
         self.marginleft = args.get("marginleft", 0)
         self.margintop = args.get("margintop", 0)
-        self.tabsheight = args.get("tabsheight", 40)
+        self.tabsheight = args.get("tabsheight", 40)                
+        self.tabsdiv = Div().ac("tabpanetabsdiv")
+        self.contentdiv = Div().ac("tabpanecontentdiv")
+        self.container = Div().ac("tabpanecontainer")
+        self.container.aa([self.tabsdiv, self.contentdiv])        
+        self.a(self.container)        
+        self.tabs = []
+        self.seltab = None
+        self.resize()
+
+    def resize(self):
         if self.kind == "main":
             self.width = window.innerWidth - 2 * WINDOW_SAFETY_MARGIN
             self.height = window.innerHeight - 2 * WINDOW_SAFETY_MARGIN
             self.marginleft = WINDOW_SAFETY_MARGIN
             self.margintop = WINDOW_SAFETY_MARGIN
         self.contentheight = self.height - self.tabsheight
-        self.tabsdiv = Div().ac("tabpanetabsdiv").w(self.width).h(self.tabsheight)
-        self.contentdiv = Div().ac("tabpanecontentdiv").w(self.width).h(self.contentheight)
-        self.container = Div().ac("tabpanecontainer").w(self.width).h(self.height).ml(self.marginleft).mt(self.margintop)
-        self.container.aa([self.tabsdiv, self.contentdiv])        
-        self.a(self.container)        
-        self.tabs = []
-        self.seltab = None
+        self.tabsdiv.w(self.width).h(self.tabsheight)
+        self.contentdiv.w(self.width).h(self.contentheight)
+        self.container.w(self.width).h(self.height).ml(self.marginleft).mt(self.margintop)
+        try:
+            self.resizecontent(self.seltab.element)
+        except:
+            pass
 
     def tabSelectedCallback(self, tab):
         self.selectByKey(tab.key)
@@ -652,11 +683,25 @@ class SplitPane(e):
         self.width = width
         self.height = height
         self.controldiv.w(self.width).h(self.controlheight)
-        cdh = self.height - self.controlheight
-        if cdh < self.mincontentheight:
-            cdh = self.mincontentheight
-        self.contentdiv.w(self.width).h(cdh)
-        self.w(self.width).h(self.height)
+        self.contentheight = self.height - self.controlheight
+        if self.contentheight < self.mincontentheight:
+            self.contentheight = self.mincontentheight
+        self.contentdiv.w(self.width).h(self.contentheight)
+        self.w(self.width).h(self.height)        
+        try:
+            self.content.resize(self.innercontentwidth(), self.innercontentheight())
+        except:
+            pass
+
+    def innercontentheight(self):
+        return self.contentheight - SCROLL_BAR_WIDTH
+
+    def innercontentwidth(self):
+        return self.width - SCROLL_BAR_WIDTH
+
+    def setcontent(self, element):
+        self.content = element
+        self.contentdiv.x().a(self.content)
 
     def __init__(self, args = {}):
         super().__init__("div")
@@ -1205,12 +1250,11 @@ def buildconfigdiv():
     configsplitpane = SplitPane({
         "controlheight": 50
     })
-    controlpanel = Div().aa([
+    configsplitpane.controldiv.aa([
         Button("Serialize", serializecallback).fs(24),
         Button("Show source", showsrc).fs(16)
-    ])
-    configsplitpane.controldiv.a(controlpanel)
-    configsplitpane.contentdiv.a(configschema)
+    ]).bc("#ddd")
+    configsplitpane.setcontent(configschema)
     return configsplitpane
 
 def getbincallback(content):    
@@ -1264,9 +1308,14 @@ def build():
     global cmdinp, mainlog, maintabpane, engineconsole
 
     cmdinp = TextInputWithButton({"submitcallback": cmdinpcallback})
-    mainlog = Log()
+    mainlog = Log({})
 
-    engineconsole = Div().aa([cmdinp, mainlog])    
+    engineconsole = configsplitpane = SplitPane({
+        "controlheight": 80
+    })
+
+    engineconsole.controldiv.a(cmdinp)
+    engineconsole.setcontent(mainlog)
 
     maintabpane = TabPane({"kind":"main"})
     maintabpane.setTabs(
@@ -1292,7 +1341,7 @@ def onevent(json):
     docwln("socket received event " + JSON.stringify(json, null, 2))    
 
 def windowresizehandler():
-    build()
+    maintabpane.resize()
 
 def startup():
     global socket
