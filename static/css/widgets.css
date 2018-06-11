@@ -41,7 +41,7 @@
 
 .textinputcontainer {    
     display: flex; justify-content: space-around; align-items: center;
-    background-color: #ccc; width: 550px; padding: 5px; margin: 5px;
+    background-color: #ccc; width: 500px; padding: 5px; margin: 5px;
 }
 
 .textinputtext {
@@ -244,7 +244,7 @@
 
 .splitpanecontrolpanel {
     display: flex; justify-content: space-around; align-items: center;
-    overflow: hidden;
+    overflow: default;
 }
 
 .splitpanecontentdiv {
@@ -253,4 +253,8 @@
 
 .logcontentcmd {
     color: #77f; font-weight: bold; font-size: 20px;
+}
+
+.logcontentcmdreadline {
+    color: #070; font-weight: bold; font-size: 20px;
 }

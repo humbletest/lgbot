@@ -73,6 +73,8 @@ class LogItem(e):
         self.cdiv = Div().ac("logcontentdiv").html(content)
         if kind == "cmd":
             self.cdiv.ac("logcontentcmd")
+        elif kind == "cmdreadline":
+            self.cdiv.ac("logcontentcmdreadline")
         self.idiv = Div().ac("logitemdiv").aa([self.tdiv, self.cdiv])
         self.idiv.aa([self.tdiv, self.cdiv])
         self.a(self.idiv)
@@ -382,12 +384,13 @@ class ProcessConsole(SplitPane):
         self.log.log(LogItem(content, "cmd"))
         if self.cmdinpcallback is None:
             return
-        self.cmdinpcallback(content)
+        self.cmdinpcallback(content, self.key)
 
     def __init__(self, args = {}):
         args["controlheight"] = 80
         super().__init__(args)
-        self.cmdinpcallback = args.get("cmdinpcallback", None)
+        self.key = args.get("key", None)
+        self.cmdinpcallback = args.get("cmdinpcallback", None)        
         self.cmdinp = TextInputWithButton({"submitcallback": self.submitcallback})
         self.cmdaliases = args.get("cmdaliases", {})
         self.controldiv.a(self.cmdinp)        

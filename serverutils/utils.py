@@ -90,3 +90,55 @@ def read_string_from_file(path, default):
 		return default
 
 #############################################
+
+class ProcessManager:
+    def __init__(self, key):
+        self.key = key
+        self.process = None
+
+    def read_line_callback(self, sline):
+        pass
+
+    def base_read_line_callback(self, sline):
+        print("{} : {}".format(self.key, sline))
+        self.read_line_callback(sline)
+
+    def send_line(self, sline):
+        if self.process is None:
+            msg = "! no {} process to send line".format(self.key)
+            print(msg)
+            return msg
+        else:
+            self.process.send_line(sline)
+            msg = "line sent to {} process : {}".format(self.key, sline)
+            print(msg)
+            return msg
+
+    def popen(self):
+        return None
+
+    def start(self):
+        if self.process is None:
+            self.process = self.popen()
+            msg = "{} - started".format(self.key)
+            print(msg)
+            return msg
+        else:
+            msg = "! {} - already running".format(self.key)
+            print(msg)
+            return msg
+
+    def stop(self):
+        if self.process is None:            
+            msg = "! {} - already stopped".format(self.key)
+            print(msg)
+            return msg
+        else:
+            self.process.kill()
+            self.process = None
+            msg = "{} - stopped".format(self.key)
+            print(msg)
+            return msg
+
+#############################################
+
