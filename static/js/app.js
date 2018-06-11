@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-10 17:19:22
+// Transcrypt'ed from Python, 2018-06-11 14:01:44
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2542,14 +2542,22 @@ function app () {
 		var WINDOW_SAFETY_MARGIN = 10;
 		var Button = __class__ ('Button', [Input], {
 			__module__: __name__,
-			get __init__ () {return __get__ (this, function (self, caption, callback) {
+			get clicked () {return __get__ (this, function (self) {
+				self.callback (self.key);
+			});},
+			get __init__ () {return __get__ (this, function (self, caption, callback, key) {
 				if (typeof callback == 'undefined' || (callback != null && callback .hasOwnProperty ("__kwargtrans__"))) {;
 					var callback = null;
+				};
+				if (typeof key == 'undefined' || (key != null && key .hasOwnProperty ("__kwargtrans__"))) {;
+					var key = null;
 				};
 				__super__ (Button, '__init__') (self, 'button');
 				self.sv (caption);
 				if (!(callback === null)) {
-					self.ae ('mousedown', callback);
+					self.callback = callback;
+					self.key = key;
+					self.ae ('mousedown', self.clicked);
 				}
 			});}
 		});
@@ -2620,11 +2628,14 @@ function app () {
 					var kind = 'normal';
 				};
 				__super__ (LogItem, '__init__') (self, 'div');
-				var tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleString ()));
-				var cdiv = Div ().ac ('logcontentdiv').html (content);
-				var idiv = Div ().ac ('logitemdiv').aa (list ([tdiv, cdiv]));
-				idiv.aa (list ([tdiv, cdiv]));
-				self.a (idiv);
+				self.tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleString ()));
+				self.cdiv = Div ().ac ('logcontentdiv').html (content);
+				if (kind == 'cmd') {
+					self.cdiv.ac ('logcontentcmd');
+				}
+				self.idiv = Div ().ac ('logitemdiv').aa (list ([self.tdiv, self.cdiv]));
+				self.idiv.aa (list ([self.tdiv, self.cdiv]));
+				self.a (self.idiv);
 			});}
 		});
 		var Log = __class__ ('Log', [e], {
@@ -3000,6 +3011,21 @@ function app () {
 		});
 		var ProcessConsole = __class__ ('ProcessConsole', [SplitPane], {
 			__module__: __name__,
+			get aliascallback () {return __get__ (this, function (self, key) {
+				var cmds = self.cmdaliases [key] ['cmds'];
+				var __iterable0__ = cmds;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var cmd = __iterable0__ [__index0__];
+					self.submitcallback (cmd);
+				}
+			});},
+			get submitcallback () {return __get__ (this, function (self, content) {
+				self.log.log (LogItem (content, 'cmd'));
+				if (self.cmdinpcallback === null) {
+					return ;
+				}
+				self.cmdinpcallback (content);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
 					var args = dict ({});
@@ -3007,8 +3033,16 @@ function app () {
 				args ['controlheight'] = 80;
 				__super__ (ProcessConsole, '__init__') (self, args);
 				self.cmdinpcallback = args.py_get ('cmdinpcallback', null);
-				self.cmdinp = TextInputWithButton (dict ({'submitcallback': self.cmdinpcallback}));
+				self.cmdinp = TextInputWithButton (dict ({'submitcallback': self.submitcallback}));
+				self.cmdaliases = args.py_get ('cmdaliases', dict ({}));
 				self.controldiv.a (self.cmdinp);
+				var __iterable0__ = self.cmdaliases.py_keys ();
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var cmdaliaskey = __iterable0__ [__index0__];
+					var cmdalias = self.cmdaliases [cmdaliaskey];
+					var btn = Button (cmdalias ['display'], self.aliascallback, cmdaliaskey);
+					self.controldiv.a (btn);
+				}
 				self.log = Log (dict ({}));
 				self.setcontent (self.log);
 			});}
@@ -3560,6 +3594,8 @@ function app () {
 				queryparams [parts [0]] = parts [1];
 			}
 		}
+		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'Start', 'cmds': list (['r'])}), 'stop': dict ({'display': 'Stop', 'cmds': list (['s'])}), 'restart': dict ({'display': 'Restart', 'cmds': list (['s', 'r'])})});
+		var BOT_CMD_ALIASES = ENGINE_CMD_ALIASES;
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
 		var maintabpane = null;
@@ -3644,8 +3680,8 @@ function app () {
 			putjsonbin (json, serializeputjsonbincallback, id);
 		};
 		var build = function () {
-			processconsoles ['engine'] = ProcessConsole (dict ({'cmdinpcallback': cmdinpcallback}));
-			processconsoles ['bot'] = ProcessConsole (dict ({'cmdinpcallback': botcmdinpcallback}));
+			processconsoles ['engine'] = ProcessConsole (dict ({'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
+			processconsoles ['bot'] = ProcessConsole (dict ({'cmdinpcallback': botcmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			maintabpane = TabPane (dict ({'kind': 'main'}));
 			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
@@ -3694,6 +3730,7 @@ function app () {
 		}
 		startup ();
 		__pragma__ ('<all>')
+			__all__.BOT_CMD_ALIASES = BOT_CMD_ALIASES;
 			__all__.Button = Button;
 			__all__.CheckBox = CheckBox;
 			__all__.ComboBox = ComboBox;
@@ -3701,6 +3738,7 @@ function app () {
 			__all__.DEFAULT_ENABLED = DEFAULT_ENABLED;
 			__all__.DEFAULT_HELP = DEFAULT_HELP;
 			__all__.Div = Div;
+			__all__.ENGINE_CMD_ALIASES = ENGINE_CMD_ALIASES;
 			__all__.Input = Input;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
