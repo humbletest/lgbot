@@ -17,6 +17,8 @@ simpleserver:
   color: BRIGHTCYAN
   deps:
     - simple.py  
+    - serverutils/process.py
+    - serverutils/utils.py
   cmds:
     - ss.bat
 server:
@@ -24,7 +26,7 @@ server:
   restart: true
   color: BRIGHTYELLOW
   deps:
-    - server.py      
+    - server.py          
   cmds:    
     - s.bat
 browser:

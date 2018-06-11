@@ -8,6 +8,8 @@ import os
 
 http = urllib3.PoolManager()
 
+JSONBIN_APIBASEURL = "https://api.jsonbin.io"
+
 def geturl(url):
     print("get url", url)
     r = http.request("GET", url)
@@ -19,6 +21,21 @@ def postjson(url, obj):
     r = http.request('POST', url, headers={'Content-Type': 'application/json'}, body=json.dumps(obj))
     content = r.data.decode("utf-8")
     return content
+
+def getjsonbin(id, version = "latest"):
+    url = JSONBIN_APIBASEURL + "/b/" + id + "/" + version
+    print("get jsonbin", url)
+    r = http.request("GET", url, headers = {
+        "Content-Type": "application/json",
+        "private": False
+    })
+    content = r.data.decode("utf-8")
+    return content
+
+def getjsonbinobj(id, version = "latest"):
+    content = getjsonbin(id, version)
+    obj = json.loads(content)
+    return obj
 
 #############################################
 
