@@ -250,3 +250,7 @@
 .splitpanecontentdiv {
     overflow: scroll;
 }
+
+.logcontentcmd {
+    color: #77f; font-weight: bold; font-size: 20px;
+}

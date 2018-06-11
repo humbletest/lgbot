@@ -23,6 +23,18 @@ if len(queryparamsstring) > 1:
 ######################################################
 
 ######################################################
+# app consts
+
+ENGINE_CMD_ALIASES = {
+    "start": {"display":"Start", "cmds":["r"]},
+    "stop": {"display":"Stop", "cmds":["s"]},
+    "restart": {"display":"Restart", "cmds":["s","r"]}
+}
+
+BOT_CMD_ALIASES = ENGINE_CMD_ALIASES
+######################################################
+
+######################################################
 # app globals
 socket = None
 processconsoles = {
@@ -124,11 +136,13 @@ def build():
     global processconsoles, maintabpane, engineconsole
 
     processconsoles["engine"] = ProcessConsole({
-        "cmdinpcallback": cmdinpcallback
+        "cmdinpcallback": cmdinpcallback,
+        "cmdaliases": ENGINE_CMD_ALIASES
     })
 
     processconsoles["bot"] = ProcessConsole({
-        "cmdinpcallback": botcmdinpcallback
+        "cmdinpcallback": botcmdinpcallback,
+        "cmdaliases": BOT_CMD_ALIASES
     })
 
     maintabpane = TabPane({"kind":"main"})

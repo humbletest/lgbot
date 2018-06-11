@@ -6,11 +6,16 @@ WINDOW_SAFETY_MARGIN = 10
 ######################################################
 # widgets
 class Button(Input):
-    def __init__(self, caption, callback = None):
-        super().__init__("button")        
+    def clicked(self):
+        self.callback(self.key)
+
+    def __init__(self, caption, callback = None, key = None):
+        super().__init__("button")                
         self.sv(caption)
-        if not ( callback is None):
-            self.ae("mousedown", callback)
+        if not ( callback is None ):
+            self.callback = callback
+            self.key = key
+            self.ae("mousedown", self.clicked)
 
 class RawTextInput(Input):
     def keyup(self, ev):
@@ -64,11 +69,13 @@ class TextInputWithButton(e):
 class LogItem(e):
     def __init__(self, content, kind = "normal"):
         super().__init__("div")
-        tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleString()))
-        cdiv = Div().ac("logcontentdiv").html(content)
-        idiv = Div().ac("logitemdiv").aa([tdiv,cdiv])
-        idiv.aa([tdiv,cdiv])
-        self.a(idiv)
+        self.tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleString()))
+        self.cdiv = Div().ac("logcontentdiv").html(content)
+        if kind == "cmd":
+            self.cdiv.ac("logcontentcmd")
+        self.idiv = Div().ac("logitemdiv").aa([self.tdiv, self.cdiv])
+        self.idiv.aa([self.tdiv, self.cdiv])
+        self.a(self.idiv)
 
 class Log(e):
     def __init__(self, args):
@@ -366,12 +373,28 @@ class SplitPane(e):
         self.aa([self.controldiv, self.contentdiv])
 
 class ProcessConsole(SplitPane):
+    def aliascallback(self, key):                
+        cmds = self.cmdaliases[key]["cmds"]
+        for cmd in cmds:
+            self.submitcallback(cmd)
+
+    def submitcallback(self, content):
+        self.log.log(LogItem(content, "cmd"))
+        if self.cmdinpcallback is None:
+            return
+        self.cmdinpcallback(content)
+
     def __init__(self, args = {}):
         args["controlheight"] = 80
         super().__init__(args)
         self.cmdinpcallback = args.get("cmdinpcallback", None)
-        self.cmdinp = TextInputWithButton({"submitcallback": self.cmdinpcallback})
-        self.controldiv.a(self.cmdinp)
+        self.cmdinp = TextInputWithButton({"submitcallback": self.submitcallback})
+        self.cmdaliases = args.get("cmdaliases", {})
+        self.controldiv.a(self.cmdinp)        
+        for cmdaliaskey in self.cmdaliases.keys():
+            cmdalias = self.cmdaliases[cmdaliaskey]
+            btn = Button(cmdalias["display"], self.aliascallback, cmdaliaskey)
+            self.controldiv.a(btn)
         self.log = Log({})
         self.setcontent(self.log)
 
