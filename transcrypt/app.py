@@ -422,6 +422,8 @@ class LogItem(e):
         self.cdiv = Div().ac("logcontentdiv").html(content)
         if kind == "cmd":
             self.cdiv.ac("logcontentcmd")
+        elif kind == "cmdreadline":
+            self.cdiv.ac("logcontentcmdreadline")
         self.idiv = Div().ac("logitemdiv").aa([self.tdiv, self.cdiv])
         self.idiv.aa([self.tdiv, self.cdiv])
         self.a(self.idiv)
@@ -731,12 +733,13 @@ class ProcessConsole(SplitPane):
         self.log.log(LogItem(content, "cmd"))
         if self.cmdinpcallback is None:
             return
-        self.cmdinpcallback(content)
+        self.cmdinpcallback(content, self.key)
 
     def __init__(self, args = {}):
         args["controlheight"] = 80
         super().__init__(args)
-        self.cmdinpcallback = args.get("cmdinpcallback", None)
+        self.key = args.get("key", None)
+        self.cmdinpcallback = args.get("cmdinpcallback", None)        
         self.cmdinp = TextInputWithButton({"submitcallback": self.submitcallback})
         self.cmdaliases = args.get("cmdaliases", {})
         self.controldiv.a(self.cmdinp)        
@@ -1253,7 +1256,12 @@ ENGINE_CMD_ALIASES = {
     "restart": {"display":"Restart", "cmds":["s","r"]}
 }
 
-BOT_CMD_ALIASES = ENGINE_CMD_ALIASES
+BOT_CMD_ALIASES = {
+    "start": {"display":"Start", "cmds":["r"]},
+    "stop": {"display":"Stop", "cmds":["s"]},
+    "restart": {"display":"Restart", "cmds":["s","r"]},
+    "loadconfig": {"display":"Load config", "cmds":["r", "lc"]}
+}
 ######################################################
 
 ######################################################
@@ -1264,7 +1272,6 @@ processconsoles = {
     "bot": None
 }
 maintabpane = None
-engineconsole = None
 configschema = SchemaDict({})
 id = None
 srcdiv = Div().ms().fs(20)
@@ -1320,11 +1327,9 @@ def log(content, dest = "engine"):
     li = LogItem("<pre>" + content + "</pre>")
     processconsoles[dest].log.log(li)
 
-def cmdinpcallback(cmd):
-    socket.emit('sioreq', {"kind":"cmd", "data": cmd})
-
-def botcmdinpcallback(cmd):
-    socket.emit('sioreq', {"kind":"botcmd", "data": cmd})
+def cmdinpcallback(cmd, key):
+    print("cmdinp", cmd, key)
+    socket.emit('sioreq', {"kind":"cmd", "key": key, "data": cmd})
 
 def serializeputjsonbincallback(json, content):
     #print(json);return;
@@ -1355,15 +1360,17 @@ def serializecallback():
 ######################################################
 # app
 def build():
-    global processconsoles, maintabpane, engineconsole
+    global processconsoles, maintabpane
 
     processconsoles["engine"] = ProcessConsole({
+        "key": "engine",
         "cmdinpcallback": cmdinpcallback,
         "cmdaliases": ENGINE_CMD_ALIASES
     })
 
     processconsoles["bot"] = ProcessConsole({
-        "cmdinpcallback": botcmdinpcallback,
+        "key": "bot",
+        "cmdinpcallback": cmdinpcallback,
         "cmdaliases": BOT_CMD_ALIASES
     })
 
@@ -1390,15 +1397,21 @@ def onconnect():
 
 def onevent(json):
     dest = "engine"
-    if "botline" in json:
-        dest = "bot"
+    logitem = None
+    if "kind" in json:
+        kind = json["kind"]
+        if kind == "procreadline":
+            dest = json["prockey"]
+            sline = json["sline"]
+            logitem = LogItem(sline, "cmdreadline")
     if "response" in json:
         response = json["response"]
-        if "kind" in response:
-            kind = response["kind"]
-            if kind == "ackbotcmd":
-                dest = "bot"
-    log("socket received event " + JSON.stringify(json, null, 2), dest)    
+        if "key" in response:
+            dest = response["key"]
+    if logitem is None:
+        log("socket received event " + JSON.stringify(json, null, 2), dest)    
+    else:
+        processconsoles[dest].log.log(logitem)
 
 def windowresizehandler():
     maintabpane.resize()

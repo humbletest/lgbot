@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-11 14:01:44
+// Transcrypt'ed from Python, 2018-06-11 19:29:49
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2633,6 +2633,9 @@ function app () {
 				if (kind == 'cmd') {
 					self.cdiv.ac ('logcontentcmd');
 				}
+				else if (kind == 'cmdreadline') {
+					self.cdiv.ac ('logcontentcmdreadline');
+				}
 				self.idiv = Div ().ac ('logitemdiv').aa (list ([self.tdiv, self.cdiv]));
 				self.idiv.aa (list ([self.tdiv, self.cdiv]));
 				self.a (self.idiv);
@@ -3024,7 +3027,7 @@ function app () {
 				if (self.cmdinpcallback === null) {
 					return ;
 				}
-				self.cmdinpcallback (content);
+				self.cmdinpcallback (content, self.key);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
@@ -3032,6 +3035,7 @@ function app () {
 				};
 				args ['controlheight'] = 80;
 				__super__ (ProcessConsole, '__init__') (self, args);
+				self.key = args.py_get ('key', null);
 				self.cmdinpcallback = args.py_get ('cmdinpcallback', null);
 				self.cmdinp = TextInputWithButton (dict ({'submitcallback': self.submitcallback}));
 				self.cmdaliases = args.py_get ('cmdaliases', dict ({}));
@@ -3595,11 +3599,10 @@ function app () {
 			}
 		}
 		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'Start', 'cmds': list (['r'])}), 'stop': dict ({'display': 'Stop', 'cmds': list (['s'])}), 'restart': dict ({'display': 'Restart', 'cmds': list (['s', 'r'])})});
-		var BOT_CMD_ALIASES = ENGINE_CMD_ALIASES;
+		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'Start', 'cmds': list (['r'])}), 'stop': dict ({'display': 'Stop', 'cmds': list (['s'])}), 'restart': dict ({'display': 'Restart', 'cmds': list (['s', 'r'])}), 'loadconfig': dict ({'display': 'Load config', 'cmds': list (['r', 'lc'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
 		var maintabpane = null;
-		var engineconsole = null;
 		var configschema = SchemaDict (dict ({}));
 		var id = null;
 		var srcdiv = Div ().ms ().fs (20);
@@ -3645,11 +3648,9 @@ function app () {
 			var li = LogItem (('<pre>' + content) + '</pre>');
 			processconsoles [dest].log.log (li);
 		};
-		var cmdinpcallback = function (cmd) {
-			socket.emit ('sioreq', dict ({'kind': 'cmd', 'data': cmd}));
-		};
-		var botcmdinpcallback = function (cmd) {
-			socket.emit ('sioreq', dict ({'kind': 'botcmd', 'data': cmd}));
+		var cmdinpcallback = function (cmd, key) {
+			print ('cmdinp', cmd, key);
+			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': key, 'data': cmd}));
 		};
 		var serializeputjsonbincallback = function (json, content) {
 			try {
@@ -3680,8 +3681,8 @@ function app () {
 			putjsonbin (json, serializeputjsonbincallback, id);
 		};
 		var build = function () {
-			processconsoles ['engine'] = ProcessConsole (dict ({'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
-			processconsoles ['bot'] = ProcessConsole (dict ({'cmdinpcallback': botcmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
+			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
+			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			maintabpane = TabPane (dict ({'kind': 'main'}));
 			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
 			ge ('maintabdiv').innerHTML = '';
@@ -3693,19 +3694,27 @@ function app () {
 		};
 		var onevent = function (json) {
 			var dest = 'engine';
-			if (__in__ ('botline', json)) {
-				var dest = 'bot';
+			var logitem = null;
+			if (__in__ ('kind', json)) {
+				var kind = json ['kind'];
+				if (kind == 'procreadline') {
+					var dest = json ['prockey'];
+					var sline = json ['sline'];
+					var logitem = LogItem (sline, 'cmdreadline');
+				}
 			}
 			if (__in__ ('response', json)) {
 				var response = json ['response'];
-				if (__in__ ('kind', response)) {
-					var kind = response ['kind'];
-					if (kind == 'ackbotcmd') {
-						var dest = 'bot';
-					}
+				if (__in__ ('key', response)) {
+					var dest = response ['key'];
 				}
 			}
-			log ('socket received event ' + JSON.stringify (json, null, 2), dest);
+			if (logitem === null) {
+				log ('socket received event ' + JSON.stringify (json, null, 2), dest);
+			}
+			else {
+				processconsoles [dest].log.log (logitem);
+			}
 		};
 		var windowresizehandler = function () {
 			maintabpane.resize ();
@@ -3769,7 +3778,6 @@ function app () {
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;
-			__all__.botcmdinpcallback = botcmdinpcallback;
 			__all__.build = build;
 			__all__.buildconfigdiv = buildconfigdiv;
 			__all__.ce = ce;
@@ -3777,7 +3785,6 @@ function app () {
 			__all__.configschema = configschema;
 			__all__.deserializeconfig = deserializeconfig;
 			__all__.e = e;
-			__all__.engineconsole = engineconsole;
 			__all__.ge = ge;
 			__all__.getScrollBarWidth = getScrollBarWidth;
 			__all__.getbincallback = getbincallback;
