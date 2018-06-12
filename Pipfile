@@ -11,6 +11,8 @@ eventlet = "*"
 "urllib3" = {extras = ["secure"]}
 pyyaml = "*"
 selenium = "*"
+requests = "*"
+backoff = "*"
 
 [dev-packages]
 

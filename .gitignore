@@ -1,4 +1,9 @@
 
+
+/lbot/*
+!/lbot/lichess.py
+
+
 driver/
 
 
