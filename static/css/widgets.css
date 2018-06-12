@@ -6,6 +6,7 @@
     --schemasettingswidth: 300px;
     --schemahelpwidth: 500px;
     --schemasettingspadding: 8px;
+    --logtimewidth: 125px;
 }
 
 .noselect {
@@ -19,20 +20,19 @@
 }
 
 .logitemdiv {
-    background-color:lightgray; white-space:nowrap;
+    display: flex; justify-content: space-around; align-items: center;
+    background-color:lightgray;
     width: calc(100% - 8px); padding: 2px; margin: 2px;
 }
 
 .logtimediv {
-    background-color: gold; font-size: 9px; font-family: monospace;
-    display: inline-block; vertical-align: middle; text-align: center;    
-    width: 125px; padding: 5px; margin: 2px;
+    background-color: gold; font-size: 9px; font-family: monospace;    
+    width: var(--logtimewidth); text-align: center; padding: 3px;
 }
 
 .logcontentdiv {
-    background-color: aliceblue; font-size: 10px; font-family: monospace;
-    display: inline-block; vertical-align: middle;    
-    width: calc(100% - 120px); padding: 2px; margin: 2px;
+    background-color: aliceblue; font-size: 10px; font-family: monospace;    
+    width: calc(100% - var(--logtimewidth) - 20px); padding: 2px; margin: 2px;
 }
 
 .logcontentjson {
