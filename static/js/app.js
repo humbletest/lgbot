@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-11 19:29:49
+// Transcrypt'ed from Python, 2018-06-12 08:28:34
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2377,7 +2377,9 @@ function app () {
 				return self;
 			});},
 			get x () {return __get__ (this, function (self) {
-				self.html ('');
+				while (self.e.firstChild) {
+					self.e.removeChild (self.e.firstChild);
+				}
 				return self;
 			});},
 			get w () {return __get__ (this, function (self, w) {
@@ -2629,12 +2631,33 @@ function app () {
 				};
 				__super__ (LogItem, '__init__') (self, 'div');
 				self.tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleString ()));
-				self.cdiv = Div ().ac ('logcontentdiv').html (content);
+				self.content = content;
+				self.cdiv = Div ().ac ('logcontentdiv');
+				if (len (self.content) > 0) {
+					if (self.content [0] == '[' || self.content [0] == '{') {
+						try {
+							var json = JSON.parse (self.content);
+							var jsonstr = JSON.stringify (json, null, 2);
+							self.content = ('<pre>' + jsonstr) + '</pre>';
+							self.cdiv.ac ('logcontentjson');
+						}
+						catch (__except0__) {
+							// pass;
+						}
+					}
+				}
+				self.cdiv.html (self.content);
 				if (kind == 'cmd') {
 					self.cdiv.ac ('logcontentcmd');
 				}
 				else if (kind == 'cmdreadline') {
 					self.cdiv.ac ('logcontentcmdreadline');
+				}
+				else if (kind == 'cmdstatusok') {
+					self.cdiv.ac ('logcontentcmdstatusok');
+				}
+				else if (kind == 'cmdstatuserr') {
+					self.cdiv.ac ('logcontentcmdstatuserr');
 				}
 				self.idiv = Div ().ac ('logitemdiv').aa (list ([self.tdiv, self.cdiv]));
 				self.idiv.aa (list ([self.tdiv, self.cdiv]));
@@ -3707,6 +3730,15 @@ function app () {
 				var response = json ['response'];
 				if (__in__ ('key', response)) {
 					var dest = response ['key'];
+				}
+				if (__in__ ('status', response)) {
+					var status = response ['status'];
+					var logitem = LogItem (status, 'cmdstatusok');
+					if (len (status) > 0) {
+						if (status [0] == '!') {
+							var logitem = LogItem (status, 'cmdstatuserr');
+						}
+					}
 				}
 			}
 			if (logitem === null) {
