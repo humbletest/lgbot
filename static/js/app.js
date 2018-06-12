@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-12 13:04:44
+// Transcrypt'ed from Python, 2018-06-12 20:25:57
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3626,8 +3626,8 @@ function app () {
 				queryparams [parts [0]] = parts [1];
 			}
 		}
-		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'Start', 'cmds': list (['r'])}), 'stop': dict ({'display': 'Stop', 'cmds': list (['s'])}), 'restart': dict ({'display': 'Restart', 'cmds': list (['s', 'r'])})});
-		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'Start', 'cmds': list (['r'])}), 'stop': dict ({'display': 'Stop', 'cmds': list (['s'])}), 'restart': dict ({'display': 'Restart', 'cmds': list (['s', 'r'])}), 'loadconfig': dict ({'display': 'Load config', 'cmds': list (['r', 'lc'])})});
+		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])})});
+		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])}), 'loadconfig': dict ({'display': 'Load config', 'cmds': list (['r', 'lc'])}), 'loadprofile': dict ({'display': 'Load profile', 'cmds': list (['lp'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
 		var maintabpane = null;
@@ -3729,6 +3729,13 @@ function app () {
 					var dest = json ['prockey'];
 					var sline = json ['sline'];
 					var logitem = LogItem (sline, 'cmdreadline');
+					if (dest == 'bot') {
+						if (len (sline) > 0) {
+							if (sline [0] == '!') {
+								var logitem = LogItem ('bot error:' + sline.__getslice__ (1, null, 1), 'cmdstatuserr');
+							}
+						}
+					}
 				}
 			}
 			if (__in__ ('response', json)) {

@@ -1272,16 +1272,17 @@ if len(queryparamsstring) > 1:
 # app consts
 
 ENGINE_CMD_ALIASES = {
-    "start": {"display":"Start", "cmds":["r"]},
-    "stop": {"display":"Stop", "cmds":["s"]},
-    "restart": {"display":"Restart", "cmds":["s","r"]}
+    "start": {"display":"R", "cmds":["r"]},
+    "stop": {"display":"S", "cmds":["s"]},
+    "restart": {"display":"SR", "cmds":["s","r"]}
 }
 
 BOT_CMD_ALIASES = {
-    "start": {"display":"Start", "cmds":["r"]},
-    "stop": {"display":"Stop", "cmds":["s"]},
-    "restart": {"display":"Restart", "cmds":["s","r"]},
-    "loadconfig": {"display":"Load config", "cmds":["r", "lc"]}
+    "start": {"display":"R", "cmds":["r"]},
+    "stop": {"display":"S", "cmds":["s"]},
+    "restart": {"display":"SR", "cmds":["s","r"]},
+    "loadconfig": {"display":"Load config", "cmds":["r", "lc"]},
+    "loadprofile": {"display":"Load profile", "cmds":["lp"]}
 }
 ######################################################
 
@@ -1425,6 +1426,10 @@ def onevent(json):
             dest = json["prockey"]
             sline = json["sline"]
             logitem = LogItem(sline, "cmdreadline")
+            if dest == "bot":
+                if len(sline)>0:
+                    if sline[0] == "!":
+                        logitem = LogItem("bot error:" + sline[1:], "cmdstatuserr")
     if "response" in json:
         response = json["response"]
         if "key" in response:
