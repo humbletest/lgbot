@@ -26,11 +26,10 @@ def loadconfig():
 
 def printconfig():
     print("printing config")
-    formatted = json.dumps(config, indent = 2)
+    formatted = json.dumps(config)
     print(formatted)
     print("config printed")
 
-print("bot started")
 while True:
     cmd = input("").rstrip()
     if cmd == "lc":

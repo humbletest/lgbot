@@ -70,11 +70,26 @@ class LogItem(e):
     def __init__(self, content, kind = "normal"):
         super().__init__("div")
         self.tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleString()))
-        self.cdiv = Div().ac("logcontentdiv").html(content)
+        self.content = content
+        self.cdiv = Div().ac("logcontentdiv")
+        if len(self.content)>0:
+            if self.content[0] == "[" or self.content[0] == "{":
+                try:
+                    json = JSON.parse(self.content)
+                    jsonstr = JSON.stringify(json, None, 2)
+                    self.content = "<pre>" + jsonstr + "</pre>"
+                    self.cdiv.ac("logcontentjson")
+                except:
+                    pass
+        self.cdiv.html(self.content)
         if kind == "cmd":
             self.cdiv.ac("logcontentcmd")
         elif kind == "cmdreadline":
             self.cdiv.ac("logcontentcmdreadline")
+        elif kind == "cmdstatusok":
+            self.cdiv.ac("logcontentcmdstatusok")
+        elif kind == "cmdstatuserr":
+            self.cdiv.ac("logcontentcmdstatuserr")
         self.idiv = Div().ac("logitemdiv").aa([self.tdiv, self.cdiv])
         self.idiv.aa([self.tdiv, self.cdiv])
         self.a(self.idiv)

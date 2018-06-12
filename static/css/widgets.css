@@ -24,15 +24,19 @@
 }
 
 .logtimediv {
-    background-color: gold; font-size: 9px;
+    background-color: gold; font-size: 9px; font-family: monospace;
     display: inline-block; vertical-align: middle; text-align: center;    
-    width: 100px; padding: 5px; margin: 2px;
+    width: 125px; padding: 5px; margin: 2px;
 }
 
 .logcontentdiv {
-    background-color: aliceblue; font-size: 10px;
+    background-color: aliceblue; font-size: 10px; font-family: monospace;
     display: inline-block; vertical-align: middle;    
     width: calc(100% - 120px); padding: 2px; margin: 2px;
+}
+
+.logcontentjson {
+    background-color: #ffa;
 }
 
 .logdiv {
@@ -256,5 +260,13 @@
 }
 
 .logcontentcmdreadline {
-    color: #070; font-weight: bold; font-size: 20px;
+    color: #000; font-weight: bold; font-size: 20px;
+}
+
+.logcontentcmdstatusok {
+    color: #080; font-weight: bold; font-size: 20px;
+}
+
+.logcontentcmdstatuserr {
+    color: #a00; font-weight: bold; font-size: 20px;
 }

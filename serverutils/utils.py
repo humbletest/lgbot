@@ -1,12 +1,16 @@
 import threading
 import inspect
+import certifi
 import urllib3
 import json
 import os
 
 #############################################
 
-http = urllib3.PoolManager()
+http = urllib3.PoolManager(
+    cert_reqs='CERT_REQUIRED',
+    ca_certs=certifi.where()
+)
 
 JSONBIN_APIBASEURL = "https://api.jsonbin.io"
 

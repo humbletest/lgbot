@@ -183,6 +183,12 @@ def onevent(json):
         response = json["response"]
         if "key" in response:
             dest = response["key"]
+        if "status" in response:
+            status = response["status"]
+            logitem = LogItem(status, "cmdstatusok")
+            if len(status)>0:
+                if status[0] == "!":
+                    logitem = LogItem(status, "cmdstatuserr")
     if logitem is None:
         log("socket received event " + JSON.stringify(json, null, 2), dest)    
     else:

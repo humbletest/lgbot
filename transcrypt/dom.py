@@ -62,7 +62,9 @@ class e:
 
     # clear
     def x(self):
-        self.html("")
+        #self.html("")
+        while self.e.firstChild:
+            self.e.removeChild(self.e.firstChild)
         return self
 
     # width

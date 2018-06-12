@@ -8,7 +8,7 @@ flask = "*"
 gunicorn = "*"
 flask-socketio = "*"
 eventlet = "*"
-"urllib3" = "*"
+"urllib3" = {extras = ["secure"]}
 pyyaml = "*"
 selenium = "*"
 
