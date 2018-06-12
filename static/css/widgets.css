@@ -6,7 +6,7 @@
     --schemasettingswidth: 300px;
     --schemahelpwidth: 500px;
     --schemasettingspadding: 8px;
-    --logtimewidth: 125px;
+    --logtimewidth: 50px;
 }
 
 .noselect {
@@ -22,12 +22,12 @@
 .logitemdiv {
     display: flex; justify-content: space-around; align-items: center;
     background-color:lightgray;
-    width: calc(100% - 8px); padding: 2px; margin: 2px;
+    width: calc(100% - 2px); padding: 1px;
 }
 
 .logtimediv {
     background-color: gold; font-size: 9px; font-family: monospace;    
-    width: var(--logtimewidth); text-align: center; padding: 3px;
+    width: var(--logtimewidth); text-align: center; padding: 1px;
 }
 
 .logcontentdiv {

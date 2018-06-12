@@ -237,7 +237,7 @@ def build_thread_func():
         somechange = b.build(loop = True)        
         if somechange or browserinit:
             if browserinit:
-                time.sleep(3)                
+                time.sleep(1)                
                 browser.get('http://localhost:5000')
                 browserinit = False
             else:                
