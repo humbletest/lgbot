@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-12 08:28:34
+// Transcrypt'ed from Python, 2018-06-12 12:06:15
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2630,7 +2630,7 @@ function app () {
 					var kind = 'normal';
 				};
 				__super__ (LogItem, '__init__') (self, 'div');
-				self.tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleString ()));
+				self.tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleTimeString ()));
 				self.content = content;
 				self.cdiv = Div ().ac ('logcontentdiv');
 				if (len (self.content) > 0) {
@@ -2756,7 +2756,7 @@ function app () {
 				var __iterable0__ = self.tabs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var tab = __iterable0__ [__index0__];
-					var tabelement = Div ().ac ('tabpanetab').html (tab.displayname);
+					var tabelement = Div ().aac (list (['tabpanetab', 'noselect'])).html (tab.displayname);
 					self.tabsdiv.a (tabelement);
 					tab.tabelement = tabelement;
 					tab.tabelement.ae ('mousedown', self.tabSelectedCallback.bind (self, tab));

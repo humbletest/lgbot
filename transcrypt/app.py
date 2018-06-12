@@ -420,7 +420,7 @@ class TextInputWithButton(e):
 class LogItem(e):
     def __init__(self, content, kind = "normal"):
         super().__init__("div")
-        self.tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleString()))
+        self.tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleTimeString()))
         self.content = content
         self.cdiv = Div().ac("logcontentdiv")
         if len(self.content)>0:
@@ -523,7 +523,7 @@ class TabPane(e):
         self.tabs = tabs
         self.tabsdiv.x()
         for tab in self.tabs:
-            tabelement = Div().ac("tabpanetab").html(tab.displayname)
+            tabelement = Div().aac(["tabpanetab","noselect"]).html(tab.displayname)
             self.tabsdiv.a(tabelement)
             tab.tabelement = tabelement
             tab.tabelement.ae("mousedown", self.tabSelectedCallback.bind(self, tab))
