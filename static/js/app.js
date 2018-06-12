@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-12 12:06:15
+// Transcrypt'ed from Python, 2018-06-12 13:04:44
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3261,12 +3261,16 @@ function app () {
 					self.keychangedcallback ();
 				}
 			});},
+			get setkeychangedcallback () {return __get__ (this, function (self, keychangedcallback) {
+				self.keychangedcallback = keychangedcallback;
+				return self;
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
 				self.kind = 'nameditem';
 				self.key = args.py_get ('key', uid ());
 				self.item = args.py_get ('item', SchemaItem (args));
-				self.keychangedcallback = args.py_get ('keychangedcallback', null);
+				self.keychangedcallback = null;
 				self.item.parent = self;
 				self.namedcontainer = Div ().ac ('namedschemaitem');
 				self.namediv = Div ().ac ('schemaitemname');
@@ -3401,11 +3405,11 @@ function app () {
 			});},
 			get getschemakinds () {return __get__ (this, function (self) {
 				var schemakinds = dict ({'create': 'Create new', 'scalar': 'Scalar', 'list': 'List', 'dict': 'Dict'});
-				if (self.kind == 'dict') {
-					var __iterable0__ = self.childs;
-					for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
-						var nameditem = __iterable0__ [__index0__];
-						var key = nameditem.key;
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var nameditem = __iterable0__ [__index0__];
+					var key = nameditem.key;
+					if (!(key == null)) {
 						if (len (key) > 0) {
 							schemakinds ['#' + key] = key;
 						}
@@ -3453,7 +3457,7 @@ function app () {
 				sch.setchildparent (self);
 				var appendelement = sch;
 				if (self.kind == 'dict') {
-					var appendelement = NamedSchemaItem (dict ({'item': sch, 'keychangedcallback': self.updatecreatecombo}));
+					var appendelement = NamedSchemaItem (dict ({'item': sch})).setkeychangedcallback (self.updatecreatecombo);
 				}
 				self.childs.append (appendelement);
 				self.buildchilds ();
@@ -3596,6 +3600,7 @@ function app () {
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var child = __iterable0__ [__index0__];
 					child.item.setchildparent (returnobj);
+					child.setkeychangedcallback (returnobj.updatecreatecombo);
 				}
 			}
 			returnobj.setenabled (enabled);

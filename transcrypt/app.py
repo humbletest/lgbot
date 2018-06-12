@@ -954,13 +954,17 @@ class NamedSchemaItem(e):
     def keychanged(self):
         if not ( self.keychangedcallback is None ):
             self.keychangedcallback()
+
+    def setkeychangedcallback(self, keychangedcallback):
+        self.keychangedcallback = keychangedcallback
+        return self
     
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
         self.key = args.get("key", uid())
         self.item = args.get("item", SchemaItem(args))        
-        self.keychangedcallback = args.get("keychangedcallback", None)
+        self.keychangedcallback = None
         self.item.parent = self
         self.namedcontainer = Div().ac("namedschemaitem")
         self.namediv = Div().ac("schemaitemname")        
@@ -1065,15 +1069,15 @@ class SchemaCollection(SchemaItem):
             "scalar" : "Scalar",
             "list" : "List",
             "dict" : "Dict"
-        }        
-        if self.kind == "dict":
-            for nameditem in self.childs:
-                key = nameditem.key
+        }                        
+        for nameditem in self.childs:                
+            key = nameditem.key
+            if not ( key == None ):
                 if len(key) > 0:
-                    schemakinds["#" + key] = key
+                    schemakinds["#" + key] = key        
         return schemakinds
 
-    def updatecreatecombo(self):
+    def updatecreatecombo(self):        
         if not ( self.createcombo is None ):
             self.createcombo.setoptions(self.getschemakinds())
 
@@ -1103,9 +1107,8 @@ class SchemaCollection(SchemaItem):
         appendelement = sch
         if self.kind == "dict":
             appendelement = NamedSchemaItem({
-                "item": sch,
-                "keychangedcallback": self.updatecreatecombo
-            })
+                "item": sch
+            }).setkeychangedcallback(self.updatecreatecombo)
         self.childs.append(appendelement)
         self.buildchilds()      
         self.updatecreatecombo()          
@@ -1150,7 +1153,7 @@ class SchemaCollection(SchemaItem):
         self.opendiv.aa([self.createhook, self.childshook])        
         self.afterelementhook.a(self.opendiv)
         if self.writepreference.childsopened:
-            self.openchilds()
+            self.openchilds()            
 
 class SchemaList(SchemaCollection):
     def toobj(self):
@@ -1231,11 +1234,12 @@ def schemafromobj(obj):
         returnobj = SchemaDict({
             "childs": childs,
             "writepreference": writepreference
-        })
+        })  
         for child in returnobj.childs:
             child.item.setchildparent(returnobj)
+            child.setkeychangedcallback(returnobj.updatecreatecombo)
     returnobj.setenabled(enabled)    
-    returnobj.help = help    
+    returnobj.help = help        
     return returnobj
 
 ######################################################
