@@ -270,3 +270,7 @@
 .logcontentcmdstatuserr {
     color: #a00; font-weight: bold; font-size: 20px;
 }
+
+.logitemcontentmul {
+    color: blue; font-weight: bold;
+}

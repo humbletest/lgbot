@@ -35,8 +35,8 @@ BOT_CMD_ALIASES = {
     "start": {"display":"R", "cmds":["r"]},
     "stop": {"display":"S", "cmds":["s"]},
     "restart": {"display":"SR", "cmds":["s","r"]},
-    "loadconfig": {"display":"Load config", "cmds":["r", "lc"]},
-    "loadprofile": {"display":"Load profile", "cmds":["lp"]}
+    "loadconfig": {"display":"LC", "cmds":["s", "r", "lc", "sc"]},
+    "loadprofile": {"display":"LP", "cmds":["lp"]}
 }
 ######################################################
 
@@ -82,6 +82,7 @@ def buildconfigdiv():
     })
     configsplitpane.controldiv.aa([
         Button("Serialize", serializecallback).fs(24),
+        Button("Reload", reloadcallback).fs(16),
         Button("Show source", showsrc).fs(16)
     ]).bc("#ddd")
     configsplitpane.setcontent(configschema)
@@ -103,8 +104,7 @@ def log(content, dest = "engine"):
     li = LogItem("<pre>" + content + "</pre>")
     processconsoles[dest].log.log(li)
 
-def cmdinpcallback(cmd, key):
-    print("cmdinp", cmd, key)
+def cmdinpcallback(cmd, key):    
     socket.emit('sioreq', {"kind":"cmd", "key": key, "data": cmd})
 
 def serializeputjsonbincallback(json, content):
@@ -131,6 +131,9 @@ def serializecallback():
     global id, maintabpane, configschema, schemajson        
     json = JSON.stringify(serializeconfig(), None, 2)        
     putjsonbin(json, serializeputjsonbincallback, id)
+
+def reloadcallback():
+    document.location.href = "/"
 ######################################################
 
 ######################################################
@@ -158,7 +161,7 @@ def build():
             Tab("config", "Config", buildconfigdiv()),
             Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
-        ], "config"
+        ], "botconsole"
     )    
     
     ge("maintabdiv").innerHTML = ""

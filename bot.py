@@ -5,6 +5,8 @@ from serverutils.utils import getjsonbin, getjsonbinobj
 
 from lbot.lichess import Lichess
 
+import threading
+
 #########################################################
 
 VERSION = "1.0.0"
@@ -25,6 +27,8 @@ configname = None
 config = {}
 
 li = None
+
+controlstarted = False
 
 def gettoken():
     return config.get("token","xxxxxxxxxxxxxxxx")
@@ -61,6 +65,34 @@ def loadprofile():
     except:
         print("! loading profile failed")
 
+def log_control_event(evnt):
+    print(evnt)
+
+"""
+@backoff.on_exception(backoff.expo, BaseException, max_time=600)
+"""
+def control_thread_func():
+    print("starting control stream")    
+    try:
+        es = li.get_event_stream()
+        print("event stream created")
+        for evnt in es.iter_lines():
+            if evnt:
+                event = json.loads(evnt.decode('utf-8'))
+                log_control_event(event)
+            else:
+                log_control_event({"type": "ping"})
+    except:
+        print("! failed to get event stream")        
+
+def startcontrol():
+    global controlstarted
+    if controlstarted:
+        print("! control stream already started")
+    else:        
+        threading.Thread(target = control_thread_func).start()
+        controlstarted = True
+
 def createli():
     global li
     token = gettoken()
@@ -80,5 +112,7 @@ while True:
         createli()
     elif cmd == "lp":
         loadprofile()
+    elif cmd == "sc":
+        startcontrol()
     else:
         print("echo", cmd)

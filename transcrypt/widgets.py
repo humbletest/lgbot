@@ -67,8 +67,23 @@ class TextInputWithButton(e):
         return self
 
 class LogItem(e):
+    def equalto(self, logitem):
+        return ( self.content == logitem.content ) and ( self.kind == logitem.kind )
+
+    def getcontent(self):
+        if self.mul == 0:
+            return self.content
+        else:
+            return "<span class='logitemcontentmul'>+{}</span> {}".format(self.mul, self.content)
+
+    def updatecontent(self):
+        self.cdiv.html(self.getcontent())
+        return self
+
     def __init__(self, content, kind = "normal"):
         super().__init__("div")
+        self.kind = kind
+        self.mul = 0
         self.tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleTimeString()))
         self.content = content
         self.cdiv = Div().ac("logcontentdiv")
@@ -81,14 +96,14 @@ class LogItem(e):
                     self.cdiv.ac("logcontentjson")
                 except:
                     pass
-        self.cdiv.html(self.content)
-        if kind == "cmd":
+        self.cdiv.html(self.content)        
+        if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")
-        elif kind == "cmdreadline":
+        elif self.kind == "cmdreadline":
             self.cdiv.ac("logcontentcmdreadline")
-        elif kind == "cmdstatusok":
+        elif self.kind == "cmdstatusok":
             self.cdiv.ac("logcontentcmdstatusok")
-        elif kind == "cmdstatuserr":
+        elif self.kind == "cmdstatuserr":
             self.cdiv.ac("logcontentcmdstatuserr")
         self.idiv = Div().ac("logitemdiv").aa([self.tdiv, self.cdiv])
         self.idiv.aa([self.tdiv, self.cdiv])
@@ -113,10 +128,18 @@ class Log(e):
     def build(self):
         self.x()
         for item in reversed(self.items):
+            item.updatecontent()
             self.a(item)
 
-    def add(self, item):
-        self.items.append(item)        
+    def add(self, item):        
+        if len(self.items)>0:
+            last = self.items[len(self.items)-1]            
+            if last.equalto(item):
+                last.mul+=1                
+            else:
+                self.items.append(item)        
+        else:
+            self.items.append(item)        
         if len(self.items) > self.maxitems:
             self.items = self.items[1:]
 
@@ -203,13 +226,11 @@ class TabPane(e):
         except:
             pass
 
-    def setTabElementByKey(self, key, tabelement, show = True):
+    def setTabElementByKey(self, key, tabelement):
         tab = self.getTabByKey(key)
         if tab == None:
             return self
         tab.element = tabelement        
-        if show:
-            self.contentdiv.x().a(tab.element)
         self.resizecontent(tab.element)
         return self
 
