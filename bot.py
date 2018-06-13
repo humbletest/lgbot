@@ -7,6 +7,8 @@ from lbot.lichess import Lichess
 
 import threading
 
+import chess
+
 #########################################################
 
 VERSION = "1.0.0"
@@ -28,10 +30,14 @@ config = {}
 
 li = None
 
+board = chess.Board()
+
+print(board)
+
 controlstarted = False
 
 def gettoken():
-    return config.get("token","xxxxxxxxxxxxxxxx")
+    return config.get("token", "xxxxxxxxxxxxxxxx")
 
 #########################################################
 
