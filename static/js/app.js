@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-12 20:25:57
+// Transcrypt'ed from Python, 2018-06-13 10:17:50
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2625,11 +2625,28 @@ function app () {
 		});
 		var LogItem = __class__ ('LogItem', [e], {
 			__module__: __name__,
+			get equalto () {return __get__ (this, function (self, logitem) {
+				return self.content == logitem.content && self.kind == logitem.kind;
+			});},
+			get getcontent () {return __get__ (this, function (self) {
+				if (self.mul == 0) {
+					return self.content;
+				}
+				else {
+					return "<span class='logitemcontentmul'>+{}</span> {}".format (self.mul, self.content);
+				}
+			});},
+			get updatecontent () {return __get__ (this, function (self) {
+				self.cdiv.html (self.getcontent ());
+				return self;
+			});},
 			get __init__ () {return __get__ (this, function (self, content, kind) {
 				if (typeof kind == 'undefined' || (kind != null && kind .hasOwnProperty ("__kwargtrans__"))) {;
 					var kind = 'normal';
 				};
 				__super__ (LogItem, '__init__') (self, 'div');
+				self.kind = kind;
+				self.mul = 0;
 				self.tdiv = Div ().ac ('logtimediv').html ('{}'.format (new Date ().toLocaleTimeString ()));
 				self.content = content;
 				self.cdiv = Div ().ac ('logcontentdiv');
@@ -2647,16 +2664,16 @@ function app () {
 					}
 				}
 				self.cdiv.html (self.content);
-				if (kind == 'cmd') {
+				if (self.kind == 'cmd') {
 					self.cdiv.ac ('logcontentcmd');
 				}
-				else if (kind == 'cmdreadline') {
+				else if (self.kind == 'cmdreadline') {
 					self.cdiv.ac ('logcontentcmdreadline');
 				}
-				else if (kind == 'cmdstatusok') {
+				else if (self.kind == 'cmdstatusok') {
 					self.cdiv.ac ('logcontentcmdstatusok');
 				}
-				else if (kind == 'cmdstatuserr') {
+				else if (self.kind == 'cmdstatuserr') {
 					self.cdiv.ac ('logcontentcmdstatuserr');
 				}
 				self.idiv = Div ().ac ('logitemdiv').aa (list ([self.tdiv, self.cdiv]));
@@ -2686,11 +2703,23 @@ function app () {
 				var __iterable0__ = py_reversed (self.py_items);
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
+					item.updatecontent ();
 					self.a (item);
 				}
 			});},
 			get add () {return __get__ (this, function (self, item) {
-				self.py_items.append (item);
+				if (len (self.py_items) > 0) {
+					var last = self.py_items [len (self.py_items) - 1];
+					if (last.equalto (item)) {
+						last.mul++;
+					}
+					else {
+						self.py_items.append (item);
+					}
+				}
+				else {
+					self.py_items.append (item);
+				}
 				if (len (self.py_items) > self.maxitems) {
 					self.py_items = self.py_items.__getslice__ (1, null, 1);
 				}
@@ -2800,18 +2829,12 @@ function app () {
 					// pass;
 				}
 			});},
-			get setTabElementByKey () {return __get__ (this, function (self, key, tabelement, show) {
-				if (typeof show == 'undefined' || (show != null && show .hasOwnProperty ("__kwargtrans__"))) {;
-					var show = true;
-				};
+			get setTabElementByKey () {return __get__ (this, function (self, key, tabelement) {
 				var tab = self.getTabByKey (key);
 				if (tab == null) {
 					return self;
 				}
 				tab.element = tabelement;
-				if (show) {
-					self.contentdiv.x ().a (tab.element);
-				}
 				self.resizecontent (tab.element);
 				return self;
 			});},
@@ -3627,7 +3650,7 @@ function app () {
 			}
 		}
 		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])})});
-		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])}), 'loadconfig': dict ({'display': 'Load config', 'cmds': list (['r', 'lc'])}), 'loadprofile': dict ({'display': 'Load profile', 'cmds': list (['lp'])})});
+		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r', 'lc', 'sc'])}), 'loadprofile': dict ({'display': 'LP', 'cmds': list (['lp'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
 		var maintabpane = null;
@@ -3653,7 +3676,7 @@ function app () {
 		};
 		var buildconfigdiv = function () {
 			var configsplitpane = SplitPane (dict ({'controlheight': 50}));
-			configsplitpane.controldiv.aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Show source', showsrc).fs (16)])).bc ('#ddd');
+			configsplitpane.controldiv.aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Reload', reloadcallback).fs (16), Button ('Show source', showsrc).fs (16)])).bc ('#ddd');
 			configsplitpane.setcontent (configschema);
 			return configsplitpane;
 		};
@@ -3677,7 +3700,6 @@ function app () {
 			processconsoles [dest].log.log (li);
 		};
 		var cmdinpcallback = function (cmd, key) {
-			print ('cmdinp', cmd, key);
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': key, 'data': cmd}));
 		};
 		var serializeputjsonbincallback = function (json, content) {
@@ -3708,11 +3730,14 @@ function app () {
 			var json = JSON.stringify (serializeconfig (), null, 2);
 			putjsonbin (json, serializeputjsonbincallback, id);
 		};
+		var reloadcallback = function () {
+			document.location.href = '/';
+		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'config');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -3854,6 +3879,7 @@ function app () {
 			__all__.queryparamsstring = queryparamsstring;
 			__all__.randint = randint;
 			__all__.randscalarvalue = randscalarvalue;
+			__all__.reloadcallback = reloadcallback;
 			__all__.schemafromobj = schemafromobj;
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;

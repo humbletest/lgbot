@@ -418,8 +418,23 @@ class TextInputWithButton(e):
         return self
 
 class LogItem(e):
+    def equalto(self, logitem):
+        return ( self.content == logitem.content ) and ( self.kind == logitem.kind )
+
+    def getcontent(self):
+        if self.mul == 0:
+            return self.content
+        else:
+            return "<span class='logitemcontentmul'>+{}</span> {}".format(self.mul, self.content)
+
+    def updatecontent(self):
+        self.cdiv.html(self.getcontent())
+        return self
+
     def __init__(self, content, kind = "normal"):
         super().__init__("div")
+        self.kind = kind
+        self.mul = 0
         self.tdiv = Div().ac("logtimediv").html("{}".format(__new__ (Date()).toLocaleTimeString()))
         self.content = content
         self.cdiv = Div().ac("logcontentdiv")
@@ -432,14 +447,14 @@ class LogItem(e):
                     self.cdiv.ac("logcontentjson")
                 except:
                     pass
-        self.cdiv.html(self.content)
-        if kind == "cmd":
+        self.cdiv.html(self.content)        
+        if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")
-        elif kind == "cmdreadline":
+        elif self.kind == "cmdreadline":
             self.cdiv.ac("logcontentcmdreadline")
-        elif kind == "cmdstatusok":
+        elif self.kind == "cmdstatusok":
             self.cdiv.ac("logcontentcmdstatusok")
-        elif kind == "cmdstatuserr":
+        elif self.kind == "cmdstatuserr":
             self.cdiv.ac("logcontentcmdstatuserr")
         self.idiv = Div().ac("logitemdiv").aa([self.tdiv, self.cdiv])
         self.idiv.aa([self.tdiv, self.cdiv])
@@ -464,10 +479,18 @@ class Log(e):
     def build(self):
         self.x()
         for item in reversed(self.items):
+            item.updatecontent()
             self.a(item)
 
-    def add(self, item):
-        self.items.append(item)        
+    def add(self, item):        
+        if len(self.items)>0:
+            last = self.items[len(self.items)-1]            
+            if last.equalto(item):
+                last.mul+=1                
+            else:
+                self.items.append(item)        
+        else:
+            self.items.append(item)        
         if len(self.items) > self.maxitems:
             self.items = self.items[1:]
 
@@ -554,13 +577,11 @@ class TabPane(e):
         except:
             pass
 
-    def setTabElementByKey(self, key, tabelement, show = True):
+    def setTabElementByKey(self, key, tabelement):
         tab = self.getTabByKey(key)
         if tab == None:
             return self
         tab.element = tabelement        
-        if show:
-            self.contentdiv.x().a(tab.element)
         self.resizecontent(tab.element)
         return self
 
@@ -1281,8 +1302,8 @@ BOT_CMD_ALIASES = {
     "start": {"display":"R", "cmds":["r"]},
     "stop": {"display":"S", "cmds":["s"]},
     "restart": {"display":"SR", "cmds":["s","r"]},
-    "loadconfig": {"display":"Load config", "cmds":["r", "lc"]},
-    "loadprofile": {"display":"Load profile", "cmds":["lp"]}
+    "loadconfig": {"display":"LC", "cmds":["s", "r", "lc", "sc"]},
+    "loadprofile": {"display":"LP", "cmds":["lp"]}
 }
 ######################################################
 
@@ -1328,6 +1349,7 @@ def buildconfigdiv():
     })
     configsplitpane.controldiv.aa([
         Button("Serialize", serializecallback).fs(24),
+        Button("Reload", reloadcallback).fs(16),
         Button("Show source", showsrc).fs(16)
     ]).bc("#ddd")
     configsplitpane.setcontent(configschema)
@@ -1349,8 +1371,7 @@ def log(content, dest = "engine"):
     li = LogItem("<pre>" + content + "</pre>")
     processconsoles[dest].log.log(li)
 
-def cmdinpcallback(cmd, key):
-    print("cmdinp", cmd, key)
+def cmdinpcallback(cmd, key):    
     socket.emit('sioreq', {"kind":"cmd", "key": key, "data": cmd})
 
 def serializeputjsonbincallback(json, content):
@@ -1377,6 +1398,9 @@ def serializecallback():
     global id, maintabpane, configschema, schemajson        
     json = JSON.stringify(serializeconfig(), None, 2)        
     putjsonbin(json, serializeputjsonbincallback, id)
+
+def reloadcallback():
+    document.location.href = "/"
 ######################################################
 
 ######################################################
@@ -1404,7 +1428,7 @@ def build():
             Tab("config", "Config", buildconfigdiv()),
             Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
-        ], "config"
+        ], "botconsole"
     )    
     
     ge("maintabdiv").innerHTML = ""
