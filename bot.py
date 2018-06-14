@@ -36,6 +36,10 @@ config = {}
 
 li = None
 
+MAX_NUM_PLAYING = 1
+
+lock = threading.Lock()
+
 num_playing = 0
 
 username = "!nouser"
@@ -46,6 +50,16 @@ def gettoken():
     return config.get("token", "xxxxxxxxxxxxxxxx")
 
 #########################################################
+
+def modify_num_playing_atomic(delta):
+    global num_playing, lock
+    lock.acquire()
+    num_playing += delta
+    lock.release()
+
+def max_games_reached():
+    global num_playing, MAX_NUM_PLAYING
+    return num_playing >= MAX_NUM_PLAYING
 
 def loadconfig():
     global configobj, configname, config
@@ -115,8 +129,8 @@ def play_move(game, board):
     else:
         print("! no legal move in game {}".format(game.id))
 
-def play_game(game_id):
-    global num_playing
+def play_game(game_id):    
+    modify_num_playing_atomic(1)
     print("playing game {}".format(game_id))
     updates = li.get_game_stream(game_id).iter_lines()
     game = Game(json.loads(next(updates).decode('utf-8')), username, li.baseUrl, 20)
@@ -124,7 +138,7 @@ def play_game(game_id):
     print(board)
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
-        play_move(game, board)
+        play_move(game, board)    
     try:
         for binary_chunk in updates:
             upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
@@ -146,40 +160,40 @@ def play_game(game_id):
         traceback.print_exception(type(exception), exception, exception.__traceback__)
     finally:
         print("game over {}".format(game.url()))
-        num_playing-=1
+        modify_num_playing_atomic(-1)
 
-def log_control_event(event):
-    global num_playing
+def log_control_event(event):    
     print(event)
     try:        
         kind = event["type"]
         if kind == "challenge":
             chlng = Challenge(event["challenge"])
-            if num_playing>0:
-                print("! too many games, decline {}".format(chlng))
+            if max_games_reached():
+                print("! max games reached, decline new {}".format(chlng))
             else:
                 try:
                     response = li.accept_challenge(chlng.id)
-                    print("playing {}, accept {}".format(num_playing, chlng))                
+                    print("accept {}".format(chlng))                
                 except HTTPError as exception:
                     if exception.response.status_code == 404: # ignore missing challenge
                         print("skip missing {}".format(chlng))
                     else:
                         raise exception
         elif kind == "gameStart":            
-            game_id = event["game"]["id"]
-            if num_playing>0:
-                print("! too many games, decline new game {}".format(game_id))
+            game_id = event["game"]["id"]            
+            if max_games_reached():
+                print("! max games reached, decline new game {}".format(game_id))
             else:
                 threading.Thread(target = play_game, args = (game_id,)).start()
     except:
         print("! error handling event")
-        traceback.print_exc(file=sys.stderr)
+        traceback.print_exc(file = sys.stderr)
 
 """
 @backoff.on_exception(backoff.expo, BaseException, max_time=600)
 """
 def control_thread_func():
+    global num_playing
     print("starting control stream")    
     try:
         es = li.get_event_stream()
@@ -189,7 +203,7 @@ def control_thread_func():
                 event = json.loads(evnt.decode('utf-8'))
                 log_control_event(event)
             else:
-                log_control_event({"type": "ping"})
+                log_control_event({"type": "ping", "num_playing": num_playing})
     except:
         print("! failed to get event stream")        
 
