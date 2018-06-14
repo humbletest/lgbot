@@ -1,13 +1,19 @@
 import json
 
+import sys, traceback
+
 from serverutils.utils import read_string_from_file
 from serverutils.utils import getjsonbin, getjsonbinobj
 
 from lbot.lichess import Lichess
+from lbot.model import Challenge, Game
 
 import threading
 
 import chess
+from chess.variant import find_variant
+
+import random
 
 #########################################################
 
@@ -30,9 +36,9 @@ config = {}
 
 li = None
 
-board = chess.Board()
+num_playing = 0
 
-print(board)
+username = "!nouser"
 
 controlstarted = False
 
@@ -63,16 +69,112 @@ def printconfig():
     print("config printed")
 
 def loadprofile():    
+    global username
     try:
         print("loading profile")
         profile = li.get_profile()
-        print("profile loaded")
-        print(profile)
+        username = profile["username"]
+        print("profile loaded for {}".format(username))
+        #print(profile)
     except:
         print("! loading profile failed")
+        traceback.print_exc(file=sys.stderr)
 
-def log_control_event(evnt):
-    print(evnt)
+def setup_board(game):
+    if game.variant_name.lower() == "chess960":
+        board = chess.Board(game.initial_fen, chess960=True)
+    elif game.variant_name == "From Position":
+        board = chess.Board(game.initial_fen)
+    else:
+        VariantBoard = find_variant(game.variant_name)
+        board = VariantBoard()
+    moves = game.state["moves"].split()
+    for move in moves:
+        board = update_board(board, move)
+
+    return board
+
+def is_white_to_move(game, moves):
+    return len(moves) % 2 == (0 if game.white_starts else 1)
+
+def is_engine_move(game, moves):
+    return game.is_white == is_white_to_move(game, moves)
+
+def update_board(board, move):
+    uci_move = chess.Move.from_uci(move)
+    board.push(uci_move)
+    return board
+
+def play_move(game, board):
+    moves = list(board.generate_legal_moves())
+    if len(moves)>0:
+        best_move = random.choice(moves)
+        print("making move {} in game {}".format(best_move.uci(), game.id))
+        li.make_move(game.id, best_move)
+        game.abort_in(20)
+    else:
+        print("! no legal move in game {}".format(game.id))
+
+def play_game(game_id):
+    global num_playing
+    print("playing game {}".format(game_id))
+    updates = li.get_game_stream(game_id).iter_lines()
+    game = Game(json.loads(next(updates).decode('utf-8')), username, li.baseUrl, 20)
+    board = setup_board(game)    
+    print(board)
+    moves = game.state["moves"].split()
+    if is_engine_move(game, moves):                                        
+        play_move(game, board)
+    try:
+        for binary_chunk in updates:
+            upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
+            u_type = upd["type"] if upd else "ping"
+            if u_type == "chatLine":
+                pass
+            elif u_type == "gameState":
+                game.state = upd
+                moves = upd["moves"].split()
+                board = update_board(board, moves[-1])
+                if is_engine_move(game, moves):                                        
+                    play_move(game, board)
+            elif u_type == "ping":
+                if game.should_abort_now():
+                    print("aborting {} by lack of activity".format(game.url()))
+                    li.abort(game.id)
+    except (RemoteDisconnected, ChunkedEncodingError, ConnectionError, ProtocolError, HTTPError) as exception:
+        print("! abandoning game due to connection error")
+        traceback.print_exception(type(exception), exception, exception.__traceback__)
+    finally:
+        print("game over {}".format(game.url()))
+        num_playing-=1
+
+def log_control_event(event):
+    global num_playing
+    print(event)
+    try:        
+        kind = event["type"]
+        if kind == "challenge":
+            chlng = Challenge(event["challenge"])
+            if num_playing>0:
+                print("! too many games, decline {}".format(chlng))
+            else:
+                try:
+                    response = li.accept_challenge(chlng.id)
+                    print("playing {}, accept {}".format(num_playing, chlng))                
+                except HTTPError as exception:
+                    if exception.response.status_code == 404: # ignore missing challenge
+                        print("skip missing {}".format(chlng))
+                    else:
+                        raise exception
+        elif kind == "gameStart":            
+            game_id = event["game"]["id"]
+            if num_playing>0:
+                print("! too many games, decline new game {}".format(game_id))
+            else:
+                threading.Thread(target = play_game, args = (game_id,)).start()
+    except:
+        print("! error handling event")
+        traceback.print_exc(file=sys.stderr)
 
 """
 @backoff.on_exception(backoff.expo, BaseException, max_time=600)

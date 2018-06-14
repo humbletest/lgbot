@@ -2,6 +2,7 @@
 
 /lbot/*
 !/lbot/lichess.py
+!/lbot/model.py
 
 
 driver/
