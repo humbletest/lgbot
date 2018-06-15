@@ -1295,15 +1295,14 @@ if len(queryparamsstring) > 1:
 ENGINE_CMD_ALIASES = {
     "start": {"display":"R", "cmds":["r"]},
     "stop": {"display":"S", "cmds":["s"]},
-    "restart": {"display":"SR", "cmds":["s","r"]}
+    "uci": {"display":"uci", "cmds":["uci"]},
+    "d15": {"display":"d15", "cmds":["go depth 15"]}
 }
 
 BOT_CMD_ALIASES = {
     "start": {"display":"R", "cmds":["r"]},
-    "stop": {"display":"S", "cmds":["s"]},
-    "restart": {"display":"SR", "cmds":["s","r"]},
-    "loadconfig": {"display":"LC", "cmds":["s", "r", "lc", "sc"]},
-    "loadprofile": {"display":"LP", "cmds":["lp"]}
+    "stop": {"display":"S", "cmds":["s"]},    
+    "loadconfig": {"display":"LC", "cmds":["s", "r", "lc", "sc"]}
 }
 ######################################################
 

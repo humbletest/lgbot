@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-14 09:31:25
+// Transcrypt'ed from Python, 2018-06-15 09:56:35
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3649,8 +3649,8 @@ function app () {
 				queryparams [parts [0]] = parts [1];
 			}
 		}
-		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])})});
-		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'restart': dict ({'display': 'SR', 'cmds': list (['s', 'r'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r', 'lc', 'sc'])}), 'loadprofile': dict ({'display': 'LP', 'cmds': list (['lp'])})});
+		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'uci': dict ({'display': 'uci', 'cmds': list (['uci'])}), 'd15': dict ({'display': 'd15', 'cmds': list (['go depth 15'])})});
+		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r', 'lc', 'sc'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
 		var maintabpane = null;
