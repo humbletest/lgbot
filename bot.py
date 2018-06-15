@@ -24,6 +24,8 @@ try:
 except ImportError:
     from http.client import BadStatusLine as RemoteDisconnected
 
+import queue
+
 #########################################################
 
 VERSION = "1.0.0"
@@ -51,6 +53,8 @@ lock = threading.Lock()
 
 num_playing = 0
 
+engine_queue = queue.Queue()
+
 username = "!nouser"
 
 controlstarted = False
@@ -59,6 +63,10 @@ def gettoken():
     return config.get("token", "xxxxxxxxxxxxxxxx")
 
 #########################################################
+
+def empty_queue(q):
+    while not q.empty():
+        q.get()
 
 def modify_num_playing_atomic(delta):
     global num_playing, lock
@@ -128,10 +136,39 @@ def update_board(board, move):
     board.push(uci_move)
     return board
 
+def get_engine_best_move(board):
+    global engine_queue
+    ucis = [
+        "position fen {}".format(board.fen()),
+        "go depth 20"
+    ]
+    print(json.dumps({
+        "enginecmd": "ucis",
+        "ucis": ucis
+    }))
+    while True:
+        sline = engine_queue.get()
+        print("analysis line", sline)
+        parts = sline.split(" ")
+        kind = parts[0]
+        if kind == "bestmove":
+            try:
+                move = chess.Move.from_uci(parts[1])
+                print("best move received", move)
+                return move
+            except:
+                return None
+    return None
+
 def play_move(game, board):
     moves = list(board.generate_legal_moves())
     if len(moves)>0:
         best_move = random.choice(moves)
+        print("random best move", best_move)
+        engine_best_move = get_engine_best_move(board)
+        if not ( engine_best_move is None ):
+            print("using engine best move", engine_best_move)
+            best_move = engine_best_move
         print("making move {} in game {}".format(best_move.uci(), game.id))
         li.make_move(game.id, best_move)
         game.abort_in(20)
@@ -139,6 +176,7 @@ def play_move(game, board):
         print("! no legal move in game {}".format(game.id))
 
 def play_game(game_id):    
+    global engine_queue
     modify_num_playing_atomic(1)
     print("playing game {}".format(game_id))
     updates = li.get_game_stream(game_id).iter_lines()
@@ -149,6 +187,7 @@ def play_game(game_id):
     print(json.dumps({
         "enginecmd": "restart"
     }))
+    empty_queue(engine_queue)
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
         play_move(game, board)    
@@ -250,4 +289,10 @@ while True:
     elif cmd == "sc":
         startcontrol()
     else:
-        print("echo", cmd)
+        try:
+            obj = json.loads(cmd)            
+            if "engineline" in obj:                
+                engineline = obj["engineline"]                
+                engine_queue.put(engineline)
+        except:
+            print("echo", cmd)

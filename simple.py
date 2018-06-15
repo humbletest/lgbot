@@ -35,8 +35,17 @@ class SimpleProcessManager(ProcessManager):
         self.read_line_callback(sline)
 
 class EngineProcessManager(SimpleProcessManager):
+    global processmanagers
+
     def __init__(self, key):
         super().__init__(key)
+
+    def read_line_callback(self, sline):
+        bpm = processmanagers["bot"]
+        obj = {
+            "engineline": sline
+        }
+        bpm.send_line(json.dumps(obj))
 
     def popen(self):
         return process.PopenProcess(
@@ -57,10 +66,15 @@ class BotProcessManager(SimpleProcessManager):
             if "enginecmd" in obj:                
                 epm = processmanagers["engine"]
                 enginecmd = obj["enginecmd"]
-                print("bot engine command", enginecmd)
+                print("bot engine command", enginecmd)                
                 if enginecmd == "restart":
                     epm.stop()
                     epm.start()
+                elif enginecmd == "ucis":                    
+                    ucis = obj["ucis"]
+                    print("sending engine", ucis)
+                    for uci in ucis:
+                        epm.send_line(uci)
         except:
             pass
 
