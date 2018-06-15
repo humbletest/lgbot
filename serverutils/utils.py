@@ -100,13 +100,6 @@ class ProcessManager:
         self.key = key
         self.process = None
 
-    def read_line_callback(self, sline):
-        pass
-
-    def base_read_line_callback(self, sline):
-        print("{} : {}".format(self.key, sline))
-        self.read_line_callback(sline)
-
     def send_line(self, sline):
         if self.process is None:
             msg = "! no {} process to send line".format(self.key)

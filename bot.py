@@ -15,6 +15,15 @@ from chess.variant import find_variant
 
 import random
 
+from requests.exceptions import ChunkedEncodingError, ConnectionError, HTTPError
+from urllib3.exceptions import ProtocolError
+
+try:
+    from http.client import RemoteDisconnected
+    # New in version 3.5: Previously, BadStatusLine('') was raised.
+except ImportError:
+    from http.client import BadStatusLine as RemoteDisconnected
+
 #########################################################
 
 VERSION = "1.0.0"
@@ -135,7 +144,11 @@ def play_game(game_id):
     updates = li.get_game_stream(game_id).iter_lines()
     game = Game(json.loads(next(updates).decode('utf-8')), username, li.baseUrl, 20)
     board = setup_board(game)    
-    print(board)
+    print(board)    
+    # spawn fresh engine
+    print(json.dumps({
+        "enginecmd": "restart"
+    }))
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
         play_move(game, board)    

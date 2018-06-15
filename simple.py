@@ -24,11 +24,15 @@ class SimpleProcessManager(ProcessManager):
         super().__init__(key)
 
     def read_line_callback(self, sline):
+        pass
+
+    def base_read_line_callback(self, sline):
         postjson(PROCESS_READ_CALLBACK_URL, {
             "kind": "procreadline",
             "prockey": self.key,
             "sline": sline
         })
+        self.read_line_callback(sline)
 
 class EngineProcessManager(SimpleProcessManager):
     def __init__(self, key):
@@ -37,17 +41,33 @@ class EngineProcessManager(SimpleProcessManager):
     def popen(self):
         return process.PopenProcess(
             SIMPLE_ENGINE_PATH,
-            self.read_line_callback
+            self.base_read_line_callback
         )
 
 class BotProcessManager(SimpleProcessManager):
+    global processmanagers
+
     def __init__(self, key):
         super().__init__(key)
+
+    def read_line_callback(self, sline):
+        try:
+            obj = json.loads(sline)
+            print("bot json command")
+            if "enginecmd" in obj:                
+                epm = processmanagers["engine"]
+                enginecmd = obj["enginecmd"]
+                print("bot engine command", enginecmd)
+                if enginecmd == "restart":
+                    epm.stop()
+                    epm.start()
+        except:
+            pass
 
     def popen(self):
         return process.PopenProcess(
             "python",
-            self.read_line_callback,
+            self.base_read_line_callback,
             proc_args = ["-u", "bot.py"],
             ignore_cwd = True
         )

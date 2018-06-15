@@ -15,9 +15,4 @@ git push heroku master
 
 pause
 
-git push origin master
-
-pause
-
-git push gitlab master
-
+git push lgbot master
