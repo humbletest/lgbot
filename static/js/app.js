@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-15 09:56:35
+// Transcrypt'ed from Python, 2018-06-15 19:40:23
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2687,7 +2687,7 @@ function app () {
 				__super__ (Log, '__init__') (self, 'div');
 				self.width = args.py_get ('width', 600);
 				self.height = args.py_get ('height', 400);
-				self.maxitems = args.py_get ('maxitems', 100);
+				self.maxitems = args.py_get ('maxitems', 20);
 				self.ac ('logdiv');
 				self.py_items = list ([]);
 				self.resize (self.width, self.height);
