@@ -12,6 +12,7 @@ import threading
 
 import chess
 from chess.variant import find_variant
+from chess.uci import InfoHandler, Engine
 
 import random
 
@@ -63,6 +64,23 @@ def gettoken():
     return config.get("token", "xxxxxxxxxxxxxxxx")
 
 #########################################################
+
+def senducis(ucis):
+    print(json.dumps({
+        "enginecmd": "ucis",
+        "ucis": ucis
+    }))    
+
+def sendoption(name, value):
+    senducis([
+        "setoption name {} value {}".format(name, value)
+    ])
+
+def sendmultipv():
+    global config
+    if "multipv" in config:
+        multipv = config.get("multipv")
+        sendoption("MultiPV", multipv)
 
 def empty_queue(q):
     while not q.empty():
@@ -136,36 +154,74 @@ def update_board(board, move):
     board.push(uci_move)
     return board
 
-def get_engine_best_move(board):
-    global engine_queue
-    ucis = [
+def get_most_drawish_move(info):
+    print("getting most drawish move")
+    try:
+        mindelta = 10000 * 10000
+        move = None
+        for i in range(1, len(info["score"])+1):
+            score = info["score"][i][0]
+            if score == None:
+                mate = info["score"][i][1]
+                if mate < 0:
+                    score = -10000 - mate
+                else:
+                    score = 10000 - mate
+            scdelta = score * score
+            if scdelta < mindelta:
+                mindelta = scdelta
+                pv = info["pv"][i]
+                move = pv[0]
+                print("found more drawish move", move, score)
+        print("most drawish {} delta {}".format(move, mindelta))
+        return move
+    except:
+        traceback.print_exc(file = sys.stderr)
+        return None
+
+def get_engine_best_move(board, wtime, btime, winc, binc):
+    print("getting engine best move", wtime, btime, winc, binc)
+    global engine_queue, config
+    senducis([
         "position fen {}".format(board.fen()),
-        "go depth 20"
-    ]
-    print(json.dumps({
-        "enginecmd": "ucis",
-        "ucis": ucis
-    }))
+        "go wtime {} btime {} winc {} binc {}".format(wtime, btime, winc, binc)
+    ])
+    eng = Engine()
+    eng.board = board
+    infh = InfoHandler()    
+    eng.info_handlers.append(infh)
     while True:
-        sline = engine_queue.get()
-        print("analysis line", sline)
+        sline = engine_queue.get()        
         parts = sline.split(" ")
-        kind = parts[0]
+        kind = parts[0]        
         if kind == "bestmove":
             try:
                 move = chess.Move.from_uci(parts[1])
                 print("best move received", move)
+                if "selectmove" in config:
+                    selectmove = config["selectmove"]
+                    print("select move strategy", selectmove)
+                    if selectmove == "mostdrawish":
+                        move = get_most_drawish_move(infh.info)
                 return move
             except:
                 return None
+        elif kind == "info":
+            try:
+                eng._info(sline)
+                print("engine thinking")
+            except:
+                print("info handler error")
+                traceback.print_exc(file = sys.stderr)
     return None
 
-def play_move(game, board):
+def play_move(game, board, wtime, btime, winc, binc):
+    print("playing move", wtime, btime, winc, binc)
     moves = list(board.generate_legal_moves())
     if len(moves)>0:
         best_move = random.choice(moves)
         print("random best move", best_move)
-        engine_best_move = get_engine_best_move(board)
+        engine_best_move = get_engine_best_move(board, wtime, btime, winc, binc)
         if not ( engine_best_move is None ):
             print("using engine best move", engine_best_move)
             best_move = engine_best_move
@@ -187,10 +243,11 @@ def play_game(game_id):
     print(json.dumps({
         "enginecmd": "restart"
     }))
+    sendmultipv()
     empty_queue(engine_queue)
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
-        play_move(game, board)    
+        play_move(game, board, 2000, 2000, 0, 0)
     try:
         for binary_chunk in updates:
             upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
@@ -202,7 +259,7 @@ def play_game(game_id):
                 moves = upd["moves"].split()
                 board = update_board(board, moves[-1])
                 if is_engine_move(game, moves):                                        
-                    play_move(game, board)
+                    play_move(game, board, upd["wtime"], upd["btime"], upd["winc"], upd["binc"])
             elif u_type == "ping":
                 if game.should_abort_now():
                     print("aborting {} by lack of activity".format(game.url()))

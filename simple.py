@@ -10,6 +10,7 @@ import json
 #############################################
 # local imports
 from serverutils import process
+process.VERBOSE = False
 from serverutils.utils import postjson, ProcessManager
 #############################################
 

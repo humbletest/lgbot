@@ -115,7 +115,7 @@ class PopenProcess(object):
 
     def send_line(self, string):
         if VERBOSE:
-            print("sending line",string)
+            print("sending line", string)
         with self._stdin_lock:
             self.process.stdin.write(string + "\n")
             self.process.stdin.flush()

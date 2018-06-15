@@ -21,7 +21,7 @@ def geturl(url):
     return content
 
 def postjson(url, obj):
-    print("post json", url, obj)
+    #print("post json", url, obj)
     r = http.request('POST', url, headers={'Content-Type': 'application/json'}, body=json.dumps(obj))
     content = r.data.decode("utf-8")
     return content
@@ -108,7 +108,7 @@ class ProcessManager:
         else:
             self.process.send_line(sline)
             msg = "line sent to {} process : {}".format(self.key, sline)
-            print(msg)
+            #print(msg)
             return msg
 
     def popen(self):
