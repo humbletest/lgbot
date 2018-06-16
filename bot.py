@@ -78,6 +78,14 @@ def sendoption(name, value):
 
 def sendmultipv():
     global config
+    if "ucioptions" in config:
+        ucioptions = config.get("ucioptions")
+        for name in ucioptions:
+            value = ucioptions[name]
+            sendoption(name, value)
+
+def senducioptions():
+    global config
     if "multipv" in config:
         multipv = config.get("multipv")
         sendoption("MultiPV", multipv)
@@ -96,8 +104,9 @@ def max_games_reached():
     global num_playing, MAX_NUM_PLAYING
     return num_playing >= MAX_NUM_PLAYING
 
-def loadconfig():
+def loadconfig_bin():
     global configobj, configname, config
+    print("loading config bin")
     binid = getbinid()
     if not ( binid is None ):            
         try:
@@ -106,10 +115,27 @@ def loadconfig():
             configname = configobj[0]
             config = configobj[1]
             print("config {} loaded ok".format(configname))            
+            return True
         except:
-            print("! loading config failed")
+            print("! loading config bin failed")
     else:
         print("! missing binid")
+    return False
+
+def loadconfig_local():
+    global configobj, configname, config
+    print("loading config local")
+    try:
+        content = read_string_from_file("localconfig.json", "")
+        obj = json.loads(content)
+        configobj = obj["config"]
+        configname = configobj[0]
+        config = configobj[1]
+        print("config {} loaded ok".format(configname))            
+        return True
+    except:
+        print("! loading config local failed")
+    return False
 
 def printconfig():
     print("printing config")
@@ -180,11 +206,15 @@ def get_most_drawish_move(info):
         return None
 
 def get_engine_best_move(board, wtime, btime, winc, binc):
-    print("getting engine best move", wtime, btime, winc, binc)
+    first = ( board.fullmove_number == 1 )
+    print("getting engine best move", first, wtime, btime, winc, binc)
     global engine_queue, config
+    gocommand = "go wtime {} btime {} winc {} binc {}".format(wtime, btime, winc, binc)
+    if first:
+        gocommand = "go movetime {}".format(2000)
     senducis([
         "position fen {}".format(board.fen()),
-        "go wtime {} btime {} winc {} binc {}".format(wtime, btime, winc, binc)
+        gocommand
     ])
     eng = Engine()
     eng.board = board
@@ -209,7 +239,7 @@ def get_engine_best_move(board, wtime, btime, winc, binc):
         elif kind == "info":
             try:
                 eng._info(sline)
-                print("engine thinking")
+                #print("engine thinking")
             except:
                 print("info handler error")
                 traceback.print_exc(file = sys.stderr)
@@ -244,6 +274,7 @@ def play_game(game_id):
         "enginecmd": "restart"
     }))
     sendmultipv()
+    senducioptions()
     empty_queue(engine_queue)
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
@@ -338,7 +369,7 @@ def createli():
 while True:
     cmd = input("").rstrip()
     if cmd == "lc":
-        loadconfig()
+        loadconfig_local()
         printconfig()
         createli()
     elif cmd == "lp":

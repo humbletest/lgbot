@@ -252,7 +252,8 @@ build()
 if "id" in queryparams:    
     id = queryparams["id"]
     if not ( id == "local" ):
-        getjsonbin(id, getbincallback, getbinerrcallback)
+        #getjsonbin(id, getbincallback, getbinerrcallback)
+        loadlocal()
 else:
     loadlocal()
 
