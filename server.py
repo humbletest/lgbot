@@ -112,8 +112,10 @@ def hello():
     print("request root", request.full_path)
     if request.full_path == "/?":
         binid = read_string_from_file("binid.txt", "local")
+        # use local anyway ( comment this out to get stored binid )
+        binid = "local"
         rurl = "/?id=" + binid
-        print("redirecting root to",rurl)
+        print("redirecting root to", rurl)
         return redirect(rurl)
     return render_template("index.html", randurl = randurl)
 

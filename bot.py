@@ -90,6 +90,12 @@ def senducioptions():
         multipv = config.get("multipv")
         sendoption("MultiPV", multipv)
 
+def sendenginelog(value):
+    print(json.dumps({
+        "enginecmd": "enginelog",
+        "value": value
+    }))    
+
 def empty_queue(q):
     while not q.empty():
         q.get()
@@ -275,6 +281,7 @@ def play_game(game_id):
     }))
     sendmultipv()
     senducioptions()
+    sendenginelog(False)
     empty_queue(engine_queue)
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
@@ -297,10 +304,11 @@ def play_game(game_id):
                     li.abort(game.id)
     except (RemoteDisconnected, ChunkedEncodingError, ConnectionError, ProtocolError, HTTPError) as exception:
         print("! abandoning game due to connection error")
-        traceback.print_exception(type(exception), exception, exception.__traceback__)
+        traceback.print_exception(type(exception), exception, exception.__traceback__)        
     finally:
         print("game over {}".format(game.url()))
         modify_num_playing_atomic(-1)
+        sendenginelog(True)
 
 def log_control_event(event):    
     print(event)

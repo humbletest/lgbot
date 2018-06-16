@@ -99,6 +99,7 @@ class ProcessManager:
     def __init__(self, key):
         self.key = key
         self.process = None
+        self.sendlog = True
 
     def send_line(self, sline):
         if self.process is None:

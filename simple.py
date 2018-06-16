@@ -28,18 +28,19 @@ class SimpleProcessManager(ProcessManager):
         pass
 
     def base_read_line_callback(self, sline):
-        postjson(PROCESS_READ_CALLBACK_URL, {
-            "kind": "procreadline",
-            "prockey": self.key,
-            "sline": sline
-        })
+        if self.sendlog:
+            postjson(PROCESS_READ_CALLBACK_URL, {
+                "kind": "procreadline",
+                "prockey": self.key,
+                "sline": sline
+            })
         self.read_line_callback(sline)
 
 class EngineProcessManager(SimpleProcessManager):
     global processmanagers
 
     def __init__(self, key):
-        super().__init__(key)
+        super().__init__(key)        
 
     def read_line_callback(self, sline):
         bpm = processmanagers["bot"]
@@ -76,6 +77,10 @@ class BotProcessManager(SimpleProcessManager):
                     print("sending engine", ucis)
                     for uci in ucis:
                         epm.send_line(uci)
+                elif enginecmd == "enginelog":
+                    value = obj["value"]
+                    epm.sendlog = value
+                    
         except:
             pass
 

@@ -96,7 +96,8 @@ class LogItem(e):
                     self.cdiv.ac("logcontentjson")
                 except:
                     pass
-        self.cdiv.html(self.content)        
+        self.content = striplonglines(self.content)
+        self.cdiv.html(self.content)
         if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")
         elif self.kind == "cmdreadline":
