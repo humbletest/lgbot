@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-16 17:58:23
+// Transcrypt'ed from Python, 2018-06-16 18:37:22
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3804,7 +3804,7 @@ function app () {
 		if (__in__ ('id', queryparams)) {
 			var id = queryparams ['id'];
 			if (!(id == 'local')) {
-				getjsonbin (id, getbincallback, getbinerrcallback);
+				loadlocal ();
 			}
 		}
 		else {

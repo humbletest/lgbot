@@ -4,7 +4,10 @@
     {
       "token": "JmEKjUOpgC0WYTLW",
       "multipv": "250",
-      "selectmove": "mostdrawish"
+      "selectmove": "mostdrawish",
+      "ucioptions": {
+        "Move Overhead": "4500"
+      }
     }
   ],
   "configschema": {
@@ -94,6 +97,45 @@
                   "showhelpashtml": true
                 },
                 "value": "mostdrawish"
+              }
+            },
+            {
+              "key": "ucioptions",
+              "item": {
+                "kind": "dict",
+                "enabled": true,
+                "help": "No help available for this item.",
+                "writepreference": {
+                  "addchild": true,
+                  "remove": true,
+                  "childsopened": false,
+                  "editenabled": true,
+                  "editkey": true,
+                  "editvalue": true,
+                  "radio": false,
+                  "showhelpashtml": true
+                },
+                "items": [
+                  {
+                    "key": "Move Overhead",
+                    "item": {
+                      "kind": "scalar",
+                      "enabled": true,
+                      "help": "No help available for this item.",
+                      "writepreference": {
+                        "addchild": true,
+                        "remove": true,
+                        "childsopened": false,
+                        "editenabled": true,
+                        "editkey": true,
+                        "editvalue": true,
+                        "radio": false,
+                        "showhelpashtml": true
+                      },
+                      "value": "4500"
+                    }
+                  }
+                ]
               }
             }
           ]
