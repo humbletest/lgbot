@@ -59,25 +59,7 @@ def patchclasses(selfref, args):
 
 __pragma__("jsiter")
 
-def putjsonbinfailed(err, json, callback):
-    print("putjsonbin failed with",err)
-    print("falling back to local storage")
-    localStorage.setItem("jsonbin",json)
-    callback(json, json)
-
-def getlocalcontent():
-    print("getting local content")
-    content = localStorage.getItem("jsonbin")
-    if content == None:
-        print("no local jsonbin, falling back to empty dict")
-        content = '{}'
-    return content
-
-def getjsonbinfailed(err, callback):
-    print("getjsonbin failed with",err)    
-    callback(getlocalcontent())
-
-def putjsonbin(json, callback, id = None):
+def putjsonbin(json, id, callback, errcallback):
 
     method = "POST"
     url = "https://api.jsonbin.io/b"        
@@ -99,18 +81,13 @@ def putjsonbin(json, callback, id = None):
     
     fetch(url, args).then(
         lambda response: response.text().then(
-            lambda content: callback(json, content),
-            lambda err: putjsonbinfailed(err, json, callback)
+            lambda content: callback(content),
+            lambda err: errcallback(err)
         ),
-        lambda err: putjsonbinfailed(err, json, callback)
+        lambda err: errcallback(err)
     )
-    
 
 def getjsonbin(id, callback, errcallback, version = "latest"):
-
-    if id == "local":
-        callback(getlocalcontent())
-        return
 
     args = {
         "method": "GET",

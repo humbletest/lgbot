@@ -89,6 +89,11 @@ class socket_handler:
                     elif kind == "storebinid":
                         binid = jsonobj["data"]
                         write_string_to_file("binid.txt", binid)
+                    elif kind == "storeconfig":
+                        write_string_to_file("localconfig.json", jsonobj["data"])
+                    elif kind == "getlocalconfig":
+                        rjsonobj["kind"] = "setlocalconfig"
+                        rjsonobj["data"] = read_string_from_file("localconfig.json", "{}")
                 except:
                     rjsonobj["status"] = "! command error"
 
