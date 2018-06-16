@@ -59,25 +59,7 @@ def patchclasses(selfref, args):
 
 __pragma__("jsiter")
 
-def putjsonbinfailed(err, json, callback):
-    print("putjsonbin failed with",err)
-    print("falling back to local storage")
-    localStorage.setItem("jsonbin",json)
-    callback(json, json)
-
-def getlocalcontent():
-    print("getting local content")
-    content = localStorage.getItem("jsonbin")
-    if content == None:
-        print("no local jsonbin, falling back to empty dict")
-        content = '{}'
-    return content
-
-def getjsonbinfailed(err, callback):
-    print("getjsonbin failed with",err)    
-    callback(getlocalcontent())
-
-def putjsonbin(json, callback, id = None):
+def putjsonbin(json, id, callback, errcallback):
 
     method = "POST"
     url = "https://api.jsonbin.io/b"        
@@ -99,18 +81,13 @@ def putjsonbin(json, callback, id = None):
     
     fetch(url, args).then(
         lambda response: response.text().then(
-            lambda content: callback(json, content),
-            lambda err: putjsonbinfailed(err, json, callback)
+            lambda content: callback(content),
+            lambda err: errcallback(err)
         ),
-        lambda err: putjsonbinfailed(err, json, callback)
+        lambda err: errcallback(err)
     )
-    
 
 def getjsonbin(id, callback, errcallback, version = "latest"):
-
-    if id == "local":
-        callback(getlocalcontent())
-        return
 
     args = {
         "method": "GET",
@@ -128,7 +105,8 @@ def getjsonbin(id, callback, errcallback, version = "latest"):
         lambda err: errcallback(err)
     )
 
-__pragma__("nojsiter")######################################################
+__pragma__("nojsiter")
+######################################################
 # dom
 SCROLL_BAR_WIDTH = getScrollBarWidth()
 
@@ -1322,24 +1300,44 @@ schemajson = None
 
 ######################################################
 # client functions
+def getlocalconfig():
+    global socket
+    socket.emit('sioreq', {"kind":"getlocalconfig"})
+
+def loadlocal():
+    document.location.href="/?id=local"
+
 def showsrc():
     srcjsoncontent = JSON.stringify(serializeconfig(), None, 2)
     srcdiv.html("<pre>" + srcjsoncontent + "</pre>")
     maintabpane.selectByKey("src")
 
 def serializeconfig():
+    global configschema
     obj = {
         "config": configschema.topureobj(),
         "configschema": configschema.toobj()
-    }
+    }    
     return obj
 
 def deserializeconfig(obj):
     global configschema
-    schemaobj = {}
-    if "configschema" in obj:
-        schemaobj = obj["configschema"]    
-    configschema = schemafromobj(schemaobj)
+    try:
+        schemaobj = {}
+        if "configschema" in obj:
+            schemaobj = obj["configschema"]
+        configschema = schemafromobj(schemaobj)
+    except:
+        print("deserialize config obj failed for", obj)
+
+def deserializeconfigcontent(content):
+    global maintabpane
+    try:
+        obj = JSON.parse(content)    
+        deserializeconfig(obj)        
+    except:
+        print("deserializing config content failed for", content)
+    maintabpane.setTabElementByKey("config", buildconfigdiv())
 
 def buildconfigdiv():    
     global configschema
@@ -1355,48 +1353,48 @@ def buildconfigdiv():
     return configsplitpane
 
 def getbincallback(content):    
-    obj = JSON.parse(content)    
-    deserializeconfig(obj)
-    maintabpane.setTabElementByKey("config", buildconfigdiv())
+    deserializeconfigcontent(content)    
 
 def getbinerrcallback(err):
-    print("get bin failed with",err)
+    print("get bin failed with", err)
     loadlocal()
-
-def loadlocal():
-    document.location.href="/?id=local"
 
 def log(content, dest = "engine"):    
     li = LogItem("<pre>" + content + "</pre>")
     processconsoles[dest].log.log(li)
 
 def cmdinpcallback(cmd, key):    
+    global socket
     socket.emit('sioreq', {"kind":"cmd", "key": key, "data": cmd})
 
-def serializeputjsonbincallback(json, content):
+def serializeputjsonbincallback(content):
+    global socket
     #print(json);return;
     try:
         obj = JSON.parse(content)        
-        binid = None
+        binid = "local"
         if "id" in obj:
             binid = obj["id"]                
-        if "parentId" in obj:
-            binid = obj["parentId"]                
-        if binid is None:
-            binid = "local"
-        else:
-            #store binid in binid.txt
+        elif "parentId" in obj:
+            binid = obj["parentId"]
+        if not ( binid == "local" ):
             socket.emit('sioreq', {"kind":"storebinid", "data": binid})
         href = window.location.protocol + "//" + window.location.host + "/?id=" + binid        
         document.location.href = href
     except:
         print("there was an error parsing json", content)
+        loadlocal()
         return
 
+def serializeputjsonbinerrcallback(err):
+    print("there was an error putting to json bin", err)
+    loadlocal()
+
 def serializecallback():
-    global id, maintabpane, configschema, schemajson        
+    global id, socket
     json = JSON.stringify(serializeconfig(), None, 2)        
-    putjsonbin(json, serializeputjsonbincallback, id)
+    socket.emit('sioreq', {"kind":"storeconfig", "data": json})
+    #putjsonbin(json, id, serializeputjsonbincallback, serializeputjsonbinerrcallback)
 
 def reloadcallback():
     document.location.href = "/"
@@ -1437,10 +1435,13 @@ def build():
 ######################################################
 # socket handler
 def onconnect():    
+    global socket
     log("socket connected ok")    
     socket.emit('sioreq', {"data": "socket connected"})
+    if id == "local":
+        getlocalconfig()
 
-def onevent(json):
+def onevent(json):    
     dest = "engine"
     logitem = None
     if "kind" in json:
@@ -1452,9 +1453,9 @@ def onevent(json):
             if dest == "bot":
                 if len(sline)>0:
                     if sline[0] == "!":
-                        logitem = LogItem("bot error:" + sline[1:], "cmdstatuserr")
-    if "response" in json:
-        response = json["response"]
+                        logitem = LogItem("bot error:" + sline[1:], "cmdstatuserr")        
+    if "response" in json:        
+        response = json["response"]        
         if "key" in response:
             dest = response["key"]
         if "status" in response:
@@ -1463,6 +1464,11 @@ def onevent(json):
             if len(status)>0:
                 if status[0] == "!":
                     logitem = LogItem(status, "cmdstatuserr")
+        if "kind" in response:            
+            kind = response["kind"]
+            if kind == "setlocalconfig":                
+                data = response["data"]                
+                deserializeconfigcontent(data)
     if logitem is None:
         log("socket received event " + JSON.stringify(json, null, 2), dest)    
     else:
@@ -1490,7 +1496,8 @@ build()
 
 if "id" in queryparams:    
     id = queryparams["id"]
-    getjsonbin(id, getbincallback, getbinerrcallback)
+    if not ( id == "local" ):
+        getjsonbin(id, getbincallback, getbinerrcallback)
 else:
     loadlocal()
 

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-15 19:40:23
+// Transcrypt'ed from Python, 2018-06-16 17:58:23
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2260,29 +2260,7 @@ function app () {
 				}
 			}
 		};
-		var putjsonbinfailed = function (err, json, callback) {
-			print ('putjsonbin failed with', err);
-			print ('falling back to local storage');
-			localStorage.setItem ('jsonbin', json);
-			callback (json, json);
-		};
-		var getlocalcontent = function () {
-			print ('getting local content');
-			var content = localStorage.getItem ('jsonbin');
-			if (content == null) {
-				print ('no local jsonbin, falling back to empty dict');
-				var content = '{}';
-			}
-			return content;
-		};
-		var getjsonbinfailed = function (err, callback) {
-			print ('getjsonbin failed with', err);
-			callback (getlocalcontent ());
-		};
-		var putjsonbin = function (json, callback, id) {
-			if (typeof id == 'undefined' || (id != null && id .hasOwnProperty ("__kwargtrans__"))) {;
-				var id = null;
-			};
+		var putjsonbin = function (json, id, callback, errcallback) {
 			var method = 'POST';
 			var url = 'https://api.jsonbin.io/b';
 			if (id == 'local') {
@@ -2295,22 +2273,18 @@ function app () {
 			var args = {'method': method, 'headers': {'Content-Type': 'application/json', 'private': false}, 'body': json};
 			fetch (url, args).then ((function __lambda__ (response) {
 				return response.text ().then ((function __lambda__ (content) {
-					return callback (json, content);
+					return callback (content);
 				}), (function __lambda__ (err) {
-					return putjsonbinfailed (err, json, callback);
+					return errcallback (err);
 				}));
 			}), (function __lambda__ (err) {
-				return putjsonbinfailed (err, json, callback);
+				return errcallback (err);
 			}));
 		};
 		var getjsonbin = function (id, callback, errcallback, version) {
 			if (typeof version == 'undefined' || (version != null && version .hasOwnProperty ("__kwargtrans__"))) {;
 				var version = 'latest';
 			};
-			if (id == 'local') {
-				callback (getlocalcontent ());
-				return ;
-			}
 			var args = {'method': 'GET', 'headers': {'Content-Type': 'application/json', 'private': false}};
 			fetch ((('https://api.jsonbin.io/b/' + id) + '/') + version, args).then ((function __lambda__ (response) {
 				return response.text ().then ((function __lambda__ (content) {
@@ -3658,6 +3632,12 @@ function app () {
 		var id = null;
 		var srcdiv = Div ().ms ().fs (20);
 		var schemajson = null;
+		var getlocalconfig = function () {
+			socket.emit ('sioreq', dict ({'kind': 'getlocalconfig'}));
+		};
+		var loadlocal = function () {
+			document.location.href = '/?id=local';
+		};
 		var showsrc = function () {
 			var srcjsoncontent = JSON.stringify (serializeconfig (), null, 2);
 			srcdiv.html (('<pre>' + srcjsoncontent) + '</pre>');
@@ -3668,11 +3648,26 @@ function app () {
 			return obj;
 		};
 		var deserializeconfig = function (obj) {
-			var schemaobj = dict ({});
-			if (__in__ ('configschema', obj)) {
-				var schemaobj = obj ['configschema'];
+			try {
+				var schemaobj = dict ({});
+				if (__in__ ('configschema', obj)) {
+					var schemaobj = obj ['configschema'];
+				}
+				configschema = schemafromobj (schemaobj);
 			}
-			configschema = schemafromobj (schemaobj);
+			catch (__except0__) {
+				print ('deserialize config obj failed for', obj);
+			}
+		};
+		var deserializeconfigcontent = function (content) {
+			try {
+				var obj = JSON.parse (content);
+				deserializeconfig (obj);
+			}
+			catch (__except0__) {
+				print ('deserializing config content failed for', content);
+			}
+			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
 		};
 		var buildconfigdiv = function () {
 			var configsplitpane = SplitPane (dict ({'controlheight': 50}));
@@ -3681,16 +3676,11 @@ function app () {
 			return configsplitpane;
 		};
 		var getbincallback = function (content) {
-			var obj = JSON.parse (content);
-			deserializeconfig (obj);
-			maintabpane.setTabElementByKey ('config', buildconfigdiv ());
+			deserializeconfigcontent (content);
 		};
 		var getbinerrcallback = function (err) {
 			print ('get bin failed with', err);
 			loadlocal ();
-		};
-		var loadlocal = function () {
-			document.location.href = '/?id=local';
 		};
 		var log = function (content, dest) {
 			if (typeof dest == 'undefined' || (dest != null && dest .hasOwnProperty ("__kwargtrans__"))) {;
@@ -3702,20 +3692,17 @@ function app () {
 		var cmdinpcallback = function (cmd, key) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': key, 'data': cmd}));
 		};
-		var serializeputjsonbincallback = function (json, content) {
+		var serializeputjsonbincallback = function (content) {
 			try {
 				var obj = JSON.parse (content);
-				var binid = null;
+				var binid = 'local';
 				if (__in__ ('id', obj)) {
 					var binid = obj ['id'];
 				}
-				if (__in__ ('parentId', obj)) {
+				else if (__in__ ('parentId', obj)) {
 					var binid = obj ['parentId'];
 				}
-				if (binid === null) {
-					var binid = 'local';
-				}
-				else {
+				if (!(binid == 'local')) {
 					socket.emit ('sioreq', dict ({'kind': 'storebinid', 'data': binid}));
 				}
 				var href = (((window.location.protocol + '//') + window.location.host) + '/?id=') + binid;
@@ -3723,12 +3710,17 @@ function app () {
 			}
 			catch (__except0__) {
 				print ('there was an error parsing json', content);
+				loadlocal ();
 				return ;
 			}
 		};
+		var serializeputjsonbinerrcallback = function (err) {
+			print ('there was an error putting to json bin', err);
+			loadlocal ();
+		};
 		var serializecallback = function () {
 			var json = JSON.stringify (serializeconfig (), null, 2);
-			putjsonbin (json, serializeputjsonbincallback, id);
+			socket.emit ('sioreq', dict ({'kind': 'storeconfig', 'data': json}));
 		};
 		var reloadcallback = function () {
 			document.location.href = '/';
@@ -3744,6 +3736,9 @@ function app () {
 		var onconnect = function () {
 			log ('socket connected ok');
 			socket.emit ('sioreq', dict ({'data': 'socket connected'}));
+			if (id == 'local') {
+				getlocalconfig ();
+			}
 		};
 		var onevent = function (json) {
 			var dest = 'engine';
@@ -3777,6 +3772,13 @@ function app () {
 						}
 					}
 				}
+				if (__in__ ('kind', response)) {
+					var kind = response ['kind'];
+					if (kind == 'setlocalconfig') {
+						var data = response ['data'];
+						deserializeconfigcontent (data);
+					}
+				}
 			}
 			if (logitem === null) {
 				log ('socket received event ' + JSON.stringify (json, null, 2), dest);
@@ -3801,7 +3803,9 @@ function app () {
 		build ();
 		if (__in__ ('id', queryparams)) {
 			var id = queryparams ['id'];
-			getjsonbin (id, getbincallback, getbinerrcallback);
+			if (!(id == 'local')) {
+				getjsonbin (id, getbincallback, getbinerrcallback);
+			}
 		}
 		else {
 			loadlocal ();
@@ -3853,6 +3857,7 @@ function app () {
 			__all__.cmdinpcallback = cmdinpcallback;
 			__all__.configschema = configschema;
 			__all__.deserializeconfig = deserializeconfig;
+			__all__.deserializeconfigcontent = deserializeconfigcontent;
 			__all__.e = e;
 			__all__.ge = ge;
 			__all__.getScrollBarWidth = getScrollBarWidth;
@@ -3860,8 +3865,7 @@ function app () {
 			__all__.getbinerrcallback = getbinerrcallback;
 			__all__.getfromobj = getfromobj;
 			__all__.getjsonbin = getjsonbin;
-			__all__.getjsonbinfailed = getjsonbinfailed;
-			__all__.getlocalcontent = getlocalcontent;
+			__all__.getlocalconfig = getlocalconfig;
 			__all__.id = id;
 			__all__.loadlocal = loadlocal;
 			__all__.log = log;
@@ -3874,7 +3878,6 @@ function app () {
 			__all__.patchclasses = patchclasses;
 			__all__.processconsoles = processconsoles;
 			__all__.putjsonbin = putjsonbin;
-			__all__.putjsonbinfailed = putjsonbinfailed;
 			__all__.queryparams = queryparams;
 			__all__.queryparamsstring = queryparamsstring;
 			__all__.randint = randint;
@@ -3886,6 +3889,7 @@ function app () {
 			__all__.serializecallback = serializecallback;
 			__all__.serializeconfig = serializeconfig;
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
+			__all__.serializeputjsonbinerrcallback = serializeputjsonbinerrcallback;
 			__all__.showsrc = showsrc;
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
