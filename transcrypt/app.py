@@ -1,3 +1,15 @@
+def striplonglines(content, maxlen = 100):
+    lines = content.split("\n")    
+    strippedlines = []
+    for line in lines:        
+        if len(line) > maxlen:   
+            sline = "{} ... [ truncated {} characters ]".format(line.substring(0,maxlen), len(line) - maxlen)
+            strippedlines.append(sline)
+        else:
+            strippedlines.append(line)
+    content = "\n".join(strippedlines)    
+    return content
+
 # https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
 def getScrollBarWidth():
     outer = document.createElement("div")
@@ -425,7 +437,8 @@ class LogItem(e):
                     self.cdiv.ac("logcontentjson")
                 except:
                     pass
-        self.cdiv.html(self.content)        
+        self.content = striplonglines(self.content)
+        self.cdiv.html(self.content)
         if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")
         elif self.kind == "cmdreadline":

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-16 18:37:22
+// Transcrypt'ed from Python, 2018-06-16 20:52:36
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,26 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var striplonglines = function (content, maxlen) {
+			if (typeof maxlen == 'undefined' || (maxlen != null && maxlen .hasOwnProperty ("__kwargtrans__"))) {;
+				var maxlen = 100;
+			};
+			var lines = content.py_split ('\n');
+			var strippedlines = list ([]);
+			var __iterable0__ = lines;
+			for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+				var line = __iterable0__ [__index0__];
+				if (len (line) > maxlen) {
+					var sline = '{} ... [ truncated {} characters ]'.format (line.substring (0, maxlen), len (line) - maxlen);
+					strippedlines.append (sline);
+				}
+				else {
+					strippedlines.append (line);
+				}
+			}
+			var content = '\n'.join (strippedlines);
+			return content;
+		};
 		var getScrollBarWidth = function () {
 			var outer = document.createElement ('div');
 			outer.style.visibility = 'hidden';
@@ -2637,6 +2657,7 @@ function app () {
 						}
 					}
 				}
+				self.content = striplonglines (self.content);
 				self.cdiv.html (self.content);
 				if (self.kind == 'cmd') {
 					self.cdiv.ac ('logcontentcmd');
@@ -3894,6 +3915,7 @@ function app () {
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
 			__all__.startup = startup;
+			__all__.striplonglines = striplonglines;
 			__all__.uid = uid;
 			__all__.windowresizehandler = windowresizehandler;
 			__all__.ws_scheme = ws_scheme;
