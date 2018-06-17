@@ -122,7 +122,8 @@ class socket_handler:
                         try:
                             print("getting config from firebase")
                             rjsonobj["data"] = db.child("lgbotconfig").get().val()
-                            print("getting config from firebase done")
+                            write_string_to_file("localconfig.json", rjsonobj["data"])
+                            print("getting config from firebase done, size", len(rjsonobj["data"]))
                         except:
                             print("getting config from firebase failed, falling back to local config")
                             rjsonobj["data"] = read_string_from_file("localconfig.json", "{}")
