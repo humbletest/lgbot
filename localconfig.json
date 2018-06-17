@@ -6,7 +6,7 @@
       "multipv": "250",
       "selectmove": "mostdrawish",
       "ucioptions": {
-        "Move Overhead": "2500"
+        "Move Overhead": "2000"
       }
     }
   ],
@@ -132,7 +132,7 @@
                         "radio": false,
                         "showhelpashtml": true
                       },
-                      "value": "2500"
+                      "value": "2000"
                     }
                   }
                 ]
