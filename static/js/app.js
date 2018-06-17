@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-16 20:52:36
+// Transcrypt'ed from Python, 2018-06-17 06:58:34
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2737,6 +2737,7 @@ function app () {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (TabPane, '__init__') (self, 'div');
+				self.id = args.py_get ('id', null);
 				self.kind = args.py_get ('kind', 'child');
 				self.width = args.py_get ('width', 600);
 				self.height = args.py_get ('height', 400);
@@ -2772,7 +2773,6 @@ function app () {
 			});},
 			get tabSelectedCallback () {return __get__ (this, function (self, tab) {
 				self.selectByKey (tab.key);
-				// pass;
 			});},
 			get setTabs () {return __get__ (this, function (self, tabs, key) {
 				self.tabs = tabs;
@@ -2784,6 +2784,12 @@ function app () {
 					self.tabsdiv.a (tabelement);
 					tab.tabelement = tabelement;
 					tab.tabelement.ae ('mousedown', self.tabSelectedCallback.bind (self, tab));
+				}
+				if (!(self.key === null)) {
+					var storedkey = localStorage.getItem (self.key);
+					if (!(storedkey === null)) {
+						var key = storedkey;
+					}
 				}
 				return self.selectByKey (key);
 			});},
@@ -2825,23 +2831,31 @@ function app () {
 				}
 			});},
 			get setTabElementByKey () {return __get__ (this, function (self, key, tabelement) {
-				var tab = self.getTabByKey (key);
+				if (typeof tabelement == 'undefined' || (tabelement != null && tabelement .hasOwnProperty ("__kwargtrans__"))) {;
+					var tabelement = null;
+				};
+				var tab = self.getTabByKey (key, tabelement === null);
 				if (tab == null) {
 					return self;
 				}
-				tab.element = tabelement;
+				if (!(tabelement === null)) {
+					tab.element = tabelement;
+					if (tab == self.seltab) {
+						self.contentdiv.x ().a (tab.element);
+					}
+				}
+				else {
+					self.seltab = tab;
+					self.contentdiv.x ().a (tab.element);
+				}
 				self.resizecontent (tab.element);
 				return self;
 			});},
 			get selectByKey () {return __get__ (this, function (self, key) {
-				self.seltab = self.getTabByKey (key, true);
-				if (self.seltab == null) {
-					return self;
+				if (!(self.key === null)) {
+					localStorage.setItem (self.key, key);
 				}
-				var element = self.seltab.element;
-				self.contentdiv.x ().a (element);
-				self.resizecontent (element);
-				return self;
+				return self.setTabElementByKey (key);
 			});}
 		});
 		var ComboOption = __class__ ('ComboOption', [object], {
@@ -2867,7 +2881,7 @@ function app () {
 				self.changecallback = args.py_get ('changecallback', null);
 				self.options = list ([]);
 				self.container = Div ();
-				self.select = Select ().ac (self.selectclass);
+				self.select = Select ().aac (list (['comboboxselect', self.selectclass]));
 				self.select.ae ('change', self.selectchangecallback);
 				self.container.a (self.select);
 				self.a (self.container);
@@ -3491,7 +3505,7 @@ function app () {
 				else {
 					self.opened = true;
 					self.creatediv = Div ().ac ('schemaitem').ac ('schemacreate');
-					self.createcombo = ComboBox (dict ({'changecallback': self.createcallback}));
+					self.createcombo = ComboBox (dict ({'changecallback': self.createcallback, 'selectclass': 'schemacreatecomboselect'}));
 					self.updatecreatecombo ();
 					self.creatediv.a (self.createcombo);
 					if (self.writepreference.addchild) {
@@ -3548,6 +3562,15 @@ function app () {
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
 			__module__: __name__,
+			get buildchilds () {return __get__ (this, function (self) {
+				self.childshook.x ();
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					child.ac ('schemadictchild');
+					self.childshook.a (child);
+				}
+			});},
 			get toobj () {return __get__ (this, function (self) {
 				var dictobj = list ([]);
 				var __iterable0__ = self.childs;
@@ -3749,8 +3772,8 @@ function app () {
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
-			maintabpane = TabPane (dict ({'kind': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Flask hello world app.'))]), 'botconsole');
+			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
