@@ -15,6 +15,17 @@ import os
 from urllib.parse import quote
 import random
 import json
+print("importing pyrebase")
+import pyrebase
+print("initializing firebase")
+try:    
+    fbcreds = json.loads(open("firebase/fbcreds.json").read())
+    firebase = pyrebase.initialize_app(fbcreds)
+    db = firebase.database()
+    print("initializing firebase done")
+except:
+    print("initializing firebase failed")
+print("importing pyrebase done")
 #########################################################
 
 #########################################################
@@ -91,9 +102,21 @@ class socket_handler:
                         write_string_to_file("binid.txt", binid)
                     elif kind == "storeconfig":
                         write_string_to_file("localconfig.json", jsonobj["data"])
+                        try:
+                            print("setting config on firebase")
+                            db.child("lgbotconfig").set(jsonobj["data"])
+                            print("setting config on firebase done")
+                        except:
+                            print("setting config on firebase failed")
                     elif kind == "getlocalconfig":
                         rjsonobj["kind"] = "setlocalconfig"
-                        rjsonobj["data"] = read_string_from_file("localconfig.json", "{}")
+                        try:
+                            print("getting config from firebase")
+                            rjsonobj["data"] = db.child("lgbotconfig").get().val()
+                            print("getting config from firebase done")
+                        except:
+                            print("getting config from firebase failed, falling back to local config")
+                            rjsonobj["data"] = read_string_from_file("localconfig.json", "{}")
                 except:
                     rjsonobj["status"] = "! command error"
 

@@ -1,4 +1,10 @@
-git checkout master
+git checkout public
+
+git merge --squash master
+
+pause
+
+del firebase\*.json
 
 git add .
 git reset -- transcrypt/app.py
@@ -17,4 +23,6 @@ git add -- localconfig.json
 
 git commit -m "%* bin"
 
-git push heroku master
+pause
+
+git push lgbot public
