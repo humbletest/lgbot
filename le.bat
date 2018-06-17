@@ -1,3 +1,4 @@
+echo off
 set SIMPLE_ENGINE_NAME=stockfish9.exe
 set SIMPLE_SERVER_URL=http://localhost:4000
 set FLASK_SERVER_URL=http://localhost:5000
@@ -6,3 +7,4 @@ set BROWSER_WINDOW_TOP=35
 set BROWSER_WINDOW_LEFT=500
 set BROWSER_WINDOW_WIDTH=850
 set BROWSER_WINDOW_HEIGHT=680
+echo on
