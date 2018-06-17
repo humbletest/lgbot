@@ -9,9 +9,19 @@ from flask_socketio import SocketIO, emit
 #########################################################
 
 #########################################################
+# local imports
+from serverutils.utils import SafeLimitedUniqueQueueList
+from serverutils.utils import prettylog
+from serverutils.utils import geturl
+from serverutils.utils import write_string_to_file
+from serverutils.utils import read_string_from_file
+#########################################################
+
+#########################################################
 # global imports
 import time
 import os
+import traceback
 from urllib.parse import quote
 import random
 import json
@@ -25,16 +35,15 @@ try:
     print("initializing firebase done")
 except:
     print("initializing firebase failed")
+print("getting stored config")
+try:
+    storedconfig = db.child("lgbotconfig").get().val()
+    write_string_to_file("localconfig.json", storedconfig)
+    print("getting stored config done, size", len(storedconfig))
+except:
+    print("getting stored config failed")
+    traceback.print_exc(file=sys.stderr)
 print("importing pyrebase done")
-#########################################################
-
-#########################################################
-# local imports
-from serverutils.utils import SafeLimitedUniqueQueueList
-from serverutils.utils import prettylog
-from serverutils.utils import geturl
-from serverutils.utils import write_string_to_file
-from serverutils.utils import read_string_from_file
 #########################################################
 
 #########################################################

@@ -1,9 +1,5 @@
 git checkout public
 
-git merge --squash master
-
-pause
-
 del firebase\*.json
 
 git add .
