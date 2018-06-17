@@ -172,14 +172,14 @@ def build():
         "cmdaliases": BOT_CMD_ALIASES
     })
 
-    maintabpane = TabPane({"kind":"main"})
+    maintabpane = TabPane({"kind":"main", "id":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", processconsoles["engine"]),
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("config", "Config", buildconfigdiv()),
             Tab("src", "Src", srcdiv),
-            Tab("about", "About", Div().ac("appabout").html("Flask hello world app."))
+            Tab("about", "About", Div().ac("appabout").html("Lichess GUI bot."))
         ], "botconsole"
     )    
     

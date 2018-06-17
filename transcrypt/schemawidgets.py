@@ -352,7 +352,8 @@ class SchemaCollection(SchemaItem):
             self.opened = True
             self.creatediv = Div().ac("schemaitem").ac("schemacreate")
             self.createcombo = ComboBox({
-                "changecallback": self.createcallback
+                "changecallback": self.createcallback,
+                "selectclass": "schemacreatecomboselect"
             })
             self.updatecreatecombo()
             self.creatediv.a(self.createcombo)
@@ -400,6 +401,12 @@ class SchemaList(SchemaCollection):
         self.writepreference.setdisabledlist(["editvalue"])
 
 class SchemaDict(SchemaCollection):
+    def buildchilds(self):
+        self.childshook.x()
+        for child in self.childs:
+            child.ac("schemadictchild")
+            self.childshook.a(child)
+
     def toobj(self):
         dictobj = []
         for item in self.childs:

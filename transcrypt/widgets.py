@@ -158,6 +158,7 @@ class Tab(e):
 class TabPane(e):
     def __init__(self, args):        
         super().__init__("div")
+        self.id = args.get("id", None)
         self.kind = args.get("kind", "child")
         self.width = args.get("width", 600)
         self.height = args.get("height", 400)
@@ -190,7 +191,6 @@ class TabPane(e):
 
     def tabSelectedCallback(self, tab):
         self.selectByKey(tab.key)
-        pass
 
     def setTabs(self, tabs, key):
         self.tabs = tabs
@@ -200,6 +200,10 @@ class TabPane(e):
             self.tabsdiv.a(tabelement)
             tab.tabelement = tabelement
             tab.tabelement.ae("mousedown", self.tabSelectedCallback.bind(self, tab))
+        if not ( self.key is None ):
+            storedkey = localStorage.getItem(self.key)
+            if not ( storedkey is None ):
+                key = storedkey
         return self.selectByKey(key)
 
     def getTabByKey(self, key, updateclass = False):
@@ -227,22 +231,24 @@ class TabPane(e):
         except:
             pass
 
-    def setTabElementByKey(self, key, tabelement):
-        tab = self.getTabByKey(key)
+    def setTabElementByKey(self, key, tabelement = None):
+        tab = self.getTabByKey(key, tabelement is None)
         if tab == None:
             return self
-        tab.element = tabelement        
+        if not ( tabelement is None ):
+            tab.element = tabelement
+            if tab == self.seltab:
+                self.contentdiv.x().a(tab.element)
+        else:
+            self.seltab = tab
+            self.contentdiv.x().a(tab.element)
         self.resizecontent(tab.element)
         return self
 
     def selectByKey(self, key):
-        self.seltab = self.getTabByKey(key, True)
-        if self.seltab == None:
-            return self
-        element = self.seltab.element
-        self.contentdiv.x().a(element)
-        self.resizecontent(element)       
-        return self
+        if not ( self.key is None ):
+            localStorage.setItem(self.key, key)
+        return self.setTabElementByKey(key)
 
 class ComboOption:
     def __init__(self, key, displayname):
@@ -263,7 +269,7 @@ class ComboBox(e):
         self.changecallback = args.get("changecallback", None)
         self.options = []
         self.container = Div()
-        self.select = Select().ac(self.selectclass)
+        self.select = Select().aac(["comboboxselect", self.selectclass])
         self.select.ae("change", self.selectchangecallback)
         self.container.a(self.select)
         self.a(self.container)
