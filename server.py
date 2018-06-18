@@ -21,6 +21,7 @@ from serverutils.utils import read_string_from_file
 # global imports
 import time
 import os
+import sys
 import traceback
 from urllib.parse import quote
 import random
@@ -37,7 +38,8 @@ except:
     print("initializing firebase failed")
 print("getting stored config")
 try:
-    storedconfig = db.child("lgbotconfig").get().val()
+    #db.child("lgbotconfig").set(read_string_from_file("configbackup.json","{}"))
+    storedconfig = db.child("lgbotconfig").get().val()    
     write_string_to_file("localconfig.json", storedconfig)
     print("getting stored config done, size", len(storedconfig))
 except:

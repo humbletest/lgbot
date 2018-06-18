@@ -1,6 +1,8 @@
 ######################################################
 # schema
 
+schemaclipboard = None
+
 SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"addchild","display":"Add child","default":True},
     {"key":"remove","display":"Remove","default":True},
@@ -89,8 +91,7 @@ class SchemaItem(e):
         self.enabled = enabled
         self.enablecheckbox.setchecked(self.enabled)
 
-    def helpboxclicked(self):
-        event.stopPropagation()
+    def helpboxclicked(self):        
         if self.helpopen:
             self.helphook.x()
             self.helpopen = False
@@ -106,6 +107,10 @@ class SchemaItem(e):
                 self.helpdiv.a(self.helpeditdiv)
             self.helphook.a(self.helpdiv)
             self.helpopen = True
+
+    def copyboxclicked(self):
+        schemaclipboard.copy(self)
+        print(schemaclipboard.toobj())
     
     def settingsboxclicked(self):
         if self.settingsopen:
@@ -135,9 +140,9 @@ class SchemaItem(e):
     def setchildparent(self, childparent):
         self.childparent = childparent
         if ( not ( self.childparent is None ) ) and self.writepreference.remove:
-            self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.settingsbox, self.removebox])
+            self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox, self.removebox])
         else:
-            self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.settingsbox])
+            self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox])
 
     def __init__(self, args):
         super().__init__("div")
@@ -157,6 +162,7 @@ class SchemaItem(e):
         self.enablecheckbox.able(self.writepreference.editenabled)
         self.enablebox.a(self.enablecheckbox)                
         self.helpbox = Div().aac(["schemahelpbox","noselect"]).ae("mousedown", self.helpboxclicked).html("?")        
+        self.copybox = Div().aac(["schemacopybox","noselect"]).ae("mousedown", self.copyboxclicked).html("C")        
         self.settingsbox = Div().aac(["schemasettingsbox","noselect"]).ae("mousedown", self.settingsboxclicked).html("S")
         self.removebox = Div().aac(["schemaremovebox","noselect"]).ae("mousedown", self.removeboxclicked).html("X")        
         self.afterelementhook = Div()
@@ -164,7 +170,7 @@ class SchemaItem(e):
         self.helpopen = args.get("helpopen", False)
         self.settingshook = Div()        
         self.helphook = Div()        
-        self.schemacontainer.aa([self.enablebox, self.element, self.helpbox, self.settingsbox])
+        self.schemacontainer.aa([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox])
         self.itemcontainer = Div()
         self.itemcontainer.aa([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook])
         self.a(self.itemcontainer)
@@ -187,6 +193,11 @@ class NamedSchemaItem(e):
     def setkeychangedcallback(self, keychangedcallback):
         self.keychangedcallback = keychangedcallback
         return self
+
+    def setkey(self, key):
+        self.key = key
+        self.linkedtextinput.setText(self.key)
+        return self
     
     def __init__(self, args):
         super().__init__("div")
@@ -206,6 +217,13 @@ class NamedSchemaItem(e):
         self.namediv.a(self.linkedtextinput)        
         self.namedcontainer.aa([self.namediv, self.item])
         self.a(self.namedcontainer)
+
+    def copy(self, item):
+        self.item = item
+        self.key = None
+        if not ( self.item.parent is None ):
+            self.key = self.item.parent.key
+        self.item.parent = None
 
 class SchemaScalar(SchemaItem):
     def toobj(self):
@@ -342,6 +360,24 @@ class SchemaCollection(SchemaItem):
         self.buildchilds()      
         self.updatecreatecombo()          
 
+    def pastebuttonclicked(self):        
+        try:        
+            sch = schemafromobj(schemaclipboard.item.toobj())
+        except:
+            window.alert("No item on clipboard to paste!")
+            return self
+        sch.setchildparent(self)
+        appendelement = sch
+        if self.kind == "dict":
+            appendelement = NamedSchemaItem({
+                "item": sch
+            }).setkeychangedcallback(self.updatecreatecombo)
+            if not ( schemaclipboard.key is None ):
+                appendelement.setkey(schemaclipboard.key)
+        self.childs.append(appendelement)
+        self.buildchilds()      
+        self.updatecreatecombo()          
+
     def openchilds(self):
         if self.opened:
             self.opened = False
@@ -356,7 +392,8 @@ class SchemaCollection(SchemaItem):
                 "selectclass": "schemacreatecomboselect"
             })
             self.updatecreatecombo()
-            self.creatediv.a(self.createcombo)
+            self.pastebutton = Button("Paste", self.pastebuttonclicked).ac("schemapastebutton")
+            self.creatediv.aa([self.createcombo, self.pastebutton])
             if self.writepreference.addchild:
                 self.createhook.a(self.creatediv)
             self.openbutton.ac("schemacollectionopenbuttondone")
@@ -478,5 +515,6 @@ def schemafromobj(obj):
     returnobj.help = help        
     return returnobj
 
+schemaclipboard = NamedSchemaItem({})
 ######################################################
 

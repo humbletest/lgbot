@@ -5,10 +5,11 @@
     --schemawidth: calc( var(--schemabase) * 8 );
     --schemaitemheight: var(--schemabase);
     --schemacontainermargin: 2px;
-    --schemasettingswidth: 300px;
+    --schemasettingswidth: 200px;
     --schemahelpwidth: 500px;
     --schemasettingspadding: 8px;
     --logtimewidth: 50px;
+    --copybackgroundcolor: #9f9;
 }
 
 .noselect {
@@ -112,6 +113,12 @@
     display: flex; justify-content: space-around; align-items: center;
     width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
     background-color: #ff9; cursor: pointer;
+}
+
+.schemacopybox {    
+    display: flex; justify-content: space-around; align-items: center;
+    width: var(--schemaitemheight); height: var(--schemaitemheight); margin-left: 2px;
+    background-color: var(--copybackgroundcolor); cursor: pointer;
 }
 
 .schemasettingsbox {    
@@ -283,4 +290,9 @@
 
 .schemadictchild {
     margin-left: calc( var(--schemacontainermargin) - var(--schemabase) );
+}
+
+.schemapastebutton {
+    font-size: calc( var(--schemainputfontsize) * 0.5 );
+    background-color: var(--copybackgroundcolor);
 }

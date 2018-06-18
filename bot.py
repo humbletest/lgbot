@@ -1,3 +1,5 @@
+from config import config
+
 import json
 
 import sys, traceback
@@ -40,15 +42,7 @@ def getbinid():
         return None
     return binid
 
-configobj = {}
-
-configname = None
-
-config = {}
-
 li = None
-
-MAX_NUM_PLAYING = 1
 
 lock = threading.Lock()
 
@@ -59,9 +53,6 @@ engine_queue = queue.Queue()
 username = "!nouser"
 
 controlstarted = False
-
-def gettoken():
-    return config.get("token", "xxxxxxxxxxxxxxxx")
 
 #########################################################
 
@@ -76,19 +67,13 @@ def sendoption(name, value):
         "setoption name {} value {}".format(name, value)
     ])
 
-def sendmultipv():
-    global config
-    if "ucioptions" in config:
-        ucioptions = config.get("ucioptions")
-        for name in ucioptions:
-            value = ucioptions[name]
-            sendoption(name, value)
+def sendmultipv(cfg):        
+    if "multipv" in cfg.profileobj:
+        sendoption("MultiPV", cfg.multipv)
 
-def senducioptions():
-    global config
-    if "multipv" in config:
-        multipv = config.get("multipv")
-        sendoption("MultiPV", multipv)
+def senducioptions(cfg):
+    for ucioption in cfg.ucioptions:        
+        sendoption(ucioption.name, ucioption.value)        
 
 def sendenginelog(value):
     print(json.dumps({
@@ -106,57 +91,17 @@ def modify_num_playing_atomic(delta):
     num_playing += delta
     lock.release()
 
-def max_games_reached():
-    global num_playing, MAX_NUM_PLAYING
-    return num_playing >= MAX_NUM_PLAYING
+def max_games_reached(cfg):
+    global num_playing
+    return num_playing >= cfg.concurrency
 
-def loadconfig_bin():
-    global configobj, configname, config
-    print("loading config bin")
-    binid = getbinid()
-    if not ( binid is None ):            
-        try:
-            obj = getjsonbinobj(binid)
-            configobj = obj["config"]
-            configname = configobj[0]
-            config = configobj[1]
-            print("config {} loaded ok".format(configname))            
-            return True
-        except:
-            print("! loading config bin failed")
-    else:
-        print("! missing binid")
-    return False
-
-def loadconfig_local():
-    global configobj, configname, config
-    print("loading config local")
-    try:
-        content = read_string_from_file("localconfig.json", "")
-        obj = json.loads(content)
-        configobj = obj["config"]
-        configname = configobj[0]
-        config = configobj[1]
-        print("config {} loaded ok".format(configname))            
-        return True
-    except:
-        print("! loading config local failed")
-    return False
-
-def printconfig():
-    print("printing config")
-    formatted = json.dumps(configobj)
-    print(formatted)
-    print("config printed")
-
-def loadprofile():    
-    global username
+def loadprofile(cfg):    
+    global li, username
     try:
         print("loading profile")
         profile = li.get_profile()
         username = profile["username"]
         print("profile loaded for {}".format(username))
-        #print(profile)
     except:
         print("! loading profile failed")
         traceback.print_exc(file=sys.stderr)
@@ -211,10 +156,10 @@ def get_most_drawish_move(info):
         traceback.print_exc(file = sys.stderr)
         return None
 
-def get_engine_best_move(board, wtime, btime, winc, binc):
+def get_engine_best_move(cfg, board, wtime, btime, winc, binc):
     first = ( board.fullmove_number == 1 )
     print("getting engine best move", first, wtime, btime, winc, binc)
-    global engine_queue, config
+    global engine_queue
     gocommand = "go wtime {} btime {} winc {} binc {}".format(wtime, btime, winc, binc)
     if first:
         gocommand = "go movetime {}".format(2000)
@@ -233,12 +178,9 @@ def get_engine_best_move(board, wtime, btime, winc, binc):
         if kind == "bestmove":
             try:
                 move = chess.Move.from_uci(parts[1])
-                print("best move received", move)
-                if "selectmove" in config:
-                    selectmove = config["selectmove"]
-                    print("select move strategy", selectmove)
-                    if selectmove == "mostdrawish":
-                        move = get_most_drawish_move(infh.info)
+                print("best move received", move)                
+                if cfg.selectmove == "mostdrawish":
+                    move = get_most_drawish_move(infh.info)
                 return move
             except:
                 return None
@@ -251,13 +193,13 @@ def get_engine_best_move(board, wtime, btime, winc, binc):
                 traceback.print_exc(file = sys.stderr)
     return None
 
-def play_move(game, board, wtime, btime, winc, binc):
+def play_move(cfg, game, board, wtime, btime, winc, binc):
     print("playing move", wtime, btime, winc, binc)
     moves = list(board.generate_legal_moves())
     if len(moves)>0:
         best_move = random.choice(moves)
         print("random best move", best_move)
-        engine_best_move = get_engine_best_move(board, wtime, btime, winc, binc)
+        engine_best_move = get_engine_best_move(cfg, board, wtime, btime, winc, binc)
         if not ( engine_best_move is None ):
             print("using engine best move", engine_best_move)
             best_move = engine_best_move
@@ -267,7 +209,7 @@ def play_move(game, board, wtime, btime, winc, binc):
     else:
         print("! no legal move in game {}".format(game.id))
 
-def play_game(game_id):    
+def play_game(cfg, game_id):    
     global engine_queue
     modify_num_playing_atomic(1)
     print("playing game {}".format(game_id))
@@ -279,13 +221,13 @@ def play_game(game_id):
     print(json.dumps({
         "enginecmd": "restart"
     }))
-    sendmultipv()
-    senducioptions()
+    sendmultipv(cfg)
+    senducioptions(cfg)
     sendenginelog(False)
     empty_queue(engine_queue)
     moves = game.state["moves"].split()
     if is_engine_move(game, moves):                                        
-        play_move(game, board, 2000, 2000, 0, 0)
+        play_move(cfg, game, board, 2000, 2000, 0, 0)
     try:
         for binary_chunk in updates:
             upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
@@ -297,7 +239,7 @@ def play_game(game_id):
                 moves = upd["moves"].split()
                 board = update_board(board, moves[-1])
                 if is_engine_move(game, moves):                                        
-                    play_move(game, board, upd["wtime"], upd["btime"], upd["winc"], upd["binc"])
+                    play_move(cfg, game, board, upd["wtime"], upd["btime"], upd["winc"], upd["binc"])
             elif u_type == "ping":
                 if game.should_abort_now():
                     print("aborting {} by lack of activity".format(game.url()))
@@ -310,13 +252,13 @@ def play_game(game_id):
         modify_num_playing_atomic(-1)
         sendenginelog(True)
 
-def log_control_event(event):    
+def log_control_event(cfg, event):    
     print(event)
     try:        
         kind = event["type"]
         if kind == "challenge":
             chlng = Challenge(event["challenge"])
-            if max_games_reached():
+            if max_games_reached(cfg):
                 print("! max games reached, decline new {}".format(chlng))
             else:
                 try:
@@ -329,10 +271,10 @@ def log_control_event(event):
                         raise exception
         elif kind == "gameStart":            
             game_id = event["game"]["id"]            
-            if max_games_reached():
+            if max_games_reached(cfg):
                 print("! max games reached, decline new game {}".format(game_id))
             else:
-                threading.Thread(target = play_game, args = (game_id,)).start()
+                threading.Thread(target = play_game, args = (cfg, game_id)).start()
     except:
         print("! error handling event")
         traceback.print_exc(file = sys.stderr)
@@ -340,7 +282,7 @@ def log_control_event(event):
 """
 @backoff.on_exception(backoff.expo, BaseException, max_time=600)
 """
-def control_thread_func():
+def control_thread_func(cfg):
     global num_playing
     print("starting control stream")    
     try:
@@ -349,41 +291,45 @@ def control_thread_func():
         for evnt in es.iter_lines():
             if evnt:
                 event = json.loads(evnt.decode('utf-8'))
-                log_control_event(event)
+                log_control_event(cfg, event)
             else:
-                log_control_event({"type": "ping", "num_playing": num_playing})
+                log_control_event(cfg, {"type": "ping", "num_playing": num_playing})
     except:
         print("! failed to get event stream")        
 
-def startcontrol():
+def startcontrol(cfg):
     global controlstarted
     if controlstarted:
         print("! control stream already started")
     else:        
-        threading.Thread(target = control_thread_func).start()
+        threading.Thread(target = control_thread_func, args = (cfg,)).start()
         controlstarted = True
 
-def createli():
+def createli(cfg):
     global li
-    token = gettoken()
+    token = cfg.token
     print("creating lichess api agent", token, LICHESS_API_BASE_URL, VERSION)
     li = Lichess(token, LICHESS_API_BASE_URL, VERSION)
     print("lichess api agent created")
     print("testing lichess api agent")
-    loadprofile()
+    loadprofile(cfg)
 
 #########################################################
 
 while True:
     cmd = input("").rstrip()
-    if cmd == "lc":
-        loadconfig_local()
-        printconfig()
-        createli()
+    if cmd == "pc":
+        print(config)
+    elif cmd == "lc":
+        config.fromfile()
+        print(config)
+        createli(config)
     elif cmd == "lp":
-        loadprofile()
+        loadprofile(config)
     elif cmd == "sc":
-        startcontrol()
+        startcontrol(config)
+    elif cmd == "x":
+        break
     else:
         try:
             obj = json.loads(cmd)            
