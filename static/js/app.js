@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-17 06:58:34
+// Transcrypt'ed from Python, 2018-06-18 13:32:57
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3106,6 +3106,7 @@ function app () {
 				self.setcontent (self.log);
 			});}
 		});
+		var schemaclipboard = null;
 		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
@@ -3191,7 +3192,6 @@ function app () {
 				self.enablecheckbox.setchecked (self.enabled);
 			});},
 			get helpboxclicked () {return __get__ (this, function (self) {
-				event.stopPropagation ();
 				if (self.helpopen) {
 					self.helphook.x ();
 					self.helpopen = false;
@@ -3211,6 +3211,10 @@ function app () {
 					self.helphook.a (self.helpdiv);
 					self.helpopen = true;
 				}
+			});},
+			get copyboxclicked () {return __get__ (this, function (self) {
+				schemaclipboard.copy (self);
+				print (schemaclipboard.toobj ());
 			});},
 			get settingsboxclicked () {return __get__ (this, function (self) {
 				if (self.settingsopen) {
@@ -3243,10 +3247,10 @@ function app () {
 			get setchildparent () {return __get__ (this, function (self, childparent) {
 				self.childparent = childparent;
 				if (!(self.childparent === null) && self.writepreference.remove) {
-					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox, self.removebox]));
+					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox, self.removebox]));
 				}
 				else {
-					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox]));
+					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
@@ -3267,6 +3271,7 @@ function app () {
 				self.enablecheckbox.able (self.writepreference.editenabled);
 				self.enablebox.a (self.enablecheckbox);
 				self.helpbox = Div ().aac (list (['schemahelpbox', 'noselect'])).ae ('mousedown', self.helpboxclicked).html ('?');
+				self.copybox = Div ().aac (list (['schemacopybox', 'noselect'])).ae ('mousedown', self.copyboxclicked).html ('C');
 				self.settingsbox = Div ().aac (list (['schemasettingsbox', 'noselect'])).ae ('mousedown', self.settingsboxclicked).html ('S');
 				self.removebox = Div ().aac (list (['schemaremovebox', 'noselect'])).ae ('mousedown', self.removeboxclicked).html ('X');
 				self.afterelementhook = Div ();
@@ -3274,7 +3279,7 @@ function app () {
 				self.helpopen = args.py_get ('helpopen', false);
 				self.settingshook = Div ();
 				self.helphook = Div ();
-				self.schemacontainer.aa (list ([self.enablebox, self.element, self.helpbox, self.settingsbox]));
+				self.schemacontainer.aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				self.itemcontainer = Div ();
 				self.itemcontainer.aa (list ([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook]));
 				self.a (self.itemcontainer);
@@ -3297,6 +3302,11 @@ function app () {
 				self.keychangedcallback = keychangedcallback;
 				return self;
 			});},
+			get setkey () {return __get__ (this, function (self, key) {
+				self.key = key;
+				self.linkedtextinput.setText (self.key);
+				return self;
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
 				self.kind = 'nameditem';
@@ -3312,6 +3322,14 @@ function app () {
 				self.namediv.a (self.linkedtextinput);
 				self.namedcontainer.aa (list ([self.namediv, self.item]));
 				self.a (self.namedcontainer);
+			});},
+			get copy () {return __get__ (this, function (self, item) {
+				self.item = item;
+				self.key = null;
+				if (!(self.item.parent === null)) {
+					self.key = self.item.parent.key;
+				}
+				self.item.parent = null;
 			});}
 		});
 		var SchemaScalar = __class__ ('SchemaScalar', [SchemaItem], {
@@ -3495,6 +3513,26 @@ function app () {
 				self.buildchilds ();
 				self.updatecreatecombo ();
 			});},
+			get pastebuttonclicked () {return __get__ (this, function (self) {
+				try {
+					var sch = schemafromobj (schemaclipboard.item.toobj ());
+				}
+				catch (__except0__) {
+					window.alert ('No item on clipboard to paste!');
+					return self;
+				}
+				sch.setchildparent (self);
+				var appendelement = sch;
+				if (self.kind == 'dict') {
+					var appendelement = NamedSchemaItem (dict ({'item': sch})).setkeychangedcallback (self.updatecreatecombo);
+					if (!(schemaclipboard.key === null)) {
+						appendelement.setkey (schemaclipboard.key);
+					}
+				}
+				self.childs.append (appendelement);
+				self.buildchilds ();
+				self.updatecreatecombo ();
+			});},
 			get openchilds () {return __get__ (this, function (self) {
 				if (self.opened) {
 					self.opened = false;
@@ -3507,7 +3545,8 @@ function app () {
 					self.creatediv = Div ().ac ('schemaitem').ac ('schemacreate');
 					self.createcombo = ComboBox (dict ({'changecallback': self.createcallback, 'selectclass': 'schemacreatecomboselect'}));
 					self.updatecreatecombo ();
-					self.creatediv.a (self.createcombo);
+					self.pastebutton = Button ('Paste', self.pastebuttonclicked).ac ('schemapastebutton');
+					self.creatediv.aa (list ([self.createcombo, self.pastebutton]));
 					if (self.writepreference.addchild) {
 						self.createhook.a (self.creatediv);
 					}
@@ -3648,6 +3687,7 @@ function app () {
 			returnobj.help = help;
 			return returnobj;
 		};
+		var schemaclipboard = NamedSchemaItem (dict ({}));
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
 		}
@@ -3927,6 +3967,7 @@ function app () {
 			__all__.randint = randint;
 			__all__.randscalarvalue = randscalarvalue;
 			__all__.reloadcallback = reloadcallback;
+			__all__.schemaclipboard = schemaclipboard;
 			__all__.schemafromobj = schemafromobj;
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
