@@ -104,7 +104,8 @@ def buildconfigdiv():
         Button("Reload", reloadcallback).fs(16),
         Button("Show source", showsrc).fs(16)
     ]).bc("#ddd")
-    configsplitpane.setcontent(configschema)
+    configschemacontainerdiv = Div().ac("configschemacontainerdiv").a(configschema)
+    configsplitpane.setcontent(configschemacontainerdiv)
     return configsplitpane
 
 def getbincallback(content):    
@@ -210,6 +211,7 @@ def onevent(json):
                     if sline[0] == "!":
                         logitem = LogItem("bot error:" + sline[1:], "cmdstatuserr")        
     if "response" in json:        
+        status = "?"
         response = json["response"]        
         if "key" in response:
             dest = response["key"]
@@ -224,6 +226,8 @@ def onevent(json):
             if kind == "setlocalconfig":                
                 data = response["data"]                
                 deserializeconfigcontent(data)
+            elif kind == "configstored":
+                window.alert("Config storing status: " + status + ".")
     if logitem is None:
         log("socket received event " + JSON.stringify(json, null, 2), dest)    
     else:

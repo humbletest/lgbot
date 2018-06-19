@@ -208,6 +208,10 @@ class Bot:
                         bestpvinfo = pvinfos.getbest(lambda pvinfo: -abs(pvinfo.score()))
                         move = bestpvinfo.bestmove                        
                         print("most drawish move", move, bestpvinfo.score())
+                    elif self.cfg.selectmove == "worst":
+                        bestpvinfo = pvinfos.getbest(lambda pvinfo: -pvinfo.score())
+                        move = bestpvinfo.bestmove                        
+                        print("worst move", move, bestpvinfo.score())
                     return move
                 except:
                     return None
@@ -220,16 +224,25 @@ class Bot:
                     traceback.print_exc(file = sys.stderr)
         return None
 
+    def get_capture_random_move(self, board, moves):        
+        moves = sorted(moves, key = lambda move: -int(board.is_capture(move)))
+        return moves[0]
+
     def play_move(self, game, board, wtime, btime, winc, binc):
         print("playing move", wtime, btime, winc, binc)
         moves = list(board.generate_legal_moves())
         if len(moves)>0:
             best_move = random.choice(moves)
-            print("random best move", best_move)
-            engine_best_move = self.get_engine_best_move(board, wtime, btime, winc, binc)
-            if not ( engine_best_move is None ):
-                print("using engine best move", engine_best_move)
-                best_move = engine_best_move
+            if self.cfg.selectmove == "random":
+                print("random best move", best_move)
+            elif self.cfg.selectmove == "capturerandom":
+                best_move = self.get_capture_random_move(board, moves)
+                print("capture random best move", best_move)
+            else:
+                engine_best_move = self.get_engine_best_move(board, wtime, btime, winc, binc)
+                if not ( engine_best_move is None ):
+                    print("using engine best move", engine_best_move)
+                    best_move = engine_best_move
             print("making move {} in game {}".format(best_move.uci(), game.id))
             self.li.make_move(game.id, best_move)
             game.abort_in(20)

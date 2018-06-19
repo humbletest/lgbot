@@ -99,7 +99,7 @@ class socket_handler:
             connected_sids.enqueue(request.sid)
             prettylog([
                 "EV <{}> SID <{}>".format(self.ev,request.sid),
-                "ARGS {}".format(args),
+                "ARGS {}".format(args).ljust(160)[:160],
                 "CONNS {}".format(connected_sids.items)
             ])  
             if "kind" in jsonobj:                
@@ -115,12 +115,15 @@ class socket_handler:
                         write_string_to_file("binid.txt", binid)
                     elif kind == "storeconfig":
                         write_string_to_file("localconfig.json", jsonobj["data"])
+                        rjsonobj["kind"] = "configstored"
                         try:
                             print("setting config on firebase")
                             db.child("lgbotconfig").set(jsonobj["data"])
-                            print("setting config on firebase done")
-                        except:
+                            print("setting config on firebase done")            
+                            rjsonobj["status"] = "config stored locally and remotely"
+                        except:                            
                             print("setting config on firebase failed")
+                            rjsonobj["status"] = "config stored only locally"
                     elif kind == "getlocalconfig":
                         rjsonobj["kind"] = "setlocalconfig"
                         try:
