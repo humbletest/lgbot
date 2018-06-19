@@ -1,3 +1,5 @@
+from config import config
+
 #############################################
 # global imports
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -14,8 +16,11 @@ process.VERBOSE = False
 from serverutils.utils import postjson, ProcessManager
 #############################################
 
-FLASK_SERVER_URL = os.environ["FLASK_SERVER_URL"]
-SIMPLE_ENGINE_PATH = os.path.join("engines", os.environ["SIMPLE_ENGINE_NAME"])
+def SIMPLE_ENGINE_PATH():
+    config.fromfile()
+    return os.path.join("engines", config.enginename)
+
+FLASK_SERVER_URL = config.flaskserverurl
 PROCESS_READ_CALLBACK_URL = FLASK_SERVER_URL + "/read"
 
 #############################################
@@ -51,7 +56,7 @@ class EngineProcessManager(SimpleProcessManager):
 
     def popen(self):
         return process.PopenProcess(
-            SIMPLE_ENGINE_PATH,
+            SIMPLE_ENGINE_PATH(),
             self.base_read_line_callback
         )
 

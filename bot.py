@@ -301,6 +301,8 @@ class Bot:
 
 #########################################################
 
+print(config)
+
 bot = Bot(config)
 
 while True:
@@ -308,8 +310,7 @@ while True:
     if cmd == "pc":
         print(bot.cfg)
     elif cmd == "lc":
-        bot.cfg.fromfile()        
-        print(bot.cfg)
+        bot.cfg.fromfile()
         bot.createli()
     elif cmd == "lp":
         bot.loadprofile()

@@ -1,3 +1,5 @@
+from config import config
+
 #########################################################
 # flask imports
 from flask import Flask, render_template, request, redirect
@@ -61,7 +63,7 @@ socketio = SocketIO(app)
 
 #########################################################
 # global context
-SIMPLE_SERVER_URL = os.environ["SIMPLE_SERVER_URL"]
+SIMPLE_SERVER_URL = config.simpleserverurl
 MAX_CONNS = 3
 
 def sids_overflow_callback(sid):    
