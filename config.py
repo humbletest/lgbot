@@ -69,7 +69,7 @@ class Config:
             elif IS_PROD() and ( prodkey in obj ):
                 temp = obj[prodkey]
             elif ( key in obj ):
-                temp = obj[key]            
+                temp = obj[key]                        
             if type(temp) is kind:
                 ok = True
                 if not ( conv is None ):
@@ -103,6 +103,11 @@ class Config:
         self.parse(self.profileobj, "enginename", devdefault = "stockfish9.exe", proddefault = "stockfish9")
         self.parse(self.profileobj, "multipv", default = 1, conv = int, check = lambda i: i>=1 and i<=500)        
         self.parse(self.profileobj, "selectmove", default = "best")        
+        self.parse(self.profileobj, "accept", kind = dict, reg = False, default = {})
+        self.parse(self.accept, "opponent", kind = list, default = ['bot', 'human'])
+        self.parse(self.accept, "timecontrol", kind = list, default = ['ultraBullet', 'bullet', 'blitz', 'rapid', 'classical', 'correspondence'])
+        self.parse(self.accept, "variant", kind = list, default = ['standard', 'fromPosition', 'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingOfTheHill', 'racingKings', 'threeCheck'])
+        self.parse(self.accept, "mode", kind = list, default = ['casual', 'rated'])
         self.ucioptions = []
         try:
             ucioptionsobj = self.profileobj.get("ucioptions", {})            
@@ -131,3 +136,6 @@ class Config:
         return self.fromjsonstr(configjsonstr)
 
 config = Config()
+
+if __name__ == "__main__":
+    print(config)

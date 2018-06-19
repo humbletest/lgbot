@@ -278,14 +278,31 @@ class Bot:
             self.modify_num_playing_atomic(-1)
             sendenginelog(True)
 
+    def challenge_supported(self, chlng):
+        if ( chlng.challenger_is_bot ) and ( not ( "bot" in self.cfg.opponent ) ):
+            return False
+        if ( not ( chlng.challenger_is_bot ) ) and ( not ( "human" in self.cfg.opponent ) ):
+            return False
+        if not chlng.is_supported_speed(self.cfg.timecontrol):
+            return False
+        if not chlng.is_supported_variant(self.cfg.variant):
+            return False
+        if not chlng.is_supported_mode(self.cfg.mode):
+            return False
+        return True
+
     def log_control_event(self, event):    
         print(event)
         try:        
             kind = event["type"]
             if kind == "challenge":
-                chlng = Challenge(event["challenge"])
+                chlng = Challenge(event["challenge"])                
                 if self.max_games_reached():
                     print("! max games reached, decline new {}".format(chlng))
+                    self.li.decline_challenge(chlng.id)
+                elif not self.challenge_supported(chlng):
+                    print("! challenge not supported {}".format(chlng))
+                    self.li.decline_challenge(chlng.id)
                 else:
                     try:
                         response = self.li.accept_challenge(chlng.id)
