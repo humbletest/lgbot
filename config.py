@@ -95,12 +95,12 @@ class Config:
         self.profilelistobj = self.config.get("profile", ["profile", {}])
         self.profilekey = self.profilelistobj[0]
         self.profileobj = self.profilelistobj[1]        
-        self.fieldnames = []
-        self.parse(self.globalobj, "enginename", devdefault = "stockfish9.exe", proddefault = "stockfish9")
+        self.fieldnames = []        
         self.parse(self.globalobj, "simpleserverurl", devdefault = "http://localhost:4000", proddefault = "http://localhost:4000")        
         self.parse(self.globalobj, "flaskserverurl", devdefault = "http://localhost:5000", proddefault = "http://liguibot.herokuapp.com")        
         self.parse(self.profileobj, "token", default = "xxxxxxxxxxxxxxxx")        
         self.parse(self.profileobj, "concurrency", default = 1, conv = int, check = lambda i: i>=1 and i<=10)        
+        self.parse(self.profileobj, "enginename", devdefault = "stockfish9.exe", proddefault = "stockfish9")
         self.parse(self.profileobj, "multipv", default = 1, conv = int, check = lambda i: i>=1 and i<=500)        
         self.parse(self.profileobj, "selectmove", default = "best")        
         self.ucioptions = []

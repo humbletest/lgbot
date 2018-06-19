@@ -1,3 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+	hideDotFiles = dotGitOnly
 [remote "origin"]
 	url = https://github.com/pythonflaskserverapps/helloworld
 	fetch = +refs/heads/*:refs/remotes/origin/*
@@ -9,9 +17,14 @@
 	email = humbletest@gmail.com
 	[credential "https://github.com/humbletest/lgbot"]
 		username = humbletest
+	[credential "https://gitlab.com/pythonflaskserverapps/lgbot.git"]
+		username = pythonflaskserverapps
 [remote "lgbot"]
 	url = https://github.com/humbletest/lgbot
 	fetch = +refs/heads/*:refs/remotes/lgbot/*
 [remote "heroku"]
 	url = https://git.heroku.com/liguibot.git
 	fetch = +refs/heads/*:refs/remotes/heroku/*
+[remote "gitlab"]
+	url = https://gitlab.com/pythonflaskserverapps/lgbot.git
+	fetch = +refs/heads/*:refs/remotes/gitlab/*
