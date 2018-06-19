@@ -6,12 +6,12 @@
       {
         "token": "JmEKjUOpgC0WYTLW",
         "multipv": "250",
-        "selectmove": "mostdrawish",
         "ucioptions": {
           "Move Overhead": "2000"
         },
         "accept": {
           "opponent": [
+            "bot",
             "human"
           ],
           "timecontrol": [
@@ -35,7 +35,8 @@
             "casual",
             "rated"
           ]
-        }
+        },
+        "selectmove": "mostdrawish"
       }
     ]
   },
@@ -146,25 +147,6 @@
                     }
                   },
                   {
-                    "key": "selectmove",
-                    "item": {
-                      "kind": "scalar",
-                      "enabled": true,
-                      "help": "No help available for this item.",
-                      "writepreference": {
-                        "addchild": true,
-                        "remove": true,
-                        "childsopened": false,
-                        "editenabled": true,
-                        "editkey": true,
-                        "editvalue": true,
-                        "radio": false,
-                        "showhelpashtml": true
-                      },
-                      "value": "mostdrawish"
-                    }
-                  },
-                  {
                     "key": "ucioptions",
                     "item": {
                       "kind": "dict",
@@ -239,7 +221,7 @@
                             "items": [
                               {
                                 "kind": "scalar",
-                                "enabled": false,
+                                "enabled": true,
                                 "help": "No help available for this item.",
                                 "writepreference": {
                                   "addchild": true,
@@ -619,6 +601,106 @@
                               }
                             ]
                           }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "key": "selectmove",
+                    "item": {
+                      "kind": "list",
+                      "enabled": true,
+                      "help": "No help available for this item.",
+                      "writepreference": {
+                        "addchild": true,
+                        "remove": true,
+                        "childsopened": true,
+                        "editenabled": true,
+                        "editkey": true,
+                        "editvalue": true,
+                        "radio": true,
+                        "showhelpashtml": true
+                      },
+                      "items": [
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "best"
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": true,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "mostdrawish"
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "worst"
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "random"
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "capturerandom"
                         }
                       ]
                     }

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-19 12:49:09
+// Transcrypt'ed from Python, 2018-06-19 16:18:58
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3756,7 +3756,8 @@ function app () {
 		var buildconfigdiv = function () {
 			var configsplitpane = SplitPane (dict ({'controlheight': 50}));
 			configsplitpane.controldiv.aa (list ([Button ('Serialize', serializecallback).fs (24), Button ('Reload', reloadcallback).fs (16), Button ('Show source', showsrc).fs (16)])).bc ('#ddd');
-			configsplitpane.setcontent (configschema);
+			var configschemacontainerdiv = Div ().ac ('configschemacontainerdiv').a (configschema);
+			configsplitpane.setcontent (configschemacontainerdiv);
 			return configsplitpane;
 		};
 		var getbincallback = function (content) {
@@ -3843,6 +3844,7 @@ function app () {
 				}
 			}
 			if (__in__ ('response', json)) {
+				var status = '?';
 				var response = json ['response'];
 				if (__in__ ('key', response)) {
 					var dest = response ['key'];
@@ -3861,6 +3863,9 @@ function app () {
 					if (kind == 'setlocalconfig') {
 						var data = response ['data'];
 						deserializeconfigcontent (data);
+					}
+					else if (kind == 'configstored') {
+						window.alert (('Config storing status: ' + status) + '.');
 					}
 				}
 			}
