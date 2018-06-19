@@ -9,6 +9,32 @@
         "selectmove": "mostdrawish",
         "ucioptions": {
           "Move Overhead": "2000"
+        },
+        "accept": {
+          "opponent": [
+            "human"
+          ],
+          "timecontrol": [
+            "ultraBullet",
+            "bullet",
+            "blitz",
+            "rapid"
+          ],
+          "variant": [
+            "standard",
+            "antichess",
+            "atomic",
+            "chess960",
+            "crazyhouse",
+            "horde",
+            "kingOfTheHill",
+            "racingKings",
+            "threeCheck"
+          ],
+          "mode": [
+            "casual",
+            "rated"
+          ]
         }
       }
     ]
@@ -172,6 +198,426 @@
                               "showhelpashtml": true
                             },
                             "value": "2000"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "key": "accept",
+                    "item": {
+                      "kind": "dict",
+                      "enabled": true,
+                      "help": "No help available for this item.",
+                      "writepreference": {
+                        "addchild": true,
+                        "remove": true,
+                        "childsopened": false,
+                        "editenabled": true,
+                        "editkey": true,
+                        "editvalue": true,
+                        "radio": false,
+                        "showhelpashtml": true
+                      },
+                      "items": [
+                        {
+                          "key": "opponent",
+                          "item": {
+                            "kind": "list",
+                            "enabled": true,
+                            "help": "No help available for this item.",
+                            "writepreference": {
+                              "addchild": true,
+                              "remove": true,
+                              "childsopened": false,
+                              "editenabled": true,
+                              "editkey": true,
+                              "editvalue": true,
+                              "radio": false,
+                              "showhelpashtml": true
+                            },
+                            "items": [
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "bot"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "human"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": "timecontrol",
+                          "item": {
+                            "kind": "list",
+                            "enabled": true,
+                            "help": "No help available for this item.",
+                            "writepreference": {
+                              "addchild": true,
+                              "remove": true,
+                              "childsopened": false,
+                              "editenabled": true,
+                              "editkey": true,
+                              "editvalue": true,
+                              "radio": false,
+                              "showhelpashtml": true
+                            },
+                            "items": [
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "ultraBullet"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "bullet"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "blitz"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "rapid"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "classical"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "correspondence"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": "variant",
+                          "item": {
+                            "kind": "list",
+                            "enabled": true,
+                            "help": "No help available for this item.",
+                            "writepreference": {
+                              "addchild": true,
+                              "remove": true,
+                              "childsopened": false,
+                              "editenabled": true,
+                              "editkey": true,
+                              "editvalue": true,
+                              "radio": false,
+                              "showhelpashtml": true
+                            },
+                            "items": [
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "standard"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "fromPosition"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "antichess"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "atomic"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "chess960"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "crazyhouse"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "horde"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "kingOfTheHill"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "racingKings"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "threeCheck"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": "mode",
+                          "item": {
+                            "kind": "list",
+                            "enabled": true,
+                            "help": "No help available for this item.",
+                            "writepreference": {
+                              "addchild": true,
+                              "remove": true,
+                              "childsopened": false,
+                              "editenabled": true,
+                              "editkey": true,
+                              "editvalue": true,
+                              "radio": false,
+                              "showhelpashtml": true
+                            },
+                            "items": [
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "casual"
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "rated"
+                              }
+                            ]
                           }
                         }
                       ]
