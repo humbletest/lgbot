@@ -115,7 +115,7 @@ class Log(e):
         super().__init__("div")
         self.width = args.get("width", 600)
         self.height = args.get("height", 400)
-        self.maxitems = args.get("maxitems", 20)
+        self.maxitems = args.get("maxitems", 100)
         self.ac("logdiv")
         self.items = []        
         self.resize(self.width, self.height)

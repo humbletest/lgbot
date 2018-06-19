@@ -38,6 +38,64 @@ LICHESS_API_BASE_URL = "https://lichess.org/"
 
 #########################################################
 
+class PvInfo:
+    def __init__(self, bestmove = None, scorecp = None, scoremate = None, INFINITE_SCORE = 10000):
+        self.bestmove = bestmove
+        self.scorecp = scorecp
+        self.scoremate = scoremate
+        self.INFINITE_SCORE = INFINITE_SCORE
+
+    def score(self, default = 0):
+        if not ( self.scorecp is None ):
+            return self.scorecp
+        if not ( self.scoremate is None ):
+            if self.scoremate > 0:
+                return ( self.INFINITE_SCORE - self.scoremate )
+            else:
+                return ( - self.INFINITE_SCORE - self.scoremate )
+                
+        return default
+
+    def __repr__(self):
+        return "{} {}".format(self.bestmove, self.score())
+
+class PvInfos:
+    def __init__(self, infh):
+        self.infh = infh
+        self.pvis = {}
+
+    def process(self):
+        self.pvis = {}
+        info = self.infh.info        
+        pvobj = info["pv"]
+        scoreobj = info["score"]
+        for pvi in pvobj:
+            try:
+                pv = pvobj[pvi]
+                bestmove = pv[0]
+                score = scoreobj[pvi]
+                scorecp = score[0]
+                scoremate = score[1]
+                self.pvis[pvi] = PvInfo(bestmove = bestmove, scorecp = scorecp, scoremate = scoremate)
+            except:
+                print("there was an error parsing pv")
+                traceback.print_exc(file = sys.stderr)
+
+    def getbest(self, sortfunc = None, verbose = False):
+        self.process()
+        items = self.pvis.items()
+        if len(items) == 0:
+            return None
+        items = sorted(items, key = lambda item: item[0])
+        if not ( sortfunc is None ):
+            items = sorted(items, key = lambda item: sortfunc( item[1] ), reverse = True)
+        if verbose:
+            for item in items:
+                print(item[0], item[1])
+        return items[0][1]
+
+#########################################################
+
 def empty_queue(q):
     while not q.empty():
         q.get()
@@ -83,31 +141,6 @@ def update_board(board, move):
     uci_move = chess.Move.from_uci(move)
     board.push(uci_move)
     return board
-
-def get_most_drawish_move(info):
-    print("getting most drawish move")
-    try:
-        mindelta = 10000 * 10000
-        move = None
-        for i in range(1, len(info["score"])+1):
-            score = info["score"][i][0]
-            if score == None:
-                mate = info["score"][i][1]
-                if mate < 0:
-                    score = -10000 - mate
-                else:
-                    score = 10000 - mate
-            scdelta = score * score
-            if scdelta < mindelta:
-                mindelta = scdelta
-                pv = info["pv"][i]
-                move = pv[0]
-                print("found more drawish move", move, score)
-        print("most drawish {} delta {}".format(move, mindelta))
-        return move
-    except:
-        traceback.print_exc(file = sys.stderr)
-        return None
 
 #########################################################
 
@@ -166,11 +199,15 @@ class Bot:
             parts = sline.split(" ")
             kind = parts[0]        
             if kind == "bestmove":
+                print("best move received")                
                 try:
                     move = chess.Move.from_uci(parts[1])
-                    print("best move received", move)                
+                    print("best move", move)
+                    pvinfos = PvInfos(infh)                   
                     if self.cfg.selectmove == "mostdrawish":
-                        move = get_most_drawish_move(infh.info)
+                        bestpvinfo = pvinfos.getbest(lambda pvinfo: -abs(pvinfo.score()))
+                        move = bestpvinfo.bestmove                        
+                        print("most drawish move", move, bestpvinfo.score())
                     return move
                 except:
                     return None
