@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-20 13:55:52
+// Transcrypt'ed from Python, 2018-06-20 14:12:18
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3840,7 +3840,6 @@ function app () {
 		var deserializeconfig = function (obj) {
 			var schemaobj = dict ({});
 			try {
-				var schemaobj = dict ({});
 				if (__in__ ('configschema', obj)) {
 					var schemaobj = obj ['configschema'];
 				}
