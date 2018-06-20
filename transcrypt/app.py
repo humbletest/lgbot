@@ -693,6 +693,7 @@ class LinkedTextInput(e):
         self.rawtextinputclass = args.get("textclass", "defaultlinkedtextinputtext")
         self.rawtextinput = RawTextInput({
             "keycallback": self.keyup,
+            "entercallback": self.keyup,
             "tinpclass": self.rawtextinputclass
         })                
         self.setText(self.value)
@@ -701,7 +702,7 @@ class LinkedTextInput(e):
         self.a(self.rawtextinput)
 
 class LinkedSlider(e):
-    def changed(self):                
+    def changed(self):                        
         self.verify()
         if not ( self.changecallback is None ):
             self.changecallback()
@@ -715,10 +716,10 @@ class LinkedSlider(e):
                 self.changecallback()
 
     def setslider(self):
-        self.sliderenabled = False
-        self.slider.sv(self.value)
+        self.sliderenabled = False        
         self.slider.setmin(self.minvalue)
         self.slider.setmax(self.maxvalue)
+        self.slider.sv(self.value)
         self.sliderenabled = True
 
     def build(self):

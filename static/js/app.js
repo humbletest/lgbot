@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-20 14:12:18
+// Transcrypt'ed from Python, 2018-06-20 14:42:52
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2986,7 +2986,7 @@ function app () {
 				self.varname = varname;
 				self.value = self.parent [self.varname];
 				self.rawtextinputclass = args.py_get ('textclass', 'defaultlinkedtextinputtext');
-				self.rawtextinput = RawTextInput (dict ({'keycallback': self.keyup, 'tinpclass': self.rawtextinputclass}));
+				self.rawtextinput = RawTextInput (dict ({'keycallback': self.keyup, 'entercallback': self.keyup, 'tinpclass': self.rawtextinputclass}));
 				self.setText (self.value);
 				patchclasses (self, args);
 				self.keyupcallback = args.py_get ('keyupcallback', null);
@@ -3013,9 +3013,9 @@ function app () {
 			});},
 			get setslider () {return __get__ (this, function (self) {
 				self.sliderenabled = false;
-				self.slider.sv (self.value);
 				self.slider.setmin (self.minvalue);
 				self.slider.setmax (self.maxvalue);
+				self.slider.sv (self.value);
 				self.sliderenabled = true;
 			});},
 			get build () {return __get__ (this, function (self) {
