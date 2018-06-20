@@ -50,7 +50,7 @@ class Config:
         default = None,
         devdefault = None,
         proddefault = None,
-        kind = str,
+        kinds = [ str, int, float ],
         reg = True,
         conv = None,
         check = None
@@ -70,18 +70,21 @@ class Config:
                 temp = obj[prodkey]
             elif ( key in obj ):
                 temp = obj[key]                        
-            if type(temp) is kind:
+            if type(temp) in kinds:
                 ok = True
                 if not ( conv is None ):
                     try:
                         temp = conv(temp)                        
                     except:
+                        print("warning: conv failed on", key, temp)
                         ok = False
                 if ok:
                     if not ( check is None ):
                         ok = check(temp)
-                    if ok:
+                    if ok:                        
                         value = temp
+                    else:
+                        print("warning: check failed on", key, temp)
 
         self.__dict__[key] = value
         if reg:
@@ -103,11 +106,11 @@ class Config:
         self.parse(self.profileobj, "enginename", devdefault = "stockfish9.exe", proddefault = "stockfish9")
         self.parse(self.profileobj, "multipv", default = 1, conv = int, check = lambda i: i>=1 and i<=500)        
         self.parse(self.profileobj, "selectmove", default = "best")        
-        self.parse(self.profileobj, "accept", kind = dict, reg = False, default = {})
-        self.parse(self.accept, "opponent", kind = list, default = ['bot', 'human'])
-        self.parse(self.accept, "timecontrol", kind = list, default = ['ultraBullet', 'bullet', 'blitz', 'rapid', 'classical', 'correspondence'])
-        self.parse(self.accept, "variant", kind = list, default = ['standard', 'fromPosition', 'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingOfTheHill', 'racingKings', 'threeCheck'])
-        self.parse(self.accept, "mode", kind = list, default = ['casual', 'rated'])
+        self.parse(self.profileobj, "accept", kinds = [ dict ], reg = False, default = {})
+        self.parse(self.accept, "opponent", kinds = [ list ], default = ['bot', 'human'])
+        self.parse(self.accept, "timecontrol", kinds = [ list ], default = ['ultraBullet', 'bullet', 'blitz', 'rapid', 'classical', 'correspondence'])
+        self.parse(self.accept, "variant", kinds = [ list ], default = ['standard', 'fromPosition', 'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingOfTheHill', 'racingKings', 'threeCheck'])
+        self.parse(self.accept, "mode", kinds = [ list ], default = ['casual', 'rated'])
         self.ucioptions = []
         try:
             ucioptionsobj = self.profileobj.get("ucioptions", {})            
