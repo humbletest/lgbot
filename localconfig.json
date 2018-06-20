@@ -5,7 +5,7 @@
       "HumbleTestBot",
       {
         "token": "JmEKjUOpgC0WYTLW",
-        "multipv": "250",
+        "multipv": 250,
         "ucioptions": {
           "Move Overhead": "2000"
         },
@@ -52,6 +52,7 @@
       "editkey": true,
       "editvalue": true,
       "radio": false,
+      "slider": false,
       "showhelpashtml": true
     },
     "items": [
@@ -69,6 +70,27 @@
             "editkey": true,
             "editvalue": true,
             "radio": false,
+            "slider": false,
+            "showhelpashtml": true
+          },
+          "items": []
+        }
+      },
+      {
+        "key": "profile",
+        "item": {
+          "kind": "dict",
+          "enabled": true,
+          "help": "No help available for this item.",
+          "writepreference": {
+            "addchild": true,
+            "remove": true,
+            "childsopened": true,
+            "editenabled": true,
+            "editkey": true,
+            "editvalue": true,
+            "radio": true,
+            "slider": false,
             "showhelpashtml": true
           },
           "items": []
@@ -105,6 +127,7 @@
                   "editkey": true,
                   "editvalue": true,
                   "radio": false,
+                  "slider": false,
                   "showhelpashtml": true
                 },
                 "items": [
@@ -122,9 +145,12 @@
                         "editkey": true,
                         "editvalue": true,
                         "radio": false,
+                        "slider": false,
                         "showhelpashtml": true
                       },
-                      "value": "JmEKjUOpgC0WYTLW"
+                      "value": "JmEKjUOpgC0WYTLW",
+                      "minvalue": 1,
+                      "maxvalue": 100
                     }
                   },
                   {
@@ -141,9 +167,12 @@
                         "editkey": true,
                         "editvalue": true,
                         "radio": false,
+                        "slider": true,
                         "showhelpashtml": true
                       },
-                      "value": "250"
+                      "value": 250,
+                      "minvalue": 1,
+                      "maxvalue": 500
                     }
                   },
                   {
@@ -160,6 +189,7 @@
                         "editkey": true,
                         "editvalue": true,
                         "radio": false,
+                        "slider": false,
                         "showhelpashtml": true
                       },
                       "items": [
@@ -177,9 +207,12 @@
                               "editkey": true,
                               "editvalue": true,
                               "radio": false,
+                              "slider": false,
                               "showhelpashtml": true
                             },
-                            "value": "2000"
+                            "value": "2000",
+                            "minvalue": 1,
+                            "maxvalue": 100
                           }
                         }
                       ]
@@ -199,6 +232,7 @@
                         "editkey": true,
                         "editvalue": true,
                         "radio": false,
+                        "slider": false,
                         "showhelpashtml": true
                       },
                       "items": [
@@ -216,6 +250,7 @@
                               "editkey": true,
                               "editvalue": true,
                               "radio": false,
+                              "slider": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -231,9 +266,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "bot"
+                                "value": "bot",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -247,9 +285,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "human"
+                                "value": "human",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               }
                             ]
                           }
@@ -268,6 +309,7 @@
                               "editkey": true,
                               "editvalue": true,
                               "radio": false,
+                              "slider": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -283,9 +325,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "ultraBullet"
+                                "value": "ultraBullet",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -299,9 +344,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "bullet"
+                                "value": "bullet",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -315,9 +363,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "blitz"
+                                "value": "blitz",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -331,9 +382,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "rapid"
+                                "value": "rapid",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -347,9 +401,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "classical"
+                                "value": "classical",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -363,9 +420,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "correspondence"
+                                "value": "correspondence",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               }
                             ]
                           }
@@ -384,6 +444,7 @@
                               "editkey": true,
                               "editvalue": true,
                               "radio": false,
+                              "slider": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -399,9 +460,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "standard"
+                                "value": "standard",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -415,9 +479,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "fromPosition"
+                                "value": "fromPosition",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -431,9 +498,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "antichess"
+                                "value": "antichess",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -447,9 +517,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "atomic"
+                                "value": "atomic",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -463,9 +536,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "chess960"
+                                "value": "chess960",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -479,9 +555,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "crazyhouse"
+                                "value": "crazyhouse",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -495,9 +574,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "horde"
+                                "value": "horde",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -511,9 +593,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "kingOfTheHill"
+                                "value": "kingOfTheHill",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -527,9 +612,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "racingKings"
+                                "value": "racingKings",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -543,9 +631,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "threeCheck"
+                                "value": "threeCheck",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               }
                             ]
                           }
@@ -564,6 +655,7 @@
                               "editkey": true,
                               "editvalue": true,
                               "radio": false,
+                              "slider": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -579,9 +671,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "casual"
+                                "value": "casual",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               },
                               {
                                 "kind": "scalar",
@@ -595,9 +690,12 @@
                                   "editkey": true,
                                   "editvalue": true,
                                   "radio": false,
+                                  "slider": false,
                                   "showhelpashtml": true
                                 },
-                                "value": "rated"
+                                "value": "rated",
+                                "minvalue": 1,
+                                "maxvalue": 100
                               }
                             ]
                           }
@@ -619,6 +717,7 @@
                         "editkey": true,
                         "editvalue": true,
                         "radio": true,
+                        "slider": false,
                         "showhelpashtml": true
                       },
                       "items": [
@@ -634,9 +733,12 @@
                             "editkey": true,
                             "editvalue": true,
                             "radio": false,
+                            "slider": false,
                             "showhelpashtml": true
                           },
-                          "value": "best"
+                          "value": "best",
+                          "minvalue": 1,
+                          "maxvalue": 100
                         },
                         {
                           "kind": "scalar",
@@ -650,9 +752,12 @@
                             "editkey": true,
                             "editvalue": true,
                             "radio": false,
+                            "slider": false,
                             "showhelpashtml": true
                           },
-                          "value": "mostdrawish"
+                          "value": "mostdrawish",
+                          "minvalue": 1,
+                          "maxvalue": 100
                         },
                         {
                           "kind": "scalar",
@@ -666,9 +771,12 @@
                             "editkey": true,
                             "editvalue": true,
                             "radio": false,
+                            "slider": false,
                             "showhelpashtml": true
                           },
-                          "value": "worst"
+                          "value": "worst",
+                          "minvalue": 1,
+                          "maxvalue": 100
                         },
                         {
                           "kind": "scalar",
@@ -682,9 +790,12 @@
                             "editkey": true,
                             "editvalue": true,
                             "radio": false,
+                            "slider": false,
                             "showhelpashtml": true
                           },
-                          "value": "random"
+                          "value": "random",
+                          "minvalue": 1,
+                          "maxvalue": 100
                         },
                         {
                           "kind": "scalar",
@@ -698,9 +809,12 @@
                             "editkey": true,
                             "editvalue": true,
                             "radio": false,
+                            "slider": false,
                             "showhelpashtml": true
                           },
-                          "value": "capturerandom"
+                          "value": "capturerandom",
+                          "minvalue": 1,
+                          "maxvalue": 100
                         }
                       ]
                     }

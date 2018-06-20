@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-19 16:18:58
+// Transcrypt'ed from Python, 2018-06-20 13:19:07
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2505,6 +2505,20 @@ function app () {
 				}
 			});}
 		});
+		var Slider = __class__ ('Slider', [Input], {
+			__module__: __name__,
+			get setmin () {return __get__ (this, function (self, min) {
+				self.sa ('min', min);
+				return self;
+			});},
+			get setmax () {return __get__ (this, function (self, max) {
+				self.sa ('max', max);
+				return self;
+			});},
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (Slider, '__init__') (self, 'range');
+			});}
+		});
 		var CheckBox = __class__ ('CheckBox', [Input], {
 			__module__: __name__,
 			get setchecked () {return __get__ (this, function (self, checked) {
@@ -2970,13 +2984,95 @@ function app () {
 				__super__ (LinkedTextInput, '__init__') (self, 'div');
 				self.parent = parent;
 				self.varname = varname;
+				self.value = self.parent [self.varname];
 				self.rawtextinputclass = args.py_get ('textclass', 'defaultlinkedtextinputtext');
 				self.rawtextinput = RawTextInput (dict ({'keycallback': self.keyup, 'tinpclass': self.rawtextinputclass}));
-				self.text = args.py_get ('text', '');
-				self.setText (self.text);
+				self.setText (self.value);
 				patchclasses (self, args);
 				self.keyupcallback = args.py_get ('keyupcallback', null);
 				self.a (self.rawtextinput);
+			});}
+		});
+		var LinkedSlider = __class__ ('LinkedSlider', [e], {
+			__module__: __name__,
+			get changed () {return __get__ (this, function (self) {
+				self.verify ();
+				if (!(self.changecallback === null)) {
+					self.changecallback ();
+				}
+			});},
+			get sliderchanged () {return __get__ (this, function (self) {
+				if (self.sliderenabled) {
+					self.value = self.slider.v ();
+					self.valuetextinput.setText (self.value);
+					self.verify ();
+					if (!(self.changecallback === null)) {
+						self.changecallback ();
+					}
+				}
+			});},
+			get setslider () {return __get__ (this, function (self) {
+				self.sliderenabled = false;
+				self.slider.sv (self.value);
+				self.slider.setmin (self.minvalue);
+				self.slider.setmax (self.maxvalue);
+				self.sliderenabled = true;
+			});},
+			get build () {return __get__ (this, function (self) {
+				self.container = Div ().aac (list (['linkedslidercontainerclass', self.containerclass]));
+				self.valuetextinput = LinkedTextInput (self, 'value', dict ({'keyupcallback': self.changed, 'textclass': self.valuetextclass}));
+				self.mintextinput = LinkedTextInput (self, 'minvalue', dict ({'keyupcallback': self.changed, 'textclass': self.mintextclass}));
+				self.maxtextinput = LinkedTextInput (self, 'maxvalue', dict ({'keyupcallback': self.changed, 'textclass': self.maxtextclass}));
+				self.slider = Slider ().aac (list (['linkedslidersliderclass', self.sliderclass]));
+				self.slider.ae ('change', self.sliderchanged);
+				self.container.aa (list ([self.valuetextinput, self.mintextinput, self.slider, self.maxtextinput]));
+				self.x ().a (self.container);
+				self.verify ();
+				return self;
+			});},
+			get verify () {return __get__ (this, function (self) {
+				try {
+					self.value = int (self.value);
+				}
+				catch (__except0__) {
+					self.value = 1;
+				}
+				try {
+					self.minvalue = int (self.minvalue);
+				}
+				catch (__except0__) {
+					self.minvalue = 1;
+				}
+				try {
+					self.maxvalue = int (self.maxvalue);
+				}
+				catch (__except0__) {
+					self.maxvalue = 100;
+				}
+				self.parent [self.varname] = self.value;
+				self.parent [self.minvarname] = self.minvalue;
+				self.parent [self.maxvarname] = self.maxvalue;
+				self.setslider ();
+			});},
+			get __init__ () {return __get__ (this, function (self, parent, varname, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (LinkedSlider, '__init__') (self, 'div');
+				self.parent = parent;
+				self.varname = varname;
+				self.minvarname = 'min' + self.varname;
+				self.maxvarname = 'max' + self.varname;
+				self.value = self.parent [self.varname];
+				self.minvalue = self.parent [self.minvarname];
+				self.maxvalue = self.parent [self.maxvarname];
+				self.changecallback = args.py_get ('changecallback', null);
+				self.containerclass = args.py_get ('containerclass', 'linkedslidercontainerclass');
+				self.valuetextclass = args.py_get ('valuetextclass', 'linkedslidervaluetextclass');
+				self.mintextclass = args.py_get ('mintextclass', 'linkedslidermintextclass');
+				self.sliderclass = args.py_get ('sliderclass', 'linkedslidersliderclass');
+				self.maxtextclass = args.py_get ('maxtextclass', 'linkedslidermaxtextclass');
+				self.build ();
 			});}
 		});
 		var LinkedTextarea = __class__ ('LinkedTextarea', [e], {
@@ -3107,7 +3203,7 @@ function app () {
 			});}
 		});
 		var schemaclipboard = null;
-		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
+		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'slider', 'display': 'Slider', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self) {
@@ -3337,6 +3433,8 @@ function app () {
 			get toobj () {return __get__ (this, function (self) {
 				var obj = self.baseobj ();
 				obj ['value'] = self.value;
+				obj ['minvalue'] = self.minvalue;
+				obj ['maxvalue'] = self.maxvalue;
 				return obj;
 			});},
 			get topureobj () {return __get__ (this, function (self) {
@@ -3344,20 +3442,28 @@ function app () {
 				return obj;
 			});},
 			get writepreferencechangedtask () {return __get__ (this, function (self) {
-				self.linkedtextinput.able (self.writepreference.editvalue);
+				self.build ();
+			});},
+			get build () {return __get__ (this, function (self) {
+				if (self.writepreference.slider) {
+					self.linkedslider = LinkedSlider (self, 'value', dict ({'containerclass': 'schemalinkedslidercontainerclass', 'valuetextclass': 'schemalinkedslidervaluetextclass', 'mintextclass': 'schemalinkedslidermintextclass', 'sliderclass': 'schemalinkedslidersliderclass', 'maxtextclass': 'schemalinkedslidermaxtextclass'}));
+					self.element.x ().aa (list ([self.linkedslider]));
+				}
+				else {
+					self.linkedtextinput = LinkedTextInput (self, 'value', dict ({'textclass': 'schemascalarrawtextinput'}));
+					self.linkedtextinput.able (self.writepreference.editvalue);
+					self.element.x ().aa (list ([self.linkedtextinput]));
+				}
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
 				self.kind = 'scalar';
 				self.value = args.py_get ('value', randscalarvalue (2, 8));
+				self.minvalue = args.py_get ('minvalue', 1);
+				self.maxvalue = args.py_get ('maxvalue', 100);
 				self.element.ac ('schemascalar');
-				args ['keycallback'] = self.textchangedcallback;
-				self.linkedtextinput = LinkedTextInput (self, 'value', dict ({'textclass': 'schemascalarrawtextinput'}));
-				self.linkedtextinput.setText (self.value);
-				self.linkedtextinput.able (self.writepreference.editvalue);
-				self.element.ae ('mousedown', self.divclicked);
-				self.element.aa (list ([self.linkedtextinput]));
 				self.writepreference.setdisabledlist (list (['addchild', 'remove', 'childsopened', 'radio']));
+				self.build ();
 			});}
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
@@ -3596,7 +3702,7 @@ function app () {
 				__super__ (SchemaList, '__init__') (self, args);
 				self.kind = 'list';
 				self.element.ac ('schemalist');
-				self.writepreference.setdisabledlist (list (['editvalue']));
+				self.writepreference.setdisabledlist (list (['editvalue', 'slider']));
 			});}
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
@@ -3626,7 +3732,7 @@ function app () {
 				__super__ (SchemaDict, '__init__') (self, args);
 				self.kind = 'dict';
 				self.element.ac ('schemadict');
-				self.writepreference.setdisabledlist (list (['editvalue']));
+				self.writepreference.setdisabledlist (list (['editvalue', 'slider']));
 			});}
 		});
 		var schemawritepreferencefromobj = function (obj) {
@@ -3645,7 +3751,7 @@ function app () {
 			var writepreference = schemawritepreferencefromobj (getfromobj (obj, 'writepreference', dict ({})));
 			var returnobj = dict ({});
 			if (kind == 'scalar') {
-				var returnobj = SchemaScalar (dict ({'value': obj ['value'], 'writepreference': writepreference}));
+				var returnobj = SchemaScalar (dict ({'value': obj ['value'], 'minvalue': obj ['minvalue'], 'maxvalue': obj ['maxvalue'], 'writepreference': writepreference}));
 			}
 			else if (kind == 'list') {
 				var py_items = obj ['items'];
@@ -3732,6 +3838,7 @@ function app () {
 			return obj;
 		};
 		var deserializeconfig = function (obj) {
+			var schemaobj = dict ({});
 			try {
 				var schemaobj = dict ({});
 				if (__in__ ('configschema', obj)) {
@@ -3913,6 +4020,7 @@ function app () {
 			__all__.Input = Input;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
+			__all__.LinkedSlider = LinkedSlider;
 			__all__.LinkedTextInput = LinkedTextInput;
 			__all__.LinkedTextarea = LinkedTextarea;
 			__all__.Log = Log;
@@ -3931,6 +4039,7 @@ function app () {
 			__all__.SchemaScalar = SchemaScalar;
 			__all__.SchemaWritePreference = SchemaWritePreference;
 			__all__.Select = Select;
+			__all__.Slider = Slider;
 			__all__.Span = Span;
 			__all__.SplitPane = SplitPane;
 			__all__.Tab = Tab;
