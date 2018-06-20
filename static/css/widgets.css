@@ -300,3 +300,47 @@
 .configschemacontainerdiv {
     min-width: 2000px; min-height: 2000px;
 }
+
+.linkedslidercontainerclass {
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #9de; padding: 2px;
+}
+
+.linkedslidervaluetextclass {
+    font-size: 20px; padding: 2px;
+}
+
+.linkedslidermintextclass {
+    font-size: 16px; padding: 1px;
+}
+
+.linkedslidersliderclass {
+    height: 15px;
+}
+
+.linkedslidermaxtextclass {
+    font-size: 16px; padding: 1px;
+}
+
+.schemalinkedslidercontainerclass {
+    display: flex; justify-content: space-around; align-items: center;
+    background-color: #9de; padding: 2px;
+}
+
+.schemalinkedslidervaluetextclass {
+    font-size: var(--schemainputfontsize); padding: 1px; width: calc( var(--schemabase) * 2 );
+}
+
+.schemalinkedslidermintextclass {
+    font-size: calc( var(--schemainputfontsize) * 0.6 ); padding: 1px; width: calc( var(--schemabase) );
+}
+
+.schemalinkedslidersliderclass {
+    background-color: #9e9; margin: var(--schemacontainermargin);
+    width: calc( var(--schemabase) * 3 ); height: calc( var(--schemabase) * 0.8 );
+}
+
+.schemalinkedslidermaxtextclass {
+    font-size: calc( var(--schemainputfontsize) * 0.6 ); padding: 1px; width: calc( var(--schemabase) );
+}
+

@@ -195,6 +195,18 @@ class Option(e):
         if selected:
             self.sa("selected", True)
 
+class Slider(Input):
+    def setmin(self, min):
+        self.sa("min", min)
+        return self
+
+    def setmax(self, max):
+        self.sa("max", max)
+        return self
+
+    def __init__(self):
+        super().__init__("range")
+
 class CheckBox(Input):
     def setchecked(self, checked):
         self.e.checked = checked

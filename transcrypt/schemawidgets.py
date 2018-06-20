@@ -11,6 +11,7 @@ SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"editkey","display":"Edit key","default":True},
     {"key":"editvalue","display":"Edit value","default":True},        
     {"key":"radio","display":"Radio","default":False},        
+    {"key":"slider","display":"Slider","default":False},        
     {"key":"showhelpashtml","display":"Show help as HTML","default":True}
 ]
 
@@ -229,6 +230,8 @@ class SchemaScalar(SchemaItem):
     def toobj(self):
         obj = self.baseobj()
         obj["value"] = self.value
+        obj["minvalue"] = self.minvalue
+        obj["maxvalue"] = self.maxvalue
         return obj
 
     def topureobj(self):
@@ -236,20 +239,32 @@ class SchemaScalar(SchemaItem):
         return obj
 
     def writepreferencechangedtask(self):
-        self.linkedtextinput.able(self.writepreference.editvalue)        
+        self.build()
+
+    def build(self):
+        if self.writepreference.slider:
+            self.linkedslider = LinkedSlider(self, "value", {
+                "containerclass": "schemalinkedslidercontainerclass",
+                "valuetextclass": "schemalinkedslidervaluetextclass",
+                "mintextclass": "schemalinkedslidermintextclass",
+                "sliderclass": "schemalinkedslidersliderclass",
+                "maxtextclass": "schemalinkedslidermaxtextclass"
+            })
+            self.element.x().aa([self.linkedslider])
+        else:
+            self.linkedtextinput = LinkedTextInput(self, "value", {"textclass":"schemascalarrawtextinput"})            
+            self.linkedtextinput.able(self.writepreference.editvalue)                
+            self.element.x().aa([self.linkedtextinput])
 
     def __init__(self, args):
         super().__init__(args)
         self.kind = "scalar"        
         self.value = args.get("value", randscalarvalue(2, 8))
-        self.element.ac("schemascalar")
-        args["keycallback"] = self.textchangedcallback
-        self.linkedtextinput = LinkedTextInput(self, "value", {"textclass":"schemascalarrawtextinput"})
-        self.linkedtextinput.setText(self.value)        
-        self.linkedtextinput.able(self.writepreference.editvalue)        
-        self.element.ae("mousedown", self.divclicked)
-        self.element.aa([self.linkedtextinput])
+        self.minvalue = args.get("minvalue", 1)        
+        self.maxvalue = args.get("maxvalue", 100)        
+        self.element.ac("schemascalar")        
         self.writepreference.setdisabledlist(["addchild","remove","childsopened","radio"])
+        self.build()
 
 class SchemaCollection(SchemaItem):
     def topureobj(self):
@@ -435,7 +450,7 @@ class SchemaList(SchemaCollection):
         super().__init__(args)        
         self.kind = "list"
         self.element.ac("schemalist")
-        self.writepreference.setdisabledlist(["editvalue"])
+        self.writepreference.setdisabledlist(["editvalue", "slider"])
 
 class SchemaDict(SchemaCollection):
     def buildchilds(self):
@@ -460,7 +475,7 @@ class SchemaDict(SchemaCollection):
         super().__init__(args)        
         self.kind = "dict"
         self.element.ac("schemadict")
-        self.writepreference.setdisabledlist(["editvalue"])
+        self.writepreference.setdisabledlist(["editvalue", "slider"])
 
 def schemawritepreferencefromobj(obj):
     swp = SchemaWritePreference()    
@@ -477,6 +492,8 @@ def schemafromobj(obj):
     if kind == "scalar":        
         returnobj = SchemaScalar({
             "value": obj["value"],
+            "minvalue": obj["minvalue"],
+            "maxvalue": obj["maxvalue"],
             "writepreference": writepreference
         })
     elif kind == "list":

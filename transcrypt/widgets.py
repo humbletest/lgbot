@@ -301,7 +301,7 @@ class LinkedCheckBox(Input):
 
     def changed(self):        
         self.updatevar()
-        if not ( self.changecallback is None):
+        if not ( self.changecallback is None ):
             self.changecallback()
 
     def __init__(self, parent, varname, args = {}):
@@ -336,16 +336,93 @@ class LinkedTextInput(e):
         super().__init__("div")
         self.parent = parent
         self.varname = varname        
+        self.value = self.parent[self.varname]
         self.rawtextinputclass = args.get("textclass", "defaultlinkedtextinputtext")
         self.rawtextinput = RawTextInput({
             "keycallback": self.keyup,
             "tinpclass": self.rawtextinputclass
-        })
-        self.text = args.get("text", "")        
-        self.setText(self.text)
+        })                
+        self.setText(self.value)
         patchclasses(self, args)
         self.keyupcallback = args.get("keyupcallback", None)
         self.a(self.rawtextinput)
+
+class LinkedSlider(e):
+    def changed(self):                
+        self.verify()
+        if not ( self.changecallback is None ):
+            self.changecallback()
+
+    def sliderchanged(self):
+        if self.sliderenabled:
+            self.value = self.slider.v()        
+            self.valuetextinput.setText(self.value)
+            self.verify()
+            if not ( self.changecallback is None ):
+                self.changecallback()
+
+    def setslider(self):
+        self.sliderenabled = False
+        self.slider.sv(self.value)
+        self.slider.setmin(self.minvalue)
+        self.slider.setmax(self.maxvalue)
+        self.sliderenabled = True
+
+    def build(self):
+        self.container = Div().aac(["linkedslidercontainerclass", self.containerclass])
+        self.valuetextinput = LinkedTextInput(self, "value", {
+            "keyupcallback": self.changed,
+            "textclass": self.valuetextclass
+        })
+        self.mintextinput = LinkedTextInput(self, "minvalue", {
+            "keyupcallback": self.changed,
+            "textclass": self.mintextclass
+        })        
+        self.maxtextinput = LinkedTextInput(self, "maxvalue", {
+            "keyupcallback": self.changed,
+            "textclass": self.maxtextclass
+        })
+        self.slider = Slider().aac(["linkedslidersliderclass", self.sliderclass])                
+        self.slider.ae("change", self.sliderchanged)                
+        self.container.aa([self.valuetextinput, self.mintextinput, self.slider, self.maxtextinput])
+        self.x().a(self.container)
+        self.verify()
+        return self
+
+    def verify(self):
+        try:
+            self.value = int(self.value)
+        except:
+            self.value = 1        
+        try:
+            self.minvalue = int(self.minvalue)
+        except:
+            self.minvalue = 1        
+        try:
+            self.maxvalue = int(self.maxvalue)
+        except:
+            self.maxvalue = 100        
+        self.parent[self.varname] = self.value        
+        self.parent[self.minvarname] = self.minvalue        
+        self.parent[self.maxvarname] = self.maxvalue        
+        self.setslider()
+
+    def __init__(self, parent, varname, args = {}):
+        super().__init__("div")                                        
+        self.parent = parent
+        self.varname = varname                                
+        self.minvarname = "min" + self.varname
+        self.maxvarname = "max" + self.varname        
+        self.value = self.parent[self.varname]   
+        self.minvalue = self.parent[self.minvarname]   
+        self.maxvalue = self.parent[self.maxvarname]   
+        self.changecallback = args.get("changecallback", None)
+        self.containerclass = args.get("containerclass", "linkedslidercontainerclass")
+        self.valuetextclass = args.get("valuetextclass", "linkedslidervaluetextclass")
+        self.mintextclass = args.get("mintextclass", "linkedslidermintextclass")        
+        self.sliderclass = args.get("sliderclass", "linkedslidersliderclass")
+        self.maxtextclass = args.get("maxtextclass", "linkedslidermaxtextclass")                
+        self.build()
 
 class LinkedTextarea(e):
     def updatevar(self):        
