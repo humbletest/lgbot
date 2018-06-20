@@ -77,9 +77,8 @@ def serializeconfig():
 
 def deserializeconfig(obj):
     global configschema
-    schemaobj = {}    
-    try:
-        schemaobj = {}
+    schemaobj = {}
+    try:        
         if "configschema" in obj:
             schemaobj = obj["configschema"]
         configschema = schemafromobj(schemaobj)
