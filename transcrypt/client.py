@@ -198,6 +198,7 @@ def onconnect():
         getlocalconfig()
 
 def onevent(json):    
+    global configschema
     dest = "engine"
     logitem = None
     if "kind" in json:
@@ -210,6 +211,29 @@ def onevent(json):
                 if len(sline)>0:
                     if sline[0] == "!":
                         logitem = LogItem("bot error:" + sline[1:], "cmdstatuserr")        
+        elif kind == "ucioptionsparsed":
+            ucioptionsobj = json["ucioptions"]
+            ucischema = schemafromucioptionsobj(ucioptionsobj)
+            profilei = configschema.getitemindexbykey("profile")
+            if not ( profilei is None ):
+                profile = configschema.childs[profilei].item
+                selprofilei = profile.getfirstselectedindex()                
+                if not ( selprofilei is None ):
+                    selfprofile = profile.childs[selprofilei].item
+                    ucischema.setchildparent(selfprofile)
+                    nameducischema = nameditem = NamedSchemaItem({
+                        "key": "ucioptions",
+                        "item": ucischema
+                    })                    
+                    ucioptionsi = selfprofile.getitemindexbykey("ucioptions")
+                    if not ( ucioptionsi is None ):
+                        selfprofile.childs[ucioptionsi] = nameducischema
+                    else:
+                        selfprofile.childs.append(nameducischema)
+                    selfprofile.openchilds()
+                    selfprofile.openchilds()
+                    maintabpane.setTabElementByKey("config", buildconfigdiv())
+                    maintabpane.selectByKey("config")
     if "response" in json:        
         status = "?"
         response = json["response"]        

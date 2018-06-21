@@ -101,13 +101,16 @@ class ProcessManager:
         self.process = None
         self.sendlog = True
 
+    def send_line_task(self, sline):
+        self.process.send_line(sline)
+
     def send_line(self, sline):
         if self.process is None:
             msg = "! no {} process to send line".format(self.key)
             print(msg)
             return msg
         else:
-            self.process.send_line(sline)
+            self.send_line_task(sline)
             msg = "line sent to {} process : {}".format(self.key, sline)
             #print(msg)
             return msg
