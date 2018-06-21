@@ -461,6 +461,20 @@ class SchemaList(SchemaCollection):
         self.writepreference.setdisabledlist(["editvalue", "slider"])
 
 class SchemaDict(SchemaCollection):
+    def setchildatkey(self, key, item):
+        item.setchildparent(self)
+        nameditem = NamedSchemaItem({
+            "key": key,
+            "item": item
+        })                    
+        i = self.getitemindexbykey(key)
+        if i is None:
+            self.childs.append(nameditem)                    
+        else:
+            self.childs[i] = nameditem
+        self.openchilds()
+        self.openchilds()        
+
     def getfirstselectedindex(self):        
         i = 0
         for item in self.childs:
@@ -555,6 +569,39 @@ def schemafromobj(obj):
     returnobj.setenabled(enabled)    
     returnobj.help = help        
     return returnobj
+
+def getpathlistfromschema(sch, pathlist):    
+    if len(pathlist)<=0:
+        return sch
+    key = pathlist[0]
+    pathlist = pathlist[1:]
+    if key == "#":
+        if sch.kind == "scalar":
+            return None
+        elif sch.kind == "list":
+            i = sch.getfirstselectedindex()
+            if i == None:
+                return None
+            return getpathlistfromschema(sch.childs[i], pathlist)
+        elif sch.kind == "dict":
+            i = sch.getfirstselectedindex()
+            if i == None:
+                return None
+            return getpathlistfromschema(sch.childs[i].item, pathlist)
+    else:
+        if sch.kind == "scalar":
+            return None
+        elif sch.kind == "list":
+            return None
+        elif sch.kind == "dict":
+            for child in sch.childs:
+                if child.key == key:
+                    return getpathlistfromschema(child.item, pathlist)
+    return None
+
+def getpathfromschema(sch, path):
+    pathlist = path.split("/")
+    return getpathlistfromschema(sch, pathlist)
 
 def schemafromucioptionsobj(obj):
     ucioptions = SchemaDict({})

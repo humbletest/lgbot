@@ -167,6 +167,10 @@ class Bot:
         for ucioption in self.cfg.ucioptions:        
             sendoption(ucioption.name, ucioption.value)  
 
+    def sendcorrecteducioptions(self):
+        self.senducioptions()
+        self.sendmultipv()
+
     def max_games_reached(self):        
         return self.num_playing >= self.cfg.concurrency  
 
@@ -259,9 +263,8 @@ class Bot:
         # spawn fresh engine
         print(json.dumps({
             "enginecmd": "restart"
-        }))
-        self.sendmultipv()
-        self.senducioptions()
+        }))        
+        self.sendcorrecteducioptions()
         sendenginelog(False)
         empty_queue(self.engine_queue)
         moves = game.state["moves"].split()
@@ -383,6 +386,8 @@ while True:
         bot.loadprofile()
     elif cmd == "sc":
         bot.startcontrol()
+    elif cmd == "scu":        
+        bot.sendcorrecteducioptions()
     elif cmd == "x":
         break
     else:
