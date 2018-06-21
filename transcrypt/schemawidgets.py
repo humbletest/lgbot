@@ -12,6 +12,7 @@ SCHEMA_WRITE_PREFERENCE_DEFAULTS = [
     {"key":"editvalue","display":"Edit value","default":True},        
     {"key":"radio","display":"Radio","default":False},        
     {"key":"slider","display":"Slider","default":False},        
+    {"key":"check","display":"Check","default":False},        
     {"key":"showhelpashtml","display":"Show help as HTML","default":True}
 ]
 
@@ -82,11 +83,15 @@ class SchemaItem(e):
         pureobj = {}
         return pureobj
 
+    def enablechangedtask():
+        pass
+
     def enablecallback(self):        
         self.enabled = self.enablecheckbox.getchecked()
         if not ( self.childparent is None ):
             if self.childparent.writepreference.radio:
                 self.childparent.setradio(self)
+        self.enablechangedtask()
 
     def setenabled(self, enabled):
         self.enabled = enabled
@@ -241,8 +246,16 @@ class SchemaScalar(SchemaItem):
     def writepreferencechangedtask(self):
         self.build()
 
+    def enablechangedtask(self):        
+        if self.enabled:
+            self.value = "true"
+        else:
+            self.value = "false"
+        self.linkedtextinput.setText(self.value)
+
     def build(self):
         if self.writepreference.slider:
+            self.enablecheckbox.rc("schemacheckenablecheckbox")
             self.linkedslider = LinkedSlider(self, "value", {
                 "containerclass": "schemalinkedslidercontainerclass",
                 "valuetextclass": "schemalinkedslidervaluetextclass",
@@ -251,7 +264,8 @@ class SchemaScalar(SchemaItem):
                 "maxtextclass": "schemalinkedslidermaxtextclass"
             })
             self.element.x().aa([self.linkedslider])
-        else:
+        else:            
+            self.enablebox.arc(self.writepreference.check, "schemacheckenablecheckbox")            
             self.linkedtextinput = LinkedTextInput(self, "value", {"textclass":"schemascalarrawtextinput"})            
             self.linkedtextinput.able(self.writepreference.editvalue)                
             self.element.x().aa([self.linkedtextinput])
@@ -275,12 +289,12 @@ class SchemaCollection(SchemaItem):
                 for nameditem in self.childs:
                     key = nameditem.key
                     item = nameditem.item
-                    if item.enabled:
+                    if item.enabled or item.writepreference.check:
                         pureobj = [key, item.topureobj()]
                         break
             elif self.kind == "list":                
                 for item in self.childs:
-                    if item.enabled:
+                    if item.enabled or item.writepreference.check:
                         pureobj = item.topureobj()
                         break
         else:
@@ -288,12 +302,12 @@ class SchemaCollection(SchemaItem):
                 for nameditem in self.childs:
                     key = nameditem.key
                     item = nameditem.item
-                    if item.enabled:
+                    if item.enabled or item.writepreference.check:
                         pureobj[key] = item.topureobj()
             elif self.kind == "list":
                 pureobj = []
                 for item in self.childs:
-                    if item.enabled:
+                    if item.enabled or item.writepreference.check:
                         pureobj.append(item.topureobj())
         return pureobj
 
@@ -458,7 +472,7 @@ class SchemaList(SchemaCollection):
         super().__init__(args)        
         self.kind = "list"
         self.element.ac("schemalist")
-        self.writepreference.setdisabledlist(["editvalue", "slider"])
+        self.writepreference.setdisabledlist(["editvalue", "slider", "check"])
 
 class SchemaDict(SchemaCollection):
     def setchildatkey(self, key, item):
@@ -513,7 +527,7 @@ class SchemaDict(SchemaCollection):
         super().__init__(args)        
         self.kind = "dict"
         self.element.ac("schemadict")
-        self.writepreference.setdisabledlist(["editvalue", "slider"])
+        self.writepreference.setdisabledlist(["editvalue", "slider", "check"])
 
 def schemawritepreferencefromobj(obj):
     swp = SchemaWritePreference()    
@@ -621,7 +635,10 @@ def schemafromucioptionsobj(obj):
             item.writepreference.slider = True
             item.build()
         elif kind == "check":
-            item.value = ""
+            item.value = "false"
+            if default:
+                item.value = "true"
+            item.writepreference.check = True
             item.setenabled(default)
             item.build()
         elif kind == "combo":

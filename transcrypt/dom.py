@@ -131,6 +131,14 @@ class e:
         self.e.classList.remove(klass)
         return self
 
+    # add or remove class based on condition
+    def arc(self, cond, klass):
+        if cond:
+            self.e.classList.add(klass)
+        else:
+            self.e.classList.remove(klass)
+        return self
+
     # return value
     def v(self):
         return self.e.value
