@@ -1142,7 +1142,7 @@ class SchemaScalar(SchemaItem):
         self.minvalue = args.get("minvalue", 1)        
         self.maxvalue = args.get("maxvalue", 100)        
         self.element.ac("schemascalar")        
-        self.writepreference.setdisabledlist(["addchild","remove","childsopened","radio"])
+        self.writepreference.setdisabledlist(["addchild","childsopened","radio"])
         self.build()
 
 class SchemaCollection(SchemaItem):
@@ -1317,6 +1317,14 @@ class SchemaCollection(SchemaItem):
             self.openchilds()            
 
 class SchemaList(SchemaCollection):
+    def getfirstselectedindex(self):        
+        i = 0
+        for item in self.childs:
+            if item.enabled:
+                return i
+            i+=1
+        return None
+
     def toobj(self):
         listobj = []
         for item in self.childs:
@@ -1332,6 +1340,22 @@ class SchemaList(SchemaCollection):
         self.writepreference.setdisabledlist(["editvalue", "slider"])
 
 class SchemaDict(SchemaCollection):
+    def getfirstselectedindex(self):        
+        i = 0
+        for item in self.childs:
+            if item.item.enabled:
+                return i
+            i+=1
+        return None
+
+    def getitemindexbykey(self, key):
+        i = 0
+        for item in self.childs:
+            if item.key == key:
+                return i
+            i+=1
+        return None
+
     def buildchilds(self):
         self.childshook.x()
         for child in self.childs:
@@ -1410,6 +1434,50 @@ def schemafromobj(obj):
     returnobj.setenabled(enabled)    
     returnobj.help = help        
     return returnobj
+
+def schemafromucioptionsobj(obj):
+    ucioptions = SchemaDict({})
+    for opt in obj:
+        key = opt["key"]
+        kind = opt["kind"]
+        default = opt["default"]
+        min = opt["min"]
+        max = opt["max"]
+        options = opt["options"]
+        item = SchemaScalar({
+            "value": default
+        })        
+        if kind == "spin":            
+            item.minvalue = min
+            item.maxvalue = max
+            item.writepreference.slider = True
+            item.build()
+        elif kind == "check":
+            item.value = ""
+            item.setenabled(default)
+            item.build()
+        elif kind == "combo":
+            item = SchemaList({})
+            item.writepreference.radio = True
+            for comboopt in options:
+                comboitem = SchemaScalar({
+                    "value": comboopt
+                })
+                comboitem.setenabled(comboopt == default)
+                comboitem.setchildparent(item)
+                item.childs.append(comboitem)
+            item.openchilds()
+            item.openchilds()
+
+        item.setchildparent(ucioptions)
+
+        nameditem = NamedSchemaItem({
+            "key": key,
+            "item": item
+        })
+
+        ucioptions.childs.append(nameditem)
+    return ucioptions
 
 schemaclipboard = NamedSchemaItem({})
 ######################################################
@@ -1614,6 +1682,7 @@ def onconnect():
         getlocalconfig()
 
 def onevent(json):    
+    global configschema
     dest = "engine"
     logitem = None
     if "kind" in json:
@@ -1626,6 +1695,29 @@ def onevent(json):
                 if len(sline)>0:
                     if sline[0] == "!":
                         logitem = LogItem("bot error:" + sline[1:], "cmdstatuserr")        
+        elif kind == "ucioptionsparsed":
+            ucioptionsobj = json["ucioptions"]
+            ucischema = schemafromucioptionsobj(ucioptionsobj)
+            profilei = configschema.getitemindexbykey("profile")
+            if not ( profilei is None ):
+                profile = configschema.childs[profilei].item
+                selprofilei = profile.getfirstselectedindex()                
+                if not ( selprofilei is None ):
+                    selfprofile = profile.childs[selprofilei].item
+                    ucischema.setchildparent(selfprofile)
+                    nameducischema = nameditem = NamedSchemaItem({
+                        "key": "ucioptions",
+                        "item": ucischema
+                    })                    
+                    ucioptionsi = selfprofile.getitemindexbykey("ucioptions")
+                    if not ( ucioptionsi is None ):
+                        selfprofile.childs[ucioptionsi] = nameducischema
+                    else:
+                        selfprofile.childs.append(nameducischema)
+                    selfprofile.openchilds()
+                    selfprofile.openchilds()
+                    maintabpane.setTabElementByKey("config", buildconfigdiv())
+                    maintabpane.selectByKey("config")
     if "response" in json:        
         status = "?"
         response = json["response"]        

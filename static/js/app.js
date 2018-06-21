@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-20 14:42:52
+// Transcrypt'ed from Python, 2018-06-21 10:54:13
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3462,7 +3462,7 @@ function app () {
 				self.minvalue = args.py_get ('minvalue', 1);
 				self.maxvalue = args.py_get ('maxvalue', 100);
 				self.element.ac ('schemascalar');
-				self.writepreference.setdisabledlist (list (['addchild', 'remove', 'childsopened', 'radio']));
+				self.writepreference.setdisabledlist (list (['addchild', 'childsopened', 'radio']));
 				self.build ();
 			});}
 		});
@@ -3687,6 +3687,18 @@ function app () {
 		});
 		var SchemaList = __class__ ('SchemaList', [SchemaCollection], {
 			__module__: __name__,
+			get getfirstselectedindex () {return __get__ (this, function (self) {
+				var i = 0;
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					if (item.enabled) {
+						return i;
+					}
+					i++;
+				}
+				return null;
+			});},
 			get toobj () {return __get__ (this, function (self) {
 				var listobj = list ([]);
 				var __iterable0__ = self.childs;
@@ -3707,6 +3719,30 @@ function app () {
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
 			__module__: __name__,
+			get getfirstselectedindex () {return __get__ (this, function (self) {
+				var i = 0;
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					if (item.item.enabled) {
+						return i;
+					}
+					i++;
+				}
+				return null;
+			});},
+			get getitemindexbykey () {return __get__ (this, function (self, key) {
+				var i = 0;
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					if (item.key == key) {
+						return i;
+					}
+					i++;
+				}
+				return null;
+			});},
 			get buildchilds () {return __get__ (this, function (self) {
 				self.childshook.x ();
 				var __iterable0__ = self.childs;
@@ -3792,6 +3828,49 @@ function app () {
 			returnobj.setenabled (enabled);
 			returnobj.help = help;
 			return returnobj;
+		};
+		var schemafromucioptionsobj = function (obj) {
+			var ucioptions = SchemaDict (dict ({}));
+			var __iterable0__ = obj;
+			for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+				var opt = __iterable0__ [__index0__];
+				var key = opt ['key'];
+				var kind = opt ['kind'];
+				var py_default = opt ['default'];
+				var min = opt ['min'];
+				var max = opt ['max'];
+				var options = opt ['options'];
+				var item = SchemaScalar (dict ({'value': py_default}));
+				if (kind == 'spin') {
+					item.minvalue = min;
+					item.maxvalue = max;
+					item.writepreference.slider = true;
+					item.build ();
+				}
+				else if (kind == 'check') {
+					item.value = '';
+					item.setenabled (py_default);
+					item.build ();
+				}
+				else if (kind == 'combo') {
+					var item = SchemaList (dict ({}));
+					item.writepreference.radio = true;
+					var __iterable1__ = options;
+					for (var __index1__ = 0; __index1__ < len (__iterable1__); __index1__++) {
+						var comboopt = __iterable1__ [__index1__];
+						var comboitem = SchemaScalar (dict ({'value': comboopt}));
+						comboitem.setenabled (comboopt == py_default);
+						comboitem.setchildparent (item);
+						item.childs.append (comboitem);
+					}
+					item.openchilds ();
+					item.openchilds ();
+				}
+				item.setchildparent (ucioptions);
+				var nameditem = NamedSchemaItem (dict ({'key': key, 'item': item}));
+				ucioptions.childs.append (nameditem);
+			}
+			return ucioptions;
 		};
 		var schemaclipboard = NamedSchemaItem (dict ({}));
 		if (window.location.protocol == 'https:') {
@@ -3948,6 +4027,33 @@ function app () {
 						}
 					}
 				}
+				else if (kind == 'ucioptionsparsed') {
+					var ucioptionsobj = json ['ucioptions'];
+					var ucischema = schemafromucioptionsobj (ucioptionsobj);
+					var profilei = configschema.getitemindexbykey ('profile');
+					if (!(profilei === null)) {
+						var profile = configschema.childs [profilei].item;
+						var selprofilei = profile.getfirstselectedindex ();
+						if (!(selprofilei === null)) {
+							var selfprofile = profile.childs [selprofilei].item;
+							ucischema.setchildparent (selfprofile);
+							var __left0__ = NamedSchemaItem (dict ({'key': 'ucioptions', 'item': ucischema}));
+							var nameducischema = __left0__;
+							var nameditem = __left0__;
+							var ucioptionsi = selfprofile.getitemindexbykey ('ucioptions');
+							if (!(ucioptionsi === null)) {
+								selfprofile.childs [ucioptionsi] = nameducischema;
+							}
+							else {
+								selfprofile.childs.append (nameducischema);
+							}
+							selfprofile.openchilds ();
+							selfprofile.openchilds ();
+							maintabpane.setTabElementByKey ('config', buildconfigdiv ());
+							maintabpane.selectByKey ('config');
+						}
+					}
+				}
 			}
 			if (__in__ ('response', json)) {
 				var status = '?';
@@ -4082,6 +4188,7 @@ function app () {
 			__all__.reloadcallback = reloadcallback;
 			__all__.schemaclipboard = schemaclipboard;
 			__all__.schemafromobj = schemafromobj;
+			__all__.schemafromucioptionsobj = schemafromucioptionsobj;
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
 			__all__.serializecallback = serializecallback;
