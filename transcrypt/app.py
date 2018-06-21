@@ -1340,6 +1340,20 @@ class SchemaList(SchemaCollection):
         self.writepreference.setdisabledlist(["editvalue", "slider"])
 
 class SchemaDict(SchemaCollection):
+    def setchildatkey(self, key, item):
+        item.setchildparent(self)
+        nameditem = NamedSchemaItem({
+            "key": key,
+            "item": item
+        })                    
+        i = self.getitemindexbykey(key)
+        if i is None:
+            self.childs.append(nameditem)                    
+        else:
+            self.childs[i] = nameditem
+        self.openchilds()
+        self.openchilds()        
+
     def getfirstselectedindex(self):        
         i = 0
         for item in self.childs:
@@ -1434,6 +1448,39 @@ def schemafromobj(obj):
     returnobj.setenabled(enabled)    
     returnobj.help = help        
     return returnobj
+
+def getpathlistfromschema(sch, pathlist):    
+    if len(pathlist)<=0:
+        return sch
+    key = pathlist[0]
+    pathlist = pathlist[1:]
+    if key == "#":
+        if sch.kind == "scalar":
+            return None
+        elif sch.kind == "list":
+            i = sch.getfirstselectedindex()
+            if i == None:
+                return None
+            return getpathlistfromschema(sch.childs[i], pathlist)
+        elif sch.kind == "dict":
+            i = sch.getfirstselectedindex()
+            if i == None:
+                return None
+            return getpathlistfromschema(sch.childs[i].item, pathlist)
+    else:
+        if sch.kind == "scalar":
+            return None
+        elif sch.kind == "list":
+            return None
+        elif sch.kind == "dict":
+            for child in sch.childs:
+                if child.key == key:
+                    return getpathlistfromschema(child.item, pathlist)
+    return None
+
+def getpathfromschema(sch, path):
+    pathlist = path.split("/")
+    return getpathlistfromschema(sch, pathlist)
 
 def schemafromucioptionsobj(obj):
     ucioptions = SchemaDict({})
@@ -1698,26 +1745,11 @@ def onevent(json):
         elif kind == "ucioptionsparsed":
             ucioptionsobj = json["ucioptions"]
             ucischema = schemafromucioptionsobj(ucioptionsobj)
-            profilei = configschema.getitemindexbykey("profile")
-            if not ( profilei is None ):
-                profile = configschema.childs[profilei].item
-                selprofilei = profile.getfirstselectedindex()                
-                if not ( selprofilei is None ):
-                    selfprofile = profile.childs[selprofilei].item
-                    ucischema.setchildparent(selfprofile)
-                    nameducischema = nameditem = NamedSchemaItem({
-                        "key": "ucioptions",
-                        "item": ucischema
-                    })                    
-                    ucioptionsi = selfprofile.getitemindexbykey("ucioptions")
-                    if not ( ucioptionsi is None ):
-                        selfprofile.childs[ucioptionsi] = nameducischema
-                    else:
-                        selfprofile.childs.append(nameducischema)
-                    selfprofile.openchilds()
-                    selfprofile.openchilds()
-                    maintabpane.setTabElementByKey("config", buildconfigdiv())
-                    maintabpane.selectByKey("config")
+            selfprofile = getpathfromschema(configschema, "profile/#")
+            if not ( selfprofile is None ):
+                selfprofile.setchildatkey("ucioptions", ucischema)
+                maintabpane.setTabElementByKey("config", buildconfigdiv())
+                maintabpane.selectByKey("config")
     if "response" in json:        
         status = "?"
         response = json["response"]        

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-21 10:54:13
+// Transcrypt'ed from Python, 2018-06-21 13:55:48
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3719,6 +3719,19 @@ function app () {
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
 			__module__: __name__,
+			get setchildatkey () {return __get__ (this, function (self, key, item) {
+				item.setchildparent (self);
+				var nameditem = NamedSchemaItem (dict ({'key': key, 'item': item}));
+				var i = self.getitemindexbykey (key);
+				if (i === null) {
+					self.childs.append (nameditem);
+				}
+				else {
+					self.childs [i] = nameditem;
+				}
+				self.openchilds ();
+				self.openchilds ();
+			});},
 			get getfirstselectedindex () {return __get__ (this, function (self) {
 				var i = 0;
 				var __iterable0__ = self.childs;
@@ -3828,6 +3841,52 @@ function app () {
 			returnobj.setenabled (enabled);
 			returnobj.help = help;
 			return returnobj;
+		};
+		var getpathlistfromschema = function (sch, pathlist) {
+			if (len (pathlist) <= 0) {
+				return sch;
+			}
+			var key = pathlist [0];
+			var pathlist = pathlist.__getslice__ (1, null, 1);
+			if (key == '#') {
+				if (sch.kind == 'scalar') {
+					return null;
+				}
+				else if (sch.kind == 'list') {
+					var i = sch.getfirstselectedindex ();
+					if (i == null) {
+						return null;
+					}
+					return getpathlistfromschema (sch.childs [i], pathlist);
+				}
+				else if (sch.kind == 'dict') {
+					var i = sch.getfirstselectedindex ();
+					if (i == null) {
+						return null;
+					}
+					return getpathlistfromschema (sch.childs [i].item, pathlist);
+				}
+			}
+			else if (sch.kind == 'scalar') {
+				return null;
+			}
+			else if (sch.kind == 'list') {
+				return null;
+			}
+			else if (sch.kind == 'dict') {
+				var __iterable0__ = sch.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					if (child.key == key) {
+						return getpathlistfromschema (child.item, pathlist);
+					}
+				}
+			}
+			return null;
+		};
+		var getpathfromschema = function (sch, path) {
+			var pathlist = path.py_split ('/');
+			return getpathlistfromschema (sch, pathlist);
 		};
 		var schemafromucioptionsobj = function (obj) {
 			var ucioptions = SchemaDict (dict ({}));
@@ -4030,28 +4089,11 @@ function app () {
 				else if (kind == 'ucioptionsparsed') {
 					var ucioptionsobj = json ['ucioptions'];
 					var ucischema = schemafromucioptionsobj (ucioptionsobj);
-					var profilei = configschema.getitemindexbykey ('profile');
-					if (!(profilei === null)) {
-						var profile = configschema.childs [profilei].item;
-						var selprofilei = profile.getfirstselectedindex ();
-						if (!(selprofilei === null)) {
-							var selfprofile = profile.childs [selprofilei].item;
-							ucischema.setchildparent (selfprofile);
-							var __left0__ = NamedSchemaItem (dict ({'key': 'ucioptions', 'item': ucischema}));
-							var nameducischema = __left0__;
-							var nameditem = __left0__;
-							var ucioptionsi = selfprofile.getitemindexbykey ('ucioptions');
-							if (!(ucioptionsi === null)) {
-								selfprofile.childs [ucioptionsi] = nameducischema;
-							}
-							else {
-								selfprofile.childs.append (nameducischema);
-							}
-							selfprofile.openchilds ();
-							selfprofile.openchilds ();
-							maintabpane.setTabElementByKey ('config', buildconfigdiv ());
-							maintabpane.selectByKey ('config');
-						}
+					var selfprofile = getpathfromschema (configschema, 'profile/#');
+					if (!(selfprofile === null)) {
+						selfprofile.setchildatkey ('ucioptions', ucischema);
+						maintabpane.setTabElementByKey ('config', buildconfigdiv ());
+						maintabpane.selectByKey ('config');
 					}
 				}
 			}
@@ -4169,6 +4211,8 @@ function app () {
 			__all__.getfromobj = getfromobj;
 			__all__.getjsonbin = getjsonbin;
 			__all__.getlocalconfig = getlocalconfig;
+			__all__.getpathfromschema = getpathfromschema;
+			__all__.getpathlistfromschema = getpathlistfromschema;
 			__all__.id = id;
 			__all__.loadlocal = loadlocal;
 			__all__.log = log;

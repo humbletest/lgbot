@@ -13,7 +13,7 @@
           "Threads": 1,
           "Hash": 16,
           "Clear Hash": "",
-          "MultiPV": 500,
+          "MultiPV": 1,
           "Skill Level": 20,
           "Move Overhead": 2500,
           "Minimum Thinking Time": 20,
@@ -436,7 +436,7 @@
                               "slider": true,
                               "showhelpashtml": true
                             },
-                            "value": 500,
+                            "value": 1,
                             "minvalue": 1,
                             "maxvalue": 500
                           }
