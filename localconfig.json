@@ -13,16 +13,19 @@
           "Threads": 1,
           "Hash": 16,
           "Clear Hash": "",
+          "Ponder": "false",
           "MultiPV": 1,
           "Skill Level": 20,
           "Move Overhead": 2500,
           "Minimum Thinking Time": 20,
           "Slow Mover": 84,
           "nodestime": 0,
+          "UCI_Chess960": "false",
           "UCI_Variant": "chess",
+          "UCI_AnalyseMode": "false",
           "SyzygyPath": "<empty>",
           "SyzygyProbeDepth": 1,
-          "Syzygy50MoveRule": "",
+          "Syzygy50MoveRule": "true",
           "SyzygyProbeLimit": 6
         },
         "accept": {
@@ -69,6 +72,7 @@
       "editvalue": true,
       "radio": false,
       "slider": false,
+      "check": false,
       "showhelpashtml": true
     },
     "items": [
@@ -87,6 +91,7 @@
             "editvalue": true,
             "radio": false,
             "slider": false,
+            "check": false,
             "showhelpashtml": true
           },
           "items": []
@@ -107,6 +112,7 @@
             "editvalue": true,
             "radio": true,
             "slider": false,
+            "check": false,
             "showhelpashtml": true
           },
           "items": [
@@ -125,6 +131,7 @@
                   "editvalue": true,
                   "radio": false,
                   "slider": false,
+                  "check": false,
                   "showhelpashtml": true
                 },
                 "items": [
@@ -143,6 +150,7 @@
                         "editvalue": true,
                         "radio": false,
                         "slider": false,
+                        "check": false,
                         "showhelpashtml": true
                       },
                       "value": "JmEKjUOpgC0WYTLW",
@@ -165,6 +173,7 @@
                         "editvalue": true,
                         "radio": false,
                         "slider": true,
+                        "check": false,
                         "showhelpashtml": true
                       },
                       "value": 200,
@@ -187,6 +196,7 @@
                         "editvalue": true,
                         "radio": false,
                         "slider": false,
+                        "check": false,
                         "showhelpashtml": true
                       },
                       "items": [
@@ -205,6 +215,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": "",
@@ -227,6 +238,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 12,
@@ -249,6 +261,7 @@
                               "editvalue": true,
                               "radio": true,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -265,6 +278,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "Off",
@@ -284,6 +298,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "White",
@@ -303,6 +318,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "Black",
@@ -322,6 +338,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "Both",
@@ -346,6 +363,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 1,
@@ -368,6 +386,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 16,
@@ -390,6 +409,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": "",
@@ -412,9 +432,10 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": true,
                               "showhelpashtml": true
                             },
-                            "value": "",
+                            "value": "false",
                             "minvalue": 1,
                             "maxvalue": 100
                           }
@@ -434,6 +455,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 1,
@@ -456,6 +478,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 20,
@@ -478,6 +501,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 2500,
@@ -500,6 +524,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 20,
@@ -522,6 +547,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 84,
@@ -544,6 +570,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 0,
@@ -566,9 +593,10 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": true,
                               "showhelpashtml": true
                             },
-                            "value": "",
+                            "value": "false",
                             "minvalue": 1,
                             "maxvalue": 100
                           }
@@ -588,6 +616,7 @@
                               "editvalue": true,
                               "radio": true,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -604,6 +633,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "chess",
@@ -623,6 +653,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "giveaway",
@@ -642,6 +673,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "atomic",
@@ -661,6 +693,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "crazyhouse",
@@ -680,6 +713,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "extinction",
@@ -699,6 +733,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "grid",
@@ -718,6 +753,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "horde",
@@ -737,6 +773,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "kingofthehill",
@@ -756,6 +793,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "losers",
@@ -775,6 +813,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "racingkings",
@@ -794,6 +833,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "3check",
@@ -813,6 +853,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "twokings",
@@ -832,6 +873,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "suicide",
@@ -851,6 +893,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "bughouse",
@@ -870,6 +913,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "displacedgrid",
@@ -889,6 +933,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "loop",
@@ -908,6 +953,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "slippedgrid",
@@ -927,6 +973,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "twokingssymmetric",
@@ -951,9 +998,10 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": true,
                               "showhelpashtml": true
                             },
-                            "value": "",
+                            "value": "false",
                             "minvalue": 1,
                             "maxvalue": 100
                           }
@@ -973,6 +1021,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": "<empty>",
@@ -995,6 +1044,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 1,
@@ -1017,9 +1067,10 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": true,
                               "showhelpashtml": true
                             },
-                            "value": "",
+                            "value": "true",
                             "minvalue": 1,
                             "maxvalue": 100
                           }
@@ -1039,6 +1090,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": true,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "value": 6,
@@ -1064,6 +1116,7 @@
                         "editvalue": true,
                         "radio": false,
                         "slider": false,
+                        "check": false,
                         "showhelpashtml": true
                       },
                       "items": [
@@ -1082,6 +1135,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -1098,6 +1152,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "bot",
@@ -1117,6 +1172,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "human",
@@ -1141,6 +1197,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -1157,6 +1214,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "ultraBullet",
@@ -1176,6 +1234,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "bullet",
@@ -1195,6 +1254,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "blitz",
@@ -1214,6 +1274,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "rapid",
@@ -1233,6 +1294,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "classical",
@@ -1252,6 +1314,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "correspondence",
@@ -1276,6 +1339,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -1292,6 +1356,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "standard",
@@ -1311,6 +1376,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "fromPosition",
@@ -1330,6 +1396,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "antichess",
@@ -1349,6 +1416,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "atomic",
@@ -1368,6 +1436,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "chess960",
@@ -1387,6 +1456,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "crazyhouse",
@@ -1406,6 +1476,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "horde",
@@ -1425,6 +1496,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "kingOfTheHill",
@@ -1444,6 +1516,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "racingKings",
@@ -1463,6 +1536,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "threeCheck",
@@ -1487,6 +1561,7 @@
                               "editvalue": true,
                               "radio": false,
                               "slider": false,
+                              "check": false,
                               "showhelpashtml": true
                             },
                             "items": [
@@ -1503,6 +1578,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "casual",
@@ -1522,6 +1598,7 @@
                                   "editvalue": true,
                                   "radio": false,
                                   "slider": false,
+                                  "check": false,
                                   "showhelpashtml": true
                                 },
                                 "value": "rated",
@@ -1549,6 +1626,7 @@
                         "editvalue": true,
                         "radio": true,
                         "slider": false,
+                        "check": false,
                         "showhelpashtml": true
                       },
                       "items": [
@@ -1565,6 +1643,7 @@
                             "editvalue": true,
                             "radio": false,
                             "slider": false,
+                            "check": false,
                             "showhelpashtml": true
                           },
                           "value": "best",
@@ -1584,6 +1663,7 @@
                             "editvalue": true,
                             "radio": false,
                             "slider": false,
+                            "check": false,
                             "showhelpashtml": true
                           },
                           "value": "mostdrawish",
@@ -1603,6 +1683,7 @@
                             "editvalue": true,
                             "radio": false,
                             "slider": false,
+                            "check": false,
                             "showhelpashtml": true
                           },
                           "value": "worst",
@@ -1622,6 +1703,7 @@
                             "editvalue": true,
                             "radio": false,
                             "slider": false,
+                            "check": false,
                             "showhelpashtml": true
                           },
                           "value": "random",
@@ -1641,6 +1723,7 @@
                             "editvalue": true,
                             "radio": false,
                             "slider": false,
+                            "check": false,
                             "showhelpashtml": true
                           },
                           "value": "capturerandom",

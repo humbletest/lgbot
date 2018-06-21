@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-21 13:55:48
+// Transcrypt'ed from Python, 2018-06-21 16:55:23
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2432,6 +2432,15 @@ function app () {
 				self.e.classList.remove (klass);
 				return self;
 			});},
+			get arc () {return __get__ (this, function (self, cond, klass) {
+				if (cond) {
+					self.e.classList.add (klass);
+				}
+				else {
+					self.e.classList.remove (klass);
+				}
+				return self;
+			});},
 			get v () {return __get__ (this, function (self) {
 				return self.e.value;
 			});},
@@ -3203,7 +3212,7 @@ function app () {
 			});}
 		});
 		var schemaclipboard = null;
-		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'slider', 'display': 'Slider', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
+		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'slider', 'display': 'Slider', 'default': false}), dict ({'key': 'check', 'display': 'Check', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self) {
@@ -3275,6 +3284,9 @@ function app () {
 				var pureobj = dict ({});
 				return pureobj;
 			});},
+			get enablechangedtask () {return __get__ (this, function () {
+				// pass;
+			});},
 			get enablecallback () {return __get__ (this, function (self) {
 				self.enabled = self.enablecheckbox.getchecked ();
 				if (!(self.childparent === null)) {
@@ -3282,6 +3294,7 @@ function app () {
 						self.childparent.setradio (self);
 					}
 				}
+				self.enablechangedtask ();
 			});},
 			get setenabled () {return __get__ (this, function (self, enabled) {
 				self.enabled = enabled;
@@ -3444,12 +3457,23 @@ function app () {
 			get writepreferencechangedtask () {return __get__ (this, function (self) {
 				self.build ();
 			});},
+			get enablechangedtask () {return __get__ (this, function (self) {
+				if (self.enabled) {
+					self.value = 'true';
+				}
+				else {
+					self.value = 'false';
+				}
+				self.linkedtextinput.setText (self.value);
+			});},
 			get build () {return __get__ (this, function (self) {
 				if (self.writepreference.slider) {
+					self.enablecheckbox.rc ('schemacheckenablecheckbox');
 					self.linkedslider = LinkedSlider (self, 'value', dict ({'containerclass': 'schemalinkedslidercontainerclass', 'valuetextclass': 'schemalinkedslidervaluetextclass', 'mintextclass': 'schemalinkedslidermintextclass', 'sliderclass': 'schemalinkedslidersliderclass', 'maxtextclass': 'schemalinkedslidermaxtextclass'}));
 					self.element.x ().aa (list ([self.linkedslider]));
 				}
 				else {
+					self.enablebox.arc (self.writepreference.check, 'schemacheckenablecheckbox');
 					self.linkedtextinput = LinkedTextInput (self, 'value', dict ({'textclass': 'schemascalarrawtextinput'}));
 					self.linkedtextinput.able (self.writepreference.editvalue);
 					self.element.x ().aa (list ([self.linkedtextinput]));
@@ -3478,7 +3502,7 @@ function app () {
 							var nameditem = __iterable0__ [__index0__];
 							var key = nameditem.key;
 							var item = nameditem.item;
-							if (item.enabled) {
+							if (item.enabled || item.writepreference.check) {
 								var pureobj = list ([key, item.topureobj ()]);
 								break;
 							}
@@ -3488,7 +3512,7 @@ function app () {
 						var __iterable0__ = self.childs;
 						for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 							var item = __iterable0__ [__index0__];
-							if (item.enabled) {
+							if (item.enabled || item.writepreference.check) {
 								var pureobj = item.topureobj ();
 								break;
 							}
@@ -3501,7 +3525,7 @@ function app () {
 						var nameditem = __iterable0__ [__index0__];
 						var key = nameditem.key;
 						var item = nameditem.item;
-						if (item.enabled) {
+						if (item.enabled || item.writepreference.check) {
 							pureobj [key] = item.topureobj ();
 						}
 					}
@@ -3511,7 +3535,7 @@ function app () {
 					var __iterable0__ = self.childs;
 					for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 						var item = __iterable0__ [__index0__];
-						if (item.enabled) {
+						if (item.enabled || item.writepreference.check) {
 							pureobj.append (item.topureobj ());
 						}
 					}
@@ -3714,7 +3738,7 @@ function app () {
 				__super__ (SchemaList, '__init__') (self, args);
 				self.kind = 'list';
 				self.element.ac ('schemalist');
-				self.writepreference.setdisabledlist (list (['editvalue', 'slider']));
+				self.writepreference.setdisabledlist (list (['editvalue', 'slider', 'check']));
 			});}
 		});
 		var SchemaDict = __class__ ('SchemaDict', [SchemaCollection], {
@@ -3781,7 +3805,7 @@ function app () {
 				__super__ (SchemaDict, '__init__') (self, args);
 				self.kind = 'dict';
 				self.element.ac ('schemadict');
-				self.writepreference.setdisabledlist (list (['editvalue', 'slider']));
+				self.writepreference.setdisabledlist (list (['editvalue', 'slider', 'check']));
 			});}
 		});
 		var schemawritepreferencefromobj = function (obj) {
@@ -3907,7 +3931,11 @@ function app () {
 					item.build ();
 				}
 				else if (kind == 'check') {
-					item.value = '';
+					item.value = 'false';
+					if (py_default) {
+						item.value = 'true';
+					}
+					item.writepreference.check = true;
 					item.setenabled (py_default);
 					item.build ();
 				}
