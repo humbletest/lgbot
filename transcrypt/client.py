@@ -46,6 +46,7 @@ processconsoles = {
     "engine": None,
     "bot": None
 }
+mainlogpane = None
 maintabpane = None
 configschema = SchemaDict({})
 id = None
@@ -115,6 +116,10 @@ def getbinerrcallback(err):
     print("get bin failed with", err)
     loadlocal()
 
+def mainlog(logitem):
+    global mainlogpane
+    mainlogpane.log.log(logitem)
+
 def log(content, dest = "engine"):    
     li = LogItem("<pre>" + content + "</pre>")
     processconsoles[dest].log.log(li)
@@ -159,7 +164,7 @@ def reloadcallback():
 ######################################################
 # app
 def build():
-    global processconsoles, maintabpane
+    global processconsoles, maintabpane, mainlogpane
 
     processconsoles["engine"] = ProcessConsole({
         "key": "engine",
@@ -173,12 +178,15 @@ def build():
         "cmdaliases": BOT_CMD_ALIASES
     })
 
+    mainlogpane = LogPane()
+
     maintabpane = TabPane({"kind":"main", "id":"main"})
     maintabpane.setTabs(
         [
             Tab("engineconsole", "Engine console", processconsoles["engine"]),
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("config", "Config", buildconfigdiv()),
+            Tab("log", "Log", mainlogpane),
             Tab("src", "Src", srcdiv),
             Tab("about", "About", Div().ac("appabout").html("Lichess GUI bot."))
         ], "botconsole"
@@ -192,7 +200,7 @@ def build():
 # socket handler
 def onconnect():    
     global socket
-    log("socket connected ok")    
+    mainlog(LogItem("socket connected ok", "cmdstatusok"))
     socket.emit('sioreq', {"data": "socket connected"})
     if id == "local":
         getlocalconfig()
@@ -241,7 +249,8 @@ def onevent(json):
             elif kind == "configstored":
                 window.alert("Config storing status: " + status + ".")
     if logitem is None:
-        log("socket received event " + JSON.stringify(json, null, 2), dest)    
+        jsonstr = JSON.stringify(json, null, 2)
+        mainlog(LogItem(jsonstr))
     else:
         processconsoles[dest].log.log(logitem)
 
@@ -251,11 +260,11 @@ def windowresizehandler():
 def startup():
     global socket
 
-    log("creating socket for submit url [ " + SUBMIT_URL + " ]")
+    mainlog(LogItem("creating socket for submit url [ " + SUBMIT_URL + " ]", "cmdinfo"))
 
     socket = io.connect(SUBMIT_URL)
 
-    log("socket created ok")
+    mainlog(LogItem("socket created ok", "cmdstatusok"))
 
     socket.on('connect', onconnect)
     socket.on('siores', lambda json: onevent(json))

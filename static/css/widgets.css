@@ -264,6 +264,10 @@
     overflow: default;
 }
 
+.logpanecontentdiv {
+    overflow: scroll;
+}
+
 .splitpanecontentdiv {
     overflow: scroll;
 }
@@ -274,6 +278,10 @@
 
 .logcontentcmdreadline {
     color: #000; font-weight: bold; font-size: 20px;
+}
+
+.logcontentcmdinfo {
+    color: #008; font-weight: bold; font-size: 20px;
 }
 
 .logcontentcmdstatusok {

@@ -100,6 +100,8 @@ class LogItem(e):
         self.cdiv.html(self.content)
         if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")
+        elif self.kind == "cmdinfo":
+            self.cdiv.ac("logcontentcmdinfo")
         elif self.kind == "cmdreadline":
             self.cdiv.ac("logcontentcmdreadline")
         elif self.kind == "cmdstatusok":
@@ -458,6 +460,41 @@ class LabeledLinkedCheckBox(e):
         self.container.aa([self.ldiv, self.lcb])                
         patchclasses(self, args)
         self.a(self.container).ac("labeledlinkedcheckbox")
+
+class LogPane(e):
+    def resize(self, width, height):
+        self.width = width
+        self.height = height        
+        self.contentheight = self.height
+        if self.contentheight < self.mincontentheight:
+            self.contentheight = self.mincontentheight
+        self.contentdiv.w(self.width).h(self.contentheight)
+        self.w(self.width).h(self.height)        
+        try:
+            self.content.resize(self.innercontentwidth(), self.innercontentheight())
+        except:
+            pass
+
+    def innercontentheight(self):
+        return self.contentheight - SCROLL_BAR_WIDTH
+
+    def innercontentwidth(self):
+        return self.width - SCROLL_BAR_WIDTH
+
+    def setcontent(self, element):
+        self.content = element
+        self.contentdiv.x().a(self.content)
+
+    def __init__(self, args = {}):
+        super().__init__("div")
+        self.width = args.get("width", 600)
+        self.height = args.get("height", 400)        
+        self.mincontentheight = args.get("mincontentheight", 100)        
+        self.contentdiv = Div().ac("logpanecontentdiv")
+        self.resize(self.width, self.height)        
+        self.aa([self.contentdiv])
+        self.log = Log({})
+        self.setcontent(self.log)
 
 class SplitPane(e):
     def resize(self, width, height):
