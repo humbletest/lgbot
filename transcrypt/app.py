@@ -1584,7 +1584,7 @@ if len(queryparamsstring) > 1:
 ENGINE_CMD_ALIASES = {
     "start": {"display":"R", "cmds":["r"]},
     "stop": {"display":"S", "cmds":["s"]},
-    "uci": {"display":"uci", "cmds":["uci"]},
+    "parseuci": {"display":"Parse UCI options", "cmds":["r", "parseuci"]},
     "d15": {"display":"d15", "cmds":["go depth 15"]}
 }
 
@@ -1771,10 +1771,13 @@ def onevent(json):
             ucioptionsobj = json["ucioptions"]
             ucischema = schemafromucioptionsobj(ucioptionsobj)
             selfprofile = getpathfromschema(configschema, "profile/#")
-            if not ( selfprofile is None ):
+            if selfprofile is None:
+                window.alert("Warning: no profile selected to store UCI options.")                
+            else:
                 selfprofile.setchildatkey("ucioptions", ucischema)
                 maintabpane.setTabElementByKey("config", buildconfigdiv())
                 maintabpane.selectByKey("config")
+                window.alert("UCI options stored in current profile.")
     if "response" in json:        
         status = "?"
         response = json["response"]        

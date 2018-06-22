@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-21 16:55:23
+// Transcrypt'ed from Python, 2018-06-22 10:35:07
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3979,7 +3979,7 @@ function app () {
 				queryparams [parts [0]] = parts [1];
 			}
 		}
-		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'uci': dict ({'display': 'uci', 'cmds': list (['uci'])}), 'd15': dict ({'display': 'd15', 'cmds': list (['go depth 15'])})});
+		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'parseuci': dict ({'display': 'Parse UCI options', 'cmds': list (['r', 'parseuci'])}), 'd15': dict ({'display': 'd15', 'cmds': list (['go depth 15'])})});
 		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r', 'lc', 'sc'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
@@ -4118,10 +4118,14 @@ function app () {
 					var ucioptionsobj = json ['ucioptions'];
 					var ucischema = schemafromucioptionsobj (ucioptionsobj);
 					var selfprofile = getpathfromschema (configschema, 'profile/#');
-					if (!(selfprofile === null)) {
+					if (selfprofile === null) {
+						window.alert ('Warning: no profile selected to store UCI options.');
+					}
+					else {
 						selfprofile.setchildatkey ('ucioptions', ucischema);
 						maintabpane.setTabElementByKey ('config', buildconfigdiv ());
 						maintabpane.selectByKey ('config');
+						window.alert ('UCI options stored in current profile.');
 					}
 				}
 			}
