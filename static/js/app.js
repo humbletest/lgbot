@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-22 10:35:07
+// Transcrypt'ed from Python, 2018-06-22 13:03:15
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2685,6 +2685,9 @@ function app () {
 				if (self.kind == 'cmd') {
 					self.cdiv.ac ('logcontentcmd');
 				}
+				else if (self.kind == 'cmdinfo') {
+					self.cdiv.ac ('logcontentcmdinfo');
+				}
 				else if (self.kind == 'cmdreadline') {
 					self.cdiv.ac ('logcontentcmdreadline');
 				}
@@ -3126,6 +3129,49 @@ function app () {
 				self.container.aa (list ([self.ldiv, self.lcb]));
 				patchclasses (self, args);
 				self.a (self.container).ac ('labeledlinkedcheckbox');
+			});}
+		});
+		var LogPane = __class__ ('LogPane', [e], {
+			__module__: __name__,
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.width = width;
+				self.height = height;
+				self.contentheight = self.height;
+				if (self.contentheight < self.mincontentheight) {
+					self.contentheight = self.mincontentheight;
+				}
+				self.contentdiv.w (self.width).h (self.contentheight);
+				self.w (self.width).h (self.height);
+				try {
+					self.content.resize (self.innercontentwidth (), self.innercontentheight ());
+				}
+				catch (__except0__) {
+					// pass;
+				}
+			});},
+			get innercontentheight () {return __get__ (this, function (self) {
+				return self.contentheight - SCROLL_BAR_WIDTH;
+			});},
+			get innercontentwidth () {return __get__ (this, function (self) {
+				return self.width - SCROLL_BAR_WIDTH;
+			});},
+			get setcontent () {return __get__ (this, function (self, element) {
+				self.content = element;
+				self.contentdiv.x ().a (self.content);
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (LogPane, '__init__') (self, 'div');
+				self.width = args.py_get ('width', 600);
+				self.height = args.py_get ('height', 400);
+				self.mincontentheight = args.py_get ('mincontentheight', 100);
+				self.contentdiv = Div ().ac ('logpanecontentdiv');
+				self.resize (self.width, self.height);
+				self.aa (list ([self.contentdiv]));
+				self.log = Log (dict ({}));
+				self.setcontent (self.log);
 			});}
 		});
 		var SplitPane = __class__ ('SplitPane', [e], {
@@ -3983,6 +4029,7 @@ function app () {
 		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r', 'lc', 'sc'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
+		var mainlogpane = null;
 		var maintabpane = null;
 		var configschema = SchemaDict (dict ({}));
 		var id = null;
@@ -4039,6 +4086,9 @@ function app () {
 			print ('get bin failed with', err);
 			loadlocal ();
 		};
+		var mainlog = function (logitem) {
+			mainlogpane.log.log (logitem);
+		};
 		var log = function (content, dest) {
 			if (typeof dest == 'undefined' || (dest != null && dest .hasOwnProperty ("__kwargtrans__"))) {;
 				var dest = 'engine';
@@ -4085,13 +4135,14 @@ function app () {
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
+			mainlogpane = LogPane ();
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
 		var onconnect = function () {
-			log ('socket connected ok');
+			mainlog (LogItem ('socket connected ok', 'cmdstatusok'));
 			socket.emit ('sioreq', dict ({'data': 'socket connected'}));
 			if (id == 'local') {
 				getlocalconfig ();
@@ -4156,7 +4207,8 @@ function app () {
 				}
 			}
 			if (logitem === null) {
-				log ('socket received event ' + JSON.stringify (json, null, 2), dest);
+				var jsonstr = JSON.stringify (json, null, 2);
+				mainlog (LogItem (jsonstr));
 			}
 			else {
 				processconsoles [dest].log.log (logitem);
@@ -4166,9 +4218,9 @@ function app () {
 			maintabpane.resize ();
 		};
 		var startup = function () {
-			log (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]');
+			mainlog (LogItem (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]', 'cmdinfo'));
 			socket = io.connect (SUBMIT_URL);
-			log ('socket created ok');
+			mainlog (LogItem ('socket created ok', 'cmdstatusok'));
 			socket.on ('connect', onconnect);
 			socket.on ('siores', (function __lambda__ (json) {
 				return onevent (json);
@@ -4204,6 +4256,7 @@ function app () {
 			__all__.LinkedTextarea = LinkedTextarea;
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
+			__all__.LogPane = LogPane;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
 			__all__.ProcessConsole = ProcessConsole;
@@ -4248,6 +4301,8 @@ function app () {
 			__all__.id = id;
 			__all__.loadlocal = loadlocal;
 			__all__.log = log;
+			__all__.mainlog = mainlog;
+			__all__.mainlogpane = mainlogpane;
 			__all__.mainpart = mainpart;
 			__all__.mainparts = mainparts;
 			__all__.maintabpane = maintabpane;
