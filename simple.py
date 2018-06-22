@@ -48,8 +48,12 @@ class EngineProcessManager(SimpleProcessManager):
     def __init__(self, key):
         super().__init__(key)    
         self.parseuci = False        
+        self.sendparseuci = False
 
     def send_line_task(self, sline):     
+        if sline == "parseuci":
+            sline = "uci"
+            self.sendparseuci = True
         if sline == "uci":
             print("parsing uci command output")
             self.eng = Engine()
@@ -75,10 +79,12 @@ class EngineProcessManager(SimpleProcessManager):
                             "options": opt[5]
                         })
                     print("opts", optsobj)
-                    postjson(PROCESS_READ_CALLBACK_URL, {
-                        "kind": "ucioptionsparsed",
-                        "ucioptions": optsobj
-                    })
+                    if self.sendparseuci:
+                        self.sendparseuci = False
+                        postjson(PROCESS_READ_CALLBACK_URL, {
+                            "kind": "ucioptionsparsed",
+                            "ucioptions": optsobj
+                        })                    
                 else:
                     if len(command_and_args)>=2:
                         if command_and_args[0] == "option":
