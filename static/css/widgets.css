@@ -1,4 +1,4 @@
-:root {
+:root {    
     --schemabase: 30px;
     --schemaopenbuttonsize: calc( var(--schemabase) * 0.8 );
     --schemanamewidth: calc( var(--schemabase) * 5 );    

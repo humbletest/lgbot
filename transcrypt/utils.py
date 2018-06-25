@@ -1,3 +1,36 @@
+class Vect:
+    def __init__(self, x, y):
+        try:
+            self.x = float(x)
+            self.y = float(y)
+        except:
+            self.x = 0.0
+            self.y = 0.0
+            print("vect init failed on", x, y)
+
+    def p(self, v):
+        return Vect(self.x + v.x, self.y + v.y)
+
+    def s(self, s):
+        return Vect(self.x * s, self.y * s)
+
+    def m(self, v):
+        return self.p(v.s(-1))
+
+def getClientVect(ev):
+    return Vect(ev.clientX, ev.clientY)
+
+def getglobalcssvar(key):
+    return getComputedStyle(window.document.documentElement).getPropertyValue(key)
+
+def getglobalcssvarpxint(key, default):
+    try:
+        px = getglobalcssvar(key)
+        pxint = int(px.replace("px",""))
+        return pxint
+    except:
+        return default
+
 def striplonglines(content, maxlen = 100):
     lines = content.split("\n")    
     strippedlines = []
