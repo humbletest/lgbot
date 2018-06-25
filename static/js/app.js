@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-22 13:03:15
+// Transcrypt'ed from Python, 2018-06-25 08:17:17
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3319,6 +3319,12 @@ function app () {
 		var DEFAULT_ENABLED = true;
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
+			get getitem () {return __get__ (this, function (self) {
+				return self;
+			});},
+			get label () {return __get__ (this, function (self) {
+				return '';
+			});},
 			get baseobj () {return __get__ (this, function (self) {
 				var obj = dict ({'kind': self.kind, 'enabled': self.enabled, 'help': self.help, 'writepreference': self.writepreference.toobj ()});
 				return obj;
@@ -3339,6 +3345,7 @@ function app () {
 					if (self.childparent.writepreference.radio) {
 						self.childparent.setradio (self);
 					}
+					self.childparent.enablechangedtask ();
 				}
 				self.enablechangedtask ();
 			});},
@@ -3442,6 +3449,12 @@ function app () {
 		});
 		var NamedSchemaItem = __class__ ('NamedSchemaItem', [e], {
 			__module__: __name__,
+			get getitem () {return __get__ (this, function (self) {
+				return self.item;
+			});},
+			get label () {return __get__ (this, function (self) {
+				return self.key;
+			});},
 			get toobj () {return __get__ (this, function (self) {
 				return dict ({'kind': 'nameditem', 'key': self.key, 'item': self.item.toobj ()});
 			});},
@@ -3489,6 +3502,9 @@ function app () {
 		});
 		var SchemaScalar = __class__ ('SchemaScalar', [SchemaItem], {
 			__module__: __name__,
+			get label () {return __get__ (this, function (self) {
+				return self.value;
+			});},
 			get toobj () {return __get__ (this, function (self) {
 				var obj = self.baseobj ();
 				obj ['value'] = self.value;
@@ -3538,6 +3554,24 @@ function app () {
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
 			__module__: __name__,
+			get enablechangedtask () {return __get__ (this, function (self) {
+				self.openchilds ();
+				self.openchilds ();
+			});},
+			get buildchilds () {return __get__ (this, function (self) {
+				var labellist = list ([]);
+				self.childshook.x ();
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var child = __iterable0__ [__index0__];
+					self.childshook.a (child);
+					if (child.getitem ().enabled) {
+						labellist.append (child.label ());
+					}
+				}
+				var label = ' , '.join (labellist);
+				self.openbutton.x ().a (Div ().ac ('schemacollectionopenbuttonlabel').html (label));
+			});},
 			get topureobj () {return __get__ (this, function (self) {
 				var pureobj = dict ({});
 				if (self.writepreference.radio) {
@@ -3592,21 +3626,10 @@ function app () {
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var child = __iterable0__ [__index0__];
-					var childitem = child;
-					if (child.kind == 'nameditem') {
-						var childitem = child.item;
-					}
+					var childitem = child.getitem ();
 					var childeq = childitem == item;
 					childitem.enabled = childeq;
 					childitem.enablecheckbox.setchecked (childeq);
-				}
-			});},
-			get buildchilds () {return __get__ (this, function (self) {
-				self.childshook.x ();
-				var __iterable0__ = self.childs;
-				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
-					var child = __iterable0__ [__index0__];
-					self.childshook.a (child);
 				}
 			});},
 			get remove () {return __get__ (this, function (self, item) {
@@ -3742,7 +3765,7 @@ function app () {
 				self.editmode = args.py_get ('editmode', false);
 				self.childseditable = args.py_get ('childseditable', true);
 				self.element.ac ('schemacollection');
-				self.openbutton = Div ().ac ('schemacollectionopenbutton').ae ('mousedown', self.openchilds);
+				self.openbutton = Div ().aac (list (['schemacollectionopenbutton', 'noselect'])).ae ('mousedown', self.openchilds);
 				self.element.aa (list ([self.openbutton]));
 				self.createcombo = null;
 				self.createhook = Div ();
@@ -3750,7 +3773,8 @@ function app () {
 				self.opendiv = Div ().ac ('schemacollectionopendiv');
 				self.opendiv.aa (list ([self.createhook, self.childshook]));
 				self.afterelementhook.a (self.opendiv);
-				if (self.writepreference.childsopened) {
+				self.openchilds ();
+				if (!(self.writepreference.childsopened)) {
 					self.openchilds ();
 				}
 			});}
@@ -3825,15 +3849,6 @@ function app () {
 					i++;
 				}
 				return null;
-			});},
-			get buildchilds () {return __get__ (this, function (self) {
-				self.childshook.x ();
-				var __iterable0__ = self.childs;
-				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
-					var child = __iterable0__ [__index0__];
-					child.ac ('schemadictchild');
-					self.childshook.a (child);
-				}
 			});},
 			get toobj () {return __get__ (this, function (self) {
 				var dictobj = list ([]);

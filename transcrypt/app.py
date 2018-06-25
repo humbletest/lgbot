@@ -991,6 +991,12 @@ DEFAULT_HELP = "No help available for this item."
 DEFAULT_ENABLED = True
 
 class SchemaItem(e):
+    def getitem(self):
+        return self
+
+    def label(self):
+        return ""
+
     def baseobj(self):        
         obj = {
             "kind": self.kind,
@@ -1010,11 +1016,12 @@ class SchemaItem(e):
     def enablechangedtask():
         pass
 
-    def enablecallback(self):        
+    def enablecallback(self):                
         self.enabled = self.enablecheckbox.getchecked()
         if not ( self.childparent is None ):
             if self.childparent.writepreference.radio:
-                self.childparent.setradio(self)
+                self.childparent.setradio(self)            
+            self.childparent.enablechangedtask()
         self.enablechangedtask()
 
     def setenabled(self, enabled):
@@ -1106,6 +1113,12 @@ class SchemaItem(e):
         self.a(self.itemcontainer)
 
 class NamedSchemaItem(e):
+    def getitem(self):
+        return self.item
+
+    def label(self):
+        return self.key
+
     def toobj(self):        
         return {
             "kind": "nameditem",
@@ -1156,6 +1169,9 @@ class NamedSchemaItem(e):
         self.item.parent = None
 
 class SchemaScalar(SchemaItem):
+    def label(self):
+        return self.value
+
     def toobj(self):
         obj = self.baseobj()
         obj["value"] = self.value
@@ -1205,6 +1221,20 @@ class SchemaScalar(SchemaItem):
         self.build()
 
 class SchemaCollection(SchemaItem):
+    def enablechangedtask(self):
+        self.openchilds()
+        self.openchilds()
+
+    def buildchilds(self):
+        labellist = []
+        self.childshook.x()
+        for child in self.childs:
+            self.childshook.a(child)
+            if child.getitem().enabled:
+                labellist.append(child.label())
+        label = " , ".join(labellist)
+        self.openbutton.x().a(Div().ac("schemacollectionopenbuttonlabel").html(label))
+
     def topureobj(self):
         pureobj = {}
         if self.writepreference.radio:
@@ -1237,17 +1267,10 @@ class SchemaCollection(SchemaItem):
 
     def setradio(self, item):
         for child in self.childs:
-            childitem = child
-            if child.kind == "nameditem":
-                childitem = child.item                
+            childitem = child.getitem()
             childeq = ( childitem == item )                
             childitem.enabled = childeq            
             childitem.enablecheckbox.setchecked(childeq)
-
-    def buildchilds(self):
-        self.childshook.x()
-        for child in self.childs:
-            self.childshook.a(child)
 
     def remove(self, item):
         newlist = []
@@ -1364,7 +1387,7 @@ class SchemaCollection(SchemaItem):
         self.editmode = args.get("editmode", False)        
         self.childseditable = args.get("childseditable", True)
         self.element.ac("schemacollection")                
-        self.openbutton = Div().ac("schemacollectionopenbutton").ae("mousedown", self.openchilds)
+        self.openbutton = Div().aac(["schemacollectionopenbutton","noselect"]).ae("mousedown", self.openchilds)
         self.element.aa([self.openbutton])        
         self.createcombo = None
         self.createhook = Div()
@@ -1372,7 +1395,8 @@ class SchemaCollection(SchemaItem):
         self.opendiv = Div().ac("schemacollectionopendiv")
         self.opendiv.aa([self.createhook, self.childshook])        
         self.afterelementhook.a(self.opendiv)
-        if self.writepreference.childsopened:
+        self.openchilds()            
+        if not self.writepreference.childsopened:
             self.openchilds()            
 
 class SchemaList(SchemaCollection):
@@ -1428,12 +1452,6 @@ class SchemaDict(SchemaCollection):
                 return i
             i+=1
         return None
-
-    def buildchilds(self):
-        self.childshook.x()
-        for child in self.childs:
-            child.ac("schemadictchild")
-            self.childshook.a(child)
 
     def toobj(self):
         dictobj = []

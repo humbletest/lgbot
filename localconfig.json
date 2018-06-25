@@ -1,11 +1,16 @@
 {
   "config": {
-    "global": {},
+    "global": [
+      "mukezudu",
+      [
+        "qapaquxo"
+      ]
+    ],
     "profile": [
       "HumbleTestBot",
       {
         "token": "JmEKjUOpgC0WYTLW",
-        "multipv": 200,
+        "multipv": 500,
         "ucioptions": {
           "Debug Log File": "",
           "Contempt": 12,
@@ -89,12 +94,76 @@
             "editenabled": true,
             "editkey": true,
             "editvalue": true,
-            "radio": false,
+            "radio": true,
             "slider": false,
             "check": false,
             "showhelpashtml": true
           },
-          "items": []
+          "items": [
+            {
+              "key": "keyehate",
+              "item": {
+                "kind": "list",
+                "enabled": false,
+                "help": "No help available for this item.",
+                "writepreference": {
+                  "addchild": true,
+                  "remove": true,
+                  "childsopened": false,
+                  "editenabled": true,
+                  "editkey": true,
+                  "editvalue": true,
+                  "radio": false,
+                  "slider": false,
+                  "check": false,
+                  "showhelpashtml": true
+                },
+                "items": []
+              }
+            },
+            {
+              "key": "mukezudu",
+              "item": {
+                "kind": "list",
+                "enabled": true,
+                "help": "No help available for this item.",
+                "writepreference": {
+                  "addchild": true,
+                  "remove": true,
+                  "childsopened": false,
+                  "editenabled": true,
+                  "editkey": true,
+                  "editvalue": true,
+                  "radio": false,
+                  "slider": false,
+                  "check": false,
+                  "showhelpashtml": true
+                },
+                "items": [
+                  {
+                    "kind": "scalar",
+                    "enabled": true,
+                    "help": "No help available for this item.",
+                    "writepreference": {
+                      "addchild": true,
+                      "remove": true,
+                      "childsopened": false,
+                      "editenabled": true,
+                      "editkey": true,
+                      "editvalue": true,
+                      "radio": false,
+                      "slider": false,
+                      "check": false,
+                      "showhelpashtml": true
+                    },
+                    "value": "qapaquxo",
+                    "minvalue": 1,
+                    "maxvalue": 100
+                  }
+                ]
+              }
+            }
+          ]
         }
       },
       {
@@ -176,7 +245,7 @@
                         "check": false,
                         "showhelpashtml": true
                       },
-                      "value": 200,
+                      "value": 500,
                       "minvalue": 1,
                       "maxvalue": 500
                     }
@@ -190,7 +259,7 @@
                       "writepreference": {
                         "addchild": true,
                         "remove": true,
-                        "childsopened": false,
+                        "childsopened": true,
                         "editenabled": true,
                         "editkey": true,
                         "editvalue": true,
