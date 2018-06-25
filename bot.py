@@ -4,7 +4,7 @@ import backoff
 
 import json
 
-import sys, traceback
+import os, sys, traceback
 
 from serverutils.utils import read_string_from_file
 from serverutils.utils import getjsonbin, getjsonbinobj
@@ -17,6 +17,7 @@ import threading
 import chess
 from chess.variant import find_variant
 from chess.uci import InfoHandler, Engine
+from chess.polyglot import open_reader
 
 import random
 
@@ -100,6 +101,13 @@ def empty_queue(q):
     while not q.empty():
         q.get()
 
+def get_book_dir_path(uci_variant):
+    return os.path.join("book", uci_variant)
+
+def empty_queue(q):
+    while not q.empty():
+        q.get()
+
 def senducis(ucis):
     print(json.dumps({
         "enginecmd": "ucis",
@@ -167,9 +175,10 @@ class Bot:
         for ucioption in self.cfg.ucioptions:        
             sendoption(ucioption.name, ucioption.value)  
 
-    def sendcorrecteducioptions(self):
+    def sendcorrecteducioptions(self, board = chess.Board()):
         self.senducioptions()
         self.sendmultipv()
+        sendoption("UCI_Variant", type(board).uci_variant)
 
     def max_games_reached(self):        
         return self.num_playing >= self.cfg.concurrency  
@@ -184,7 +193,48 @@ class Bot:
             print("! loading profile failed")
             traceback.print_exc(file=sys.stderr)    
 
-    def get_engine_best_move(self, board, wtime, btime, winc, binc):
+    def get_book_best_move(self, game, board):
+        strategy = self.cfg.strategy
+        if strategy == "none":
+            return None
+        uci_variant = game.variant_key
+        book_dir_path = get_book_dir_path(uci_variant)
+        if not ( os.path.exists(book_dir_path) ):
+            print("book dir path {} does not exist".format(book_dir_path))
+            return None
+        for name in os.listdir(book_dir_path):
+            book_path = os.path.join(book_dir_path, name)
+            print("looking up move in {}".format(book_path))
+            with chess.polyglot.open_reader(book_path) as reader:
+                entries = reader.find_all(board, minimum_weight = self.cfg.minweight)                                
+                entries = sorted(entries, key = lambda entry: entry.weight, reverse = True)
+                if len(entries) > 0:
+                    print("entries in {} : {}".format(book_path, [(entry.move().uci(), entry.weight) for entry in entries]))
+                    if strategy == "best":
+                        entry = entries[0]
+                        move = entry.move()
+                        print("best book move found in {} : {} , weight {}".format(book_path, move, entry.weight))
+                        return move
+                    if strategy == "random":
+                        entry = random.choice(entries)
+                        move = entry.move()
+                        print("random book move found in {} : {} , weight {}".format(book_path, move, entry.weight))
+                        return move                        
+                    # weighted                    
+                    total_weights = sum(entry.weight for entry in entries)
+                    choice = random.randint(0, total_weights - 1)
+                    current_sum = 0
+                    for entry in entries:
+                        current_sum += entry.weight
+                        if current_sum > choice:
+                            move = entry.move()
+                            print("weighted book move found in {} : {} , total weights {} , choice {} , weight {}".format(book_path, move, total_weights, choice, entry.weight))
+                            return move                        
+
+    def get_engine_best_move(self, game, board, wtime, btime, winc, binc):
+        book_best_move = self.get_book_best_move(game, board)
+        if not ( book_best_move is None ):
+            return book_best_move
         first = ( board.fullmove_number == 1 )
         print("getting engine best move", first, wtime, btime, winc, binc)        
         gocommand = "go wtime {} btime {} winc {} binc {}".format(wtime, btime, winc, binc)
@@ -243,7 +293,7 @@ class Bot:
                 best_move = self.get_capture_random_move(board, moves)
                 print("capture random best move", best_move)
             else:
-                engine_best_move = self.get_engine_best_move(board, wtime, btime, winc, binc)
+                engine_best_move = self.get_engine_best_move(game, board, wtime, btime, winc, binc)
                 if not ( engine_best_move is None ):
                     print("using engine best move", engine_best_move)
                     best_move = engine_best_move
@@ -264,7 +314,7 @@ class Bot:
         print(json.dumps({
             "enginecmd": "restart"
         }))        
-        self.sendcorrecteducioptions()
+        self.sendcorrecteducioptions(board)
         sendenginelog(False)
         empty_queue(self.engine_queue)
         moves = game.state["moves"].split()

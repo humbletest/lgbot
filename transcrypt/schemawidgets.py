@@ -212,11 +212,12 @@ class SchemaItem(e):
         self.itemcontainer = Div()
         self.itemcontainer.aa([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook])
         self.a(self.itemcontainer)
-        self.schemacontainer.sa("draggable", True)
-        self.schemacontainer.ae("dragstart", self.elementdragstart)
-        self.schemacontainer.ae("drag", self.elementdrag)
-        self.schemacontainer.ae("dragend", self.elementdragend)
-        self.schemacontainer.ae("dragover", lambda ev: ev.preventDefault())
+        self.dragelement = self.copybox
+        self.dragelement.sa("draggable", True)
+        self.dragelement.ae("dragstart", self.elementdragstart)
+        self.dragelement.ae("drag", self.elementdrag)
+        self.dragelement.ae("dragend", self.elementdragend)
+        self.dragelement.ae("dragover", lambda ev: ev.preventDefault())
 
 class NamedSchemaItem(e):
     def getitem(self):
@@ -251,7 +252,8 @@ class NamedSchemaItem(e):
     def __init__(self, args):
         super().__init__("div")
         self.kind = "nameditem"
-        self.key = args.get("key", uid())
+        #self.key = args.get("key", uid())
+        self.key = args.get("key", "")
         self.item = args.get("item", SchemaItem(args))        
         self.keychangedcallback = None
         self.item.setparent(self)
@@ -293,11 +295,12 @@ class SchemaScalar(SchemaItem):
         self.build()
 
     def enablechangedtask(self):        
-        if self.enabled:
-            self.value = "true"
-        else:
-            self.value = "false"
-        self.linkedtextinput.setText(self.value)
+        if self.writepreference.check:
+            if self.enabled:
+                self.value = "true"
+            else:
+                self.value = "false"
+            self.linkedtextinput.setText(self.value)
 
     def build(self):
         if self.writepreference.slider:
@@ -319,7 +322,8 @@ class SchemaScalar(SchemaItem):
     def __init__(self, args):
         super().__init__(args)
         self.kind = "scalar"        
-        self.value = args.get("value", randscalarvalue(2, 8))
+        #self.value = args.get("value", randscalarvalue(2, 8))
+        self.value = args.get("value", "")
         self.minvalue = args.get("minvalue", 1)        
         self.maxvalue = args.get("maxvalue", 100)        
         self.element.ac("schemascalar")        

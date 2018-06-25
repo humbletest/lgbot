@@ -111,6 +111,9 @@ class Config:
         self.parse(self.accept, "timecontrol", kinds = [ list ], default = ['ultraBullet', 'bullet', 'blitz', 'rapid', 'classical', 'correspondence'])
         self.parse(self.accept, "variant", kinds = [ list ], default = ['standard', 'fromPosition', 'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingOfTheHill', 'racingKings', 'threeCheck'])
         self.parse(self.accept, "mode", kinds = [ list ], default = ['casual', 'rated'])
+        self.parse(self.profileobj, "book", kinds = [ dict ], reg = False, default = {})
+        self.parse(self.book, "strategy", default = "best")
+        self.parse(self.book, "minweight", default = 1, conv = int, check = lambda i: i>=0 and i<=10000)
         self.ucioptions = []
         try:
             ucioptionsobj = self.profileobj.get("ucioptions", {})            

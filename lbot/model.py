@@ -61,6 +61,7 @@ class Game():
         self.clock_increment = clock.get("increment", 0)
         self.perf_name = json.get("perf").get("name") if json.get("perf") else "{perf?}"
         self.variant_name = json.get("variant")["name"]
+        self.variant_key = json.get("variant")["key"]
         self.white = Player(json.get("white"))
         self.black = Player(json.get("black"))
         self.initial_fen = json.get("initialFen")
