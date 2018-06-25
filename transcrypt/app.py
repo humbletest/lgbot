@@ -1,3 +1,36 @@
+class Vect:
+    def __init__(self, x, y):
+        try:
+            self.x = float(x)
+            self.y = float(y)
+        except:
+            self.x = 0.0
+            self.y = 0.0
+            print("vect init failed on", x, y)
+
+    def p(self, v):
+        return Vect(self.x + v.x, self.y + v.y)
+
+    def s(self, s):
+        return Vect(self.x * s, self.y * s)
+
+    def m(self, v):
+        return self.p(v.s(-1))
+
+def getClientVect(ev):
+    return Vect(ev.clientX, ev.clientY)
+
+def getglobalcssvar(key):
+    return getComputedStyle(window.document.documentElement).getPropertyValue(key)
+
+def getglobalcssvarpxint(key, default):
+    try:
+        px = getglobalcssvar(key)
+        pxint = int(px.replace("px",""))
+        return pxint
+    except:
+        return default
+
 def striplonglines(content, maxlen = 100):
     lines = content.split("\n")    
     strippedlines = []
@@ -1053,8 +1086,7 @@ class SchemaItem(e):
             self.helpopen = True
 
     def copyboxclicked(self):
-        schemaclipboard.copy(self)
-        print(schemaclipboard.toobj())
+        schemaclipboard.copy(self)        
     
     def settingsboxclicked(self):
         if self.settingsopen:
@@ -1088,6 +1120,25 @@ class SchemaItem(e):
         else:
             self.schemacontainer.x().aa([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox])
 
+    def elementdragstart(self, ev):
+        self.dragstartvect = getClientVect(ev)        
+
+    def elementdrag(self, ev):
+        pass
+
+    def move(self, dir):
+        if self.childparent is None:
+            return
+        i = self.childparent.getitemindex(self)
+        newi = i + dir
+        self.childparent.movechildi(i, newi)
+
+    def elementdragend(self, ev):
+        self.dragendvect = getClientVect(ev)        
+        diff = self.dragendvect.m(self.dragstartvect)
+        dir = int(diff.y / getglobalcssvarpxint("--schemabase"))
+        self.move(dir)
+
     def __init__(self, args):
         super().__init__("div")
         self.parent = None
@@ -1099,7 +1150,7 @@ class SchemaItem(e):
         self.writepreference = args.get("writepreference", SchemaWritePreference())
         self.writepreference.setparent(self)
         self.writepreference.setchangecallback(self.writepreferencechanged)        
-        self.element = Div().ac("schemaitem")
+        self.element = Div().ac("schemaitem")        
         self.schemacontainer = Div().ac("schemacontainer")
         self.enablebox = Div().ac("schemaenablebox")
         self.enablecheckbox = CheckBox(self.enabled).ac("schemaenablecheckbox").ae("change", self.enablecallback)
@@ -1118,6 +1169,11 @@ class SchemaItem(e):
         self.itemcontainer = Div()
         self.itemcontainer.aa([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook])
         self.a(self.itemcontainer)
+        self.schemacontainer.sa("draggable", True)
+        self.schemacontainer.ae("dragstart", self.elementdragstart)
+        self.schemacontainer.ae("drag", self.elementdrag)
+        self.schemacontainer.ae("dragend", self.elementdragend)
+        self.schemacontainer.ae("dragover", lambda ev: ev.preventDefault())
 
 class NamedSchemaItem(e):
     def getitem(self):
@@ -1228,8 +1284,48 @@ class SchemaScalar(SchemaItem):
         self.build()
 
 class SchemaCollection(SchemaItem):
-    def parentsettask(self):
-        print("pst")
+    def removechildi(self, i):        
+        newchilds = []
+        rchild = None
+        for j in range(0, len(self.childs)):
+            if ( j == i ):
+                rchild = self.childs[j]
+            else:
+                newchilds.append(self.childs[j])
+        self.childs = newchilds        
+        self.openchilds()
+        self.openchilds()
+        return rchild        
+
+    def insertchildi(self, i, child):
+        newchilds = []
+        for j in range(0, len(self.childs) + 1):
+            if ( j == i ):
+                newchilds.append(child)
+            if ( j < len(self.childs) ):
+                newchilds.append(self.childs[j])
+        self.childs = newchilds        
+        self.openchilds()
+        self.openchilds()
+
+    def movechildi(self, i, newi):        
+        if len(self.childs) <= 0:
+            return
+        if newi < 0:
+            newi = 0
+        if newi > len(self.childs):
+            newi = len(self.childs) - 1
+        rchild = self.removechildi(i)
+        if not ( rchild is None ):
+            self.insertchildi(newi, rchild)
+
+    def getitemindex(self, item):
+        for i in range(0, len(self.childs)):
+            if self.childs[i].getitem() == item:
+                return i
+        return None
+
+    def parentsettask(self):        
         self.opendiv.arc(not self.parent is None, "schemadictchildleftmargin")
 
     def enablechangedtask(self):
@@ -1619,7 +1715,6 @@ def schemafromucioptionsobj(obj):
 
 schemaclipboard = NamedSchemaItem({})
 ######################################################
-
 ######################################################
 # client
 

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-25 09:03:47
+// Transcrypt'ed from Python, 2018-06-25 12:20:59
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,45 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var Vect = __class__ ('Vect', [object], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, x, y) {
+				try {
+					self.x = float (x);
+					self.y = float (y);
+				}
+				catch (__except0__) {
+					self.x = 0.0;
+					self.y = 0.0;
+					print ('vect init failed on', x, y);
+				}
+			});},
+			get p () {return __get__ (this, function (self, v) {
+				return Vect (self.x + v.x, self.y + v.y);
+			});},
+			get s () {return __get__ (this, function (self, s) {
+				return Vect (self.x * s, self.y * s);
+			});},
+			get m () {return __get__ (this, function (self, v) {
+				return self.p (v.s (-(1)));
+			});}
+		});
+		var getClientVect = function (ev) {
+			return Vect (ev.clientX, ev.clientY);
+		};
+		var getglobalcssvar = function (key) {
+			return getComputedStyle (window.document.documentElement).getPropertyValue (key);
+		};
+		var getglobalcssvarpxint = function (key, py_default) {
+			try {
+				var px = getglobalcssvar (key);
+				var pxint = int (px.py_replace ('px', ''));
+				return pxint;
+			}
+			catch (__except0__) {
+				return py_default;
+			}
+		};
 		var striplonglines = function (content, maxlen) {
 			if (typeof maxlen == 'undefined' || (maxlen != null && maxlen .hasOwnProperty ("__kwargtrans__"))) {;
 				var maxlen = 100;
@@ -3383,7 +3422,6 @@ function app () {
 			});},
 			get copyboxclicked () {return __get__ (this, function (self) {
 				schemaclipboard.copy (self);
-				print (schemaclipboard.toobj ());
 			});},
 			get settingsboxclicked () {return __get__ (this, function (self) {
 				if (self.settingsopen) {
@@ -3422,6 +3460,26 @@ function app () {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
 			});},
+			get elementdragstart () {return __get__ (this, function (self, ev) {
+				self.dragstartvect = getClientVect (ev);
+			});},
+			get elementdrag () {return __get__ (this, function (self, ev) {
+				// pass;
+			});},
+			get move () {return __get__ (this, function (self, dir) {
+				if (self.childparent === null) {
+					return ;
+				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -3452,6 +3510,13 @@ function app () {
 				self.itemcontainer = Div ();
 				self.itemcontainer.aa (list ([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook]));
 				self.a (self.itemcontainer);
+				self.schemacontainer.sa ('draggable', true);
+				self.schemacontainer.ae ('dragstart', self.elementdragstart);
+				self.schemacontainer.ae ('drag', self.elementdrag);
+				self.schemacontainer.ae ('dragend', self.elementdragend);
+				self.schemacontainer.ae ('dragover', (function __lambda__ (ev) {
+					return ev.preventDefault ();
+				}));
 			});}
 		});
 		var NamedSchemaItem = __class__ ('NamedSchemaItem', [e], {
@@ -3561,8 +3626,60 @@ function app () {
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
 			__module__: __name__,
+			get removechildi () {return __get__ (this, function (self, i) {
+				var newchilds = list ([]);
+				var rchild = null;
+				for (var j = 0; j < len (self.childs); j++) {
+					if (j == i) {
+						var rchild = self.childs [j];
+					}
+					else {
+						newchilds.append (self.childs [j]);
+					}
+				}
+				self.childs = newchilds;
+				self.openchilds ();
+				self.openchilds ();
+				return rchild;
+			});},
+			get insertchildi () {return __get__ (this, function (self, i, child) {
+				var newchilds = list ([]);
+				for (var j = 0; j < len (self.childs) + 1; j++) {
+					if (j == i) {
+						newchilds.append (child);
+					}
+					if (j < len (self.childs)) {
+						newchilds.append (self.childs [j]);
+					}
+				}
+				self.childs = newchilds;
+				self.openchilds ();
+				self.openchilds ();
+			});},
+			get movechildi () {return __get__ (this, function (self, i, newi) {
+				if (len (self.childs) <= 0) {
+					return ;
+				}
+				if (newi < 0) {
+					var newi = 0;
+				}
+				if (newi > len (self.childs)) {
+					var newi = len (self.childs) - 1;
+				}
+				var rchild = self.removechildi (i);
+				if (!(rchild === null)) {
+					self.insertchildi (newi, rchild);
+				}
+			});},
+			get getitemindex () {return __get__ (this, function (self, item) {
+				for (var i = 0; i < len (self.childs); i++) {
+					if (self.childs [i].getitem () == item) {
+						return i;
+					}
+				}
+				return null;
+			});},
 			get parentsettask () {return __get__ (this, function (self) {
-				print ('pst');
 				self.opendiv.arc (!(self.parent === null), 'schemadictchildleftmargin');
 			});},
 			get enablechangedtask () {return __get__ (this, function (self) {
@@ -4304,6 +4421,7 @@ function app () {
 			__all__.TabPane = TabPane;
 			__all__.TextArea = TextArea;
 			__all__.TextInputWithButton = TextInputWithButton;
+			__all__.Vect = Vect;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;
@@ -4316,10 +4434,13 @@ function app () {
 			__all__.deserializeconfigcontent = deserializeconfigcontent;
 			__all__.e = e;
 			__all__.ge = ge;
+			__all__.getClientVect = getClientVect;
 			__all__.getScrollBarWidth = getScrollBarWidth;
 			__all__.getbincallback = getbincallback;
 			__all__.getbinerrcallback = getbinerrcallback;
 			__all__.getfromobj = getfromobj;
+			__all__.getglobalcssvar = getglobalcssvar;
+			__all__.getglobalcssvarpxint = getglobalcssvarpxint;
 			__all__.getjsonbin = getjsonbin;
 			__all__.getlocalconfig = getlocalconfig;
 			__all__.getpathfromschema = getpathfromschema;
