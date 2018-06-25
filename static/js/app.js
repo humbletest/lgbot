@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-25 12:20:59
+// Transcrypt'ed from Python, 2018-06-25 12:37:32
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3663,7 +3663,7 @@ function app () {
 				if (newi < 0) {
 					var newi = 0;
 				}
-				if (newi > len (self.childs)) {
+				if (newi >= len (self.childs)) {
 					var newi = len (self.childs) - 1;
 				}
 				var rchild = self.removechildi (i);
