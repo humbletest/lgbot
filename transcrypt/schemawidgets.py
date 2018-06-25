@@ -356,7 +356,7 @@ class SchemaCollection(SchemaItem):
             return
         if newi < 0:
             newi = 0
-        if newi > len(self.childs):
+        if newi >= len(self.childs):
             newi = len(self.childs) - 1
         rchild = self.removechildi(i)
         if not ( rchild is None ):
