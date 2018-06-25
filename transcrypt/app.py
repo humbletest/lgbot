@@ -991,6 +991,13 @@ DEFAULT_HELP = "No help available for this item."
 DEFAULT_ENABLED = True
 
 class SchemaItem(e):
+    def parentsettask(self):
+        pass
+
+    def setparent(self, parent):
+        self.parent = parent
+        self.parentsettask()
+
     def getitem(self):
         return self
 
@@ -1148,7 +1155,7 @@ class NamedSchemaItem(e):
         self.key = args.get("key", uid())
         self.item = args.get("item", SchemaItem(args))        
         self.keychangedcallback = None
-        self.item.parent = self
+        self.item.setparent(self)
         self.namedcontainer = Div().ac("namedschemaitem")
         self.namediv = Div().ac("schemaitemname")        
         self.linkedtextinput = LinkedTextInput(self, "key", {
@@ -1166,7 +1173,7 @@ class NamedSchemaItem(e):
         self.key = None
         if not ( self.item.parent is None ):
             self.key = self.item.parent.key
-        self.item.parent = None
+        self.item.setparent(None)
 
 class SchemaScalar(SchemaItem):
     def label(self):
@@ -1221,6 +1228,10 @@ class SchemaScalar(SchemaItem):
         self.build()
 
 class SchemaCollection(SchemaItem):
+    def parentsettask(self):
+        print("pst")
+        self.opendiv.arc(not self.parent is None, "schemadictchildleftmargin")
+
     def enablechangedtask(self):
         self.openchilds()
         self.openchilds()

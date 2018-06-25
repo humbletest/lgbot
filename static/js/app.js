@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-25 08:27:47
+// Transcrypt'ed from Python, 2018-06-25 09:03:47
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3319,6 +3319,13 @@ function app () {
 		var DEFAULT_ENABLED = true;
 		var SchemaItem = __class__ ('SchemaItem', [e], {
 			__module__: __name__,
+			get parentsettask () {return __get__ (this, function (self) {
+				// pass;
+			});},
+			get setparent () {return __get__ (this, function (self, parent) {
+				self.parent = parent;
+				self.parentsettask ();
+			});},
 			get getitem () {return __get__ (this, function (self) {
 				return self;
 			});},
@@ -3481,7 +3488,7 @@ function app () {
 				self.key = args.py_get ('key', uid ());
 				self.item = args.py_get ('item', SchemaItem (args));
 				self.keychangedcallback = null;
-				self.item.parent = self;
+				self.item.setparent (self);
 				self.namedcontainer = Div ().ac ('namedschemaitem');
 				self.namediv = Div ().ac ('schemaitemname');
 				self.linkedtextinput = LinkedTextInput (self, 'key', dict ({'textclass': 'namedschemaitemrawtextinput', 'keyupcallback': self.keychanged}));
@@ -3497,7 +3504,7 @@ function app () {
 				if (!(self.item.parent === null)) {
 					self.key = self.item.parent.key;
 				}
-				self.item.parent = null;
+				self.item.setparent (null);
 			});}
 		});
 		var SchemaScalar = __class__ ('SchemaScalar', [SchemaItem], {
@@ -3554,6 +3561,10 @@ function app () {
 		});
 		var SchemaCollection = __class__ ('SchemaCollection', [SchemaItem], {
 			__module__: __name__,
+			get parentsettask () {return __get__ (this, function (self) {
+				print ('pst');
+				self.opendiv.arc (!(self.parent === null), 'schemadictchildleftmargin');
+			});},
 			get enablechangedtask () {return __get__ (this, function (self) {
 				self.openchilds ();
 				self.openchilds ();
