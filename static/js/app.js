@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-25 12:37:32
+// Transcrypt'ed from Python, 2018-06-25 17:09:15
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2243,7 +2243,7 @@ function app () {
 		};
 		var striplonglines = function (content, maxlen) {
 			if (typeof maxlen == 'undefined' || (maxlen != null && maxlen .hasOwnProperty ("__kwargtrans__"))) {;
-				var maxlen = 100;
+				var maxlen = 200;
 			};
 			var lines = content.py_split ('\n');
 			var strippedlines = list ([]);
@@ -3510,11 +3510,12 @@ function app () {
 				self.itemcontainer = Div ();
 				self.itemcontainer.aa (list ([self.schemacontainer, self.helphook, self.settingshook, self.afterelementhook]));
 				self.a (self.itemcontainer);
-				self.schemacontainer.sa ('draggable', true);
-				self.schemacontainer.ae ('dragstart', self.elementdragstart);
-				self.schemacontainer.ae ('drag', self.elementdrag);
-				self.schemacontainer.ae ('dragend', self.elementdragend);
-				self.schemacontainer.ae ('dragover', (function __lambda__ (ev) {
+				self.dragelement = self.copybox;
+				self.dragelement.sa ('draggable', true);
+				self.dragelement.ae ('dragstart', self.elementdragstart);
+				self.dragelement.ae ('drag', self.elementdrag);
+				self.dragelement.ae ('dragend', self.elementdragend);
+				self.dragelement.ae ('dragover', (function __lambda__ (ev) {
 					return ev.preventDefault ();
 				}));
 			});}
@@ -3550,7 +3551,7 @@ function app () {
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (NamedSchemaItem, '__init__') (self, 'div');
 				self.kind = 'nameditem';
-				self.key = args.py_get ('key', uid ());
+				self.key = args.py_get ('key', '');
 				self.item = args.py_get ('item', SchemaItem (args));
 				self.keychangedcallback = null;
 				self.item.setparent (self);
@@ -3592,13 +3593,15 @@ function app () {
 				self.build ();
 			});},
 			get enablechangedtask () {return __get__ (this, function (self) {
-				if (self.enabled) {
-					self.value = 'true';
+				if (self.writepreference.check) {
+					if (self.enabled) {
+						self.value = 'true';
+					}
+					else {
+						self.value = 'false';
+					}
+					self.linkedtextinput.setText (self.value);
 				}
-				else {
-					self.value = 'false';
-				}
-				self.linkedtextinput.setText (self.value);
 			});},
 			get build () {return __get__ (this, function (self) {
 				if (self.writepreference.slider) {
@@ -3616,7 +3619,7 @@ function app () {
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaScalar, '__init__') (self, args);
 				self.kind = 'scalar';
-				self.value = args.py_get ('value', randscalarvalue (2, 8));
+				self.value = args.py_get ('value', '');
 				self.minvalue = args.py_get ('minvalue', 1);
 				self.maxvalue = args.py_get ('maxvalue', 100);
 				self.element.ac ('schemascalar');

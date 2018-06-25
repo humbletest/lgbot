@@ -5,6 +5,7 @@
       "HumbleTestBot",
       {
         "token": "JmEKjUOpgC0WYTLW",
+        "selectmove": "mostdrawish",
         "multipv": 500,
         "ucioptions": {
           "Debug Log File": "",
@@ -55,7 +56,10 @@
             "rated"
           ]
         },
-        "selectmove": "mostdrawish"
+        "book": {
+          "strategy": "weighted",
+          "minweight": 3
+        }
       }
     ]
   },
@@ -159,6 +163,128 @@
                     }
                   },
                   {
+                    "key": "selectmove",
+                    "item": {
+                      "kind": "list",
+                      "enabled": true,
+                      "help": "No help available for this item.",
+                      "writepreference": {
+                        "addchild": true,
+                        "remove": true,
+                        "childsopened": false,
+                        "editenabled": true,
+                        "editkey": true,
+                        "editvalue": true,
+                        "radio": true,
+                        "slider": false,
+                        "check": false,
+                        "showhelpashtml": true
+                      },
+                      "items": [
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "best",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": true,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "mostdrawish",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "worst",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "random",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "capturerandom",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        }
+                      ]
+                    }
+                  },
+                  {
                     "key": "multipv",
                     "item": {
                       "kind": "scalar",
@@ -190,7 +316,7 @@
                       "writepreference": {
                         "addchild": true,
                         "remove": true,
-                        "childsopened": true,
+                        "childsopened": false,
                         "editenabled": true,
                         "editkey": true,
                         "editvalue": true,
@@ -1612,123 +1738,148 @@
                     }
                   },
                   {
-                    "key": "selectmove",
+                    "key": "book",
                     "item": {
-                      "kind": "list",
+                      "kind": "dict",
                       "enabled": true,
                       "help": "No help available for this item.",
                       "writepreference": {
                         "addchild": true,
                         "remove": true,
-                        "childsopened": true,
+                        "childsopened": false,
                         "editenabled": true,
                         "editkey": true,
                         "editvalue": true,
-                        "radio": true,
+                        "radio": false,
                         "slider": false,
                         "check": false,
                         "showhelpashtml": true
                       },
                       "items": [
                         {
-                          "kind": "scalar",
-                          "enabled": false,
-                          "help": "No help available for this item.",
-                          "writepreference": {
-                            "addchild": true,
-                            "remove": true,
-                            "childsopened": false,
-                            "editenabled": true,
-                            "editkey": true,
-                            "editvalue": true,
-                            "radio": false,
-                            "slider": false,
-                            "check": false,
-                            "showhelpashtml": true
-                          },
-                          "value": "best",
-                          "minvalue": 1,
-                          "maxvalue": 100
+                          "key": "strategy",
+                          "item": {
+                            "kind": "list",
+                            "enabled": true,
+                            "help": "No help available for this item.",
+                            "writepreference": {
+                              "addchild": true,
+                              "remove": true,
+                              "childsopened": false,
+                              "editenabled": true,
+                              "editkey": true,
+                              "editvalue": true,
+                              "radio": true,
+                              "slider": false,
+                              "check": false,
+                              "showhelpashtml": true
+                            },
+                            "items": [
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "slider": false,
+                                  "check": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "best",
+                                "minvalue": 1,
+                                "maxvalue": 100
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": true,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "slider": false,
+                                  "check": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "weighted",
+                                "minvalue": 1,
+                                "maxvalue": 100
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "slider": false,
+                                  "check": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "random",
+                                "minvalue": 1,
+                                "maxvalue": 100
+                              },
+                              {
+                                "kind": "scalar",
+                                "enabled": false,
+                                "help": "No help available for this item.",
+                                "writepreference": {
+                                  "addchild": true,
+                                  "remove": true,
+                                  "childsopened": false,
+                                  "editenabled": true,
+                                  "editkey": true,
+                                  "editvalue": true,
+                                  "radio": false,
+                                  "slider": false,
+                                  "check": false,
+                                  "showhelpashtml": true
+                                },
+                                "value": "none",
+                                "minvalue": 1,
+                                "maxvalue": 100
+                              }
+                            ]
+                          }
                         },
                         {
-                          "kind": "scalar",
-                          "enabled": true,
-                          "help": "No help available for this item.",
-                          "writepreference": {
-                            "addchild": true,
-                            "remove": true,
-                            "childsopened": false,
-                            "editenabled": true,
-                            "editkey": true,
-                            "editvalue": true,
-                            "radio": false,
-                            "slider": false,
-                            "check": false,
-                            "showhelpashtml": true
-                          },
-                          "value": "mostdrawish",
-                          "minvalue": 1,
-                          "maxvalue": 100
-                        },
-                        {
-                          "kind": "scalar",
-                          "enabled": false,
-                          "help": "No help available for this item.",
-                          "writepreference": {
-                            "addchild": true,
-                            "remove": true,
-                            "childsopened": false,
-                            "editenabled": true,
-                            "editkey": true,
-                            "editvalue": true,
-                            "radio": false,
-                            "slider": false,
-                            "check": false,
-                            "showhelpashtml": true
-                          },
-                          "value": "worst",
-                          "minvalue": 1,
-                          "maxvalue": 100
-                        },
-                        {
-                          "kind": "scalar",
-                          "enabled": false,
-                          "help": "No help available for this item.",
-                          "writepreference": {
-                            "addchild": true,
-                            "remove": true,
-                            "childsopened": false,
-                            "editenabled": true,
-                            "editkey": true,
-                            "editvalue": true,
-                            "radio": false,
-                            "slider": false,
-                            "check": false,
-                            "showhelpashtml": true
-                          },
-                          "value": "random",
-                          "minvalue": 1,
-                          "maxvalue": 100
-                        },
-                        {
-                          "kind": "scalar",
-                          "enabled": false,
-                          "help": "No help available for this item.",
-                          "writepreference": {
-                            "addchild": true,
-                            "remove": true,
-                            "childsopened": false,
-                            "editenabled": true,
-                            "editkey": true,
-                            "editvalue": true,
-                            "radio": false,
-                            "slider": false,
-                            "check": false,
-                            "showhelpashtml": true
-                          },
-                          "value": "capturerandom",
-                          "minvalue": 1,
-                          "maxvalue": 100
+                          "key": "minweight",
+                          "item": {
+                            "kind": "scalar",
+                            "enabled": true,
+                            "help": "No help available for this item.",
+                            "writepreference": {
+                              "addchild": true,
+                              "remove": true,
+                              "childsopened": false,
+                              "editenabled": true,
+                              "editkey": true,
+                              "editvalue": true,
+                              "radio": false,
+                              "slider": true,
+                              "check": false,
+                              "showhelpashtml": true
+                            },
+                            "value": 3,
+                            "minvalue": 1,
+                            "maxvalue": 10000
+                          }
                         }
                       ]
                     }
