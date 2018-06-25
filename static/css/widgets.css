@@ -1,7 +1,7 @@
 :root {
     --schemabase: 30px;
     --schemaopenbuttonsize: calc( var(--schemabase) * 0.8 );
-    --schemanamewidth: calc( var(--schemabase) * 5 );
+    --schemanamewidth: calc( var(--schemabase) * 5 );    
     --schemainputfontsize: calc( var(--schemabase) * 0.6 );
     --schemawidth: calc( var(--schemabase) * 8 );
     --schemaitemheight: var(--schemabase);
@@ -12,6 +12,7 @@
     --logtimewidth: 50px;
     --copybackgroundcolor: #9f9;
     --maxschemaopenbuttonwidth: calc( var(--schemawidth) - 8 * var(--schemacontainermargin) );
+    --schemacollindent: calc( var(--schemabase) + 2 * var(--schemacontainermargin) )
 }
 
 .noselect {
@@ -229,9 +230,9 @@
     background-color: #bbf;
 }
 
-.schemacollectionopendiv {
-    margin-left: calc( var(--schemaitemheight) + var(--schemacontainermargin) );
+.schemacollectionopendiv {    
     margin-top: var(--schemacontainermargin);
+    margin-left: var(--schemacollindent);
 }
 
 .comboboxselect {
@@ -367,4 +368,8 @@
 
 .schemacheckenablecheckbox {
     background-color: #7a7;
+}
+
+.schemadictchildleftmargin {
+    margin-left: calc( var(--schemacollindent) - var(--schemanamewidth) );
 }
