@@ -1,5 +1,6 @@
 :root {
     --schemabase: 30px;
+    --schemaopenbuttonsize: calc( var(--schemabase) * 0.8 );
     --schemanamewidth: calc( var(--schemabase) * 5 );
     --schemainputfontsize: calc( var(--schemabase) * 0.6 );
     --schemawidth: calc( var(--schemabase) * 8 );
@@ -10,6 +11,7 @@
     --schemasettingspadding: 8px;
     --logtimewidth: 50px;
     --copybackgroundcolor: #9f9;
+    --maxschemaopenbuttonwidth: calc( var(--schemawidth) - 8 * var(--schemacontainermargin) );
 }
 
 .noselect {
@@ -208,12 +210,23 @@
 }
 
 .schemacollectionopenbutton {
-    width: 30px; height: 30px;
+    display: flex; justify-content: space-between; align-items: center;
+    min-width: var(--schemaopenbuttonsize); max-width: var(--maxschemaopenbuttonwidth); height: var(--schemaopenbuttonsize);
     background-color: #ee9; cursor: pointer;
 }
 
+.schemacollectionopenbuttonlabel {    
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc( var(--maxschemaopenbuttonwidth) - 8 * var(--schemacontainermargin) );
+    font-size: calc( var(--schemainputfontsize) * 0.8 );
+    padding: calc( 3 * var(--schemacontainermargin) );
+    font-weight: bold;
+}
+
 .schemacollectionopenbuttondone {
-    background-color: #aaf;
+    background-color: #bbf;
 }
 
 .schemacollectionopendiv {
