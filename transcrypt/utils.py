@@ -31,7 +31,7 @@ def getglobalcssvarpxint(key, default):
     except:
         return default
 
-def striplonglines(content, maxlen = 200):
+def striplonglines(content, maxlen = 500):
     lines = content.split("\n")    
     strippedlines = []
     for line in lines:        

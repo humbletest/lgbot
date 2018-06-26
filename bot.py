@@ -4,7 +4,7 @@ import backoff
 
 import json
 
-import os, sys, traceback
+import os, sys, traceback, time
 
 from serverutils.utils import read_string_from_file
 from serverutils.utils import getjsonbin, getjsonbinobj
@@ -37,7 +37,53 @@ import queue
 VERSION = "1.0.0"
 LICHESS_API_BASE_URL = "https://lichess.org/"
 
+FIRST_MOVE_TIME = 2000
+
 #########################################################
+
+class TimeControl:
+    def __init__(self, wtime, btime, winc, binc, board):
+        self.wtime = int(wtime)
+        self.btime = int(btime)
+        self.winc = int(winc)
+        self.binc = int(binc)       
+        self.board = board 
+        self.startedat = time.time()
+        testboard = self.board.copy()
+        while len(testboard.move_stack) > 0:
+            testboard.pop()
+        self.initial_fen = testboard.fen()
+
+    def elapsed(self):
+        return int( time.time() - self.startedat )
+
+    def corrtime(self, t, color):
+        if self.board.turn == color:
+            return max(t - self.elapsed(), 0)
+        return t
+
+    def getwtime(self):
+        return self.corrtime(self.wtime, chess.WHITE)        
+
+    def getbtime(self):
+        return self.corrtime(self.btime, chess.BLACK)        
+
+    def getmoves(self):
+        if len(self.board.move_stack) <= 0:
+            return ""
+        return " moves " + " ".join([move.uci() for move in self.board.move_stack])
+
+    def gocommand(self, ponder = False):
+        gc = "go wtime {} btime {} winc {} binc {}".format(self.getwtime(), self.getbtime(), self.winc, self.binc)
+        if ponder:
+            gc += " ponder"
+        return gc        
+
+    def positioncommand(self):
+        return "position fen {}{}".format(self.initial_fen, self.getmoves())
+
+    def __repr__(self):
+        return "timecontrol wtime {} mwtime {} btime {} mbtime {} winc {} binc {} white's turn {} initial fen {}{}".format(self.wtime, self.getwtime(), self.btime, self.getbtime(), self.winc, self.binc, self.board.turn, self.initial_fen, self.getmoves())
 
 class PvInfo:
     def __init__(self, bestmove = None, scorecp = None, scoremate = None, INFINITE_SCORE = 10000):
@@ -104,10 +150,6 @@ def empty_queue(q):
 def get_book_dir_path(uci_variant):
     return os.path.join("book", uci_variant)
 
-def empty_queue(q):
-    while not q.empty():
-        q.get()
-
 def senducis(ucis):
     print(json.dumps({
         "enginecmd": "ucis",
@@ -161,6 +203,7 @@ class Bot:
         self.engine_queue = queue.Queue()
         self.username = "!nouser"
         self.controlstarted = False
+        self.ponder = None
 
     def modify_num_playing_atomic(self, delta):    
         self.lock.acquire()
@@ -231,19 +274,42 @@ class Bot:
                             print("weighted book move found in {} : {} , total weights {} , choice {} , weight {}".format(book_path, move, total_weights, choice, entry.weight))
                             return move                        
 
-    def get_engine_best_move(self, game, board, wtime, btime, winc, binc):
+    def get_engine_best_move(self, game, board, tc, ponderhit):
         book_best_move = self.get_book_best_move(game, board)
         if not ( book_best_move is None ):
             return book_best_move
-        first = ( board.fullmove_number == 1 )
-        print("getting engine best move", first, wtime, btime, winc, binc)        
-        gocommand = "go wtime {} btime {} winc {} binc {}".format(wtime, btime, winc, binc)
+        first = ( board.fullmove_number == 1 ) or ( len(board.move_stack) == 0 )
+        print("getting engine best move, first: {}, ponderhit: {}, tc: {}".format(first, ponderhit, tc))
+        gocommand = tc.gocommand()     
+        positioncommand = tc.positioncommand()   
         if first:
-            gocommand = "go movetime {}".format(2000)
-        senducis([
-            "position fen {}".format(board.fen()),
-            gocommand
-        ])
+            gocommand = "go movetime {}".format(FIRST_MOVE_TIME)
+            positioncommand = "position fen {}".format(board.fen())
+        if ponderhit:
+            if self.cfg.ponder == "uci":
+                print("uci ponderhit")
+                senducis([
+                    "ponderhit"
+                ])
+            else:
+                print("naive ponderhit")
+        else:
+            if not ( self.ponder is None ):
+                print("pondermiss on", self.ponder)
+                senducis(["stop"])
+                print("awaiting best move")
+                bmr = False
+                while not bmr:
+                    sline = self.engine_queue.get()                            
+                    parts = sline.split(" ")
+                    kind = parts[0]        
+                    if kind == "bestmove":
+                        bmr = True
+                print("pondermiss best move received")
+            senducis([
+                positioncommand,            
+                gocommand
+            ])
         eng = Engine()
         eng.board = board
         infh = InfoHandler()    
@@ -253,10 +319,24 @@ class Bot:
             parts = sline.split(" ")
             kind = parts[0]        
             if kind == "bestmove":
-                print("best move received")                
+                print("best move received", parts)                
                 try:
-                    move = chess.Move.from_uci(parts[1])
-                    print("best move", move)
+                    try:
+                        move = chess.Move.from_uci(parts[1])
+                        testboard = board.copy()
+                        testboard.push(move)
+                    except:
+                        print("error parsing bestmove", parts)
+                        traceback.print_exc(file = sys.stderr)
+                        return None
+                    try:
+                        ponder = chess.Move.from_uci(parts[3])                        
+                        testboard.push(move)
+                    except:
+                        print("error parsing ponder", parts)
+                        traceback.print_exc(file = sys.stderr)
+                        ponder = None                        
+                    print("best move", move, "ponder", ponder)
                     pvinfos = PvInfos(infh)                   
                     if self.cfg.selectmove == "mostdrawish":
                         bestpvinfo = pvinfos.getbest(lambda pvinfo: -abs(pvinfo.score()))
@@ -266,11 +346,12 @@ class Bot:
                         bestpvinfo = pvinfos.getbest(lambda pvinfo: -pvinfo.score())
                         move = bestpvinfo.bestmove                        
                         print("worst move", move, bestpvinfo.score())
-                    return move
+                    return (move, ponder)
                 except:
+                    traceback.print_exc(file = sys.stderr)
                     return None
             elif kind == "info":
-                try:
+                try:                    
                     eng._info(sline)
                     #print("engine thinking")
                 except:
@@ -282,10 +363,11 @@ class Bot:
         moves = sorted(moves, key = lambda move: -int(board.is_capture(move)))
         return moves[0]
 
-    def play_move(self, game, board, wtime, btime, winc, binc):
-        print("playing move", wtime, btime, winc, binc)
+    def play_move(self, game, board, tc, ponderhit):
+        print("playing move", tc)
         moves = list(board.generate_legal_moves())
         if len(moves)>0:
+            ponder = None
             best_move = random.choice(moves)
             if self.cfg.selectmove == "random":
                 print("random best move", best_move)
@@ -293,15 +375,18 @@ class Bot:
                 best_move = self.get_capture_random_move(board, moves)
                 print("capture random best move", best_move)
             else:
-                engine_best_move = self.get_engine_best_move(game, board, wtime, btime, winc, binc)
+                engine_best_move = self.get_engine_best_move(game, board, tc, ponderhit)
                 if not ( engine_best_move is None ):
                     print("using engine best move", engine_best_move)
-                    best_move = engine_best_move
+                    best_move = engine_best_move[0]
+                    ponder = engine_best_move[1]
             print("making move {} in game {}".format(best_move.uci(), game.id))
             self.li.make_move(game.id, best_move)
             game.abort_in(20)
+            return (best_move, ponder)
         else:
             print("! no legal move in game {}".format(game.id))
+            return None
 
     def play_game(self, game_id):        
         self.modify_num_playing_atomic(1)
@@ -319,7 +404,8 @@ class Bot:
         empty_queue(self.engine_queue)
         moves = game.state["moves"].split()
         if is_engine_move(game, moves):                                        
-            self.play_move(game, board, 2000, 2000, 0, 0)
+            self.play_move(game, board, TimeControl(FIRST_MOVE_TIME, FIRST_MOVE_TIME, 0, 0, board), False)
+        self.ponder = None
         try:
             for binary_chunk in updates:
                 upd = json.loads(binary_chunk.decode('utf-8')) if binary_chunk else None
@@ -329,9 +415,26 @@ class Bot:
                 elif u_type == "gameState":
                     game.state = upd
                     moves = upd["moves"].split()
-                    board = update_board(board, moves[-1])
+                    lastmove = moves[-1]
+                    board = update_board(board, lastmove)
                     if is_engine_move(game, moves):                                        
-                        self.play_move(game, board, upd["wtime"], upd["btime"], upd["winc"], upd["binc"])
+                        tc = TimeControl(upd["wtime"], upd["btime"], upd["winc"], upd["binc"], board)
+                        playmove = self.play_move(game, board, tc, lastmove == self.ponder)
+                        self.ponder = None
+                        if not ( playmove is None ):
+                            if ( not ( self.cfg.ponder == "none" ) ) and ( not ( playmove[1] is None ) ):                                
+                                ponderboard = board.copy()
+                                ponderboard.push(playmove[0])
+                                ponderboard.push(playmove[1])
+                                ponderbook = self.get_book_best_move(game, ponderboard)
+                                if ponderbook is None:                                    
+                                    tc.board = ponderboard
+                                    self.ponder = playmove[1].uci()   
+                                    print("start pondering on", self.ponder)                                    
+                                    senducis([                                        
+                                        tc.positioncommand(),
+                                        tc.gocommand(ponder = ( self.cfg.ponder == "uci" ) )
+                                    ])
                 elif u_type == "ping":
                     if game.should_abort_now():
                         print("aborting {} by lack of activity".format(game.url()))

@@ -110,17 +110,17 @@ class BotProcessManager(SimpleProcessManager):
     def read_line_callback(self, sline):
         try:
             obj = json.loads(sline)
-            print("bot json command")
+            #print("bot json command")
             if "enginecmd" in obj:                
                 epm = processmanagers["engine"]
                 enginecmd = obj["enginecmd"]
-                print("bot engine command", enginecmd)                
+                #print("bot engine command", enginecmd)                
                 if enginecmd == "restart":
                     epm.stop()
                     epm.start()
                 elif enginecmd == "ucis":                    
                     ucis = obj["ucis"]
-                    print("sending engine", ucis)
+                    #print("sending engine", ucis)
                     for uci in ucis:
                         epm.send_line(uci)
                 elif enginecmd == "enginelog":

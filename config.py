@@ -106,6 +106,7 @@ class Config:
         self.parse(self.profileobj, "enginename", devdefault = "stockfish9.exe", proddefault = "stockfish9")
         self.parse(self.profileobj, "multipv", default = 1, conv = int, check = lambda i: i>=1 and i<=500)        
         self.parse(self.profileobj, "selectmove", default = "best")        
+        self.parse(self.profileobj, "ponder", default = "none")        
         self.parse(self.profileobj, "accept", kinds = [ dict ], reg = False, default = {})
         self.parse(self.accept, "opponent", kinds = [ list ], default = ['bot', 'human'])
         self.parse(self.accept, "timecontrol", kinds = [ list ], default = ['ultraBullet', 'bullet', 'blitz', 'rapid', 'classical', 'correspondence'])
