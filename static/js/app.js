@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-26 20:10:46
+// Transcrypt'ed from Python, 2018-06-26 23:42:54
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4172,7 +4172,7 @@ function app () {
 			}
 		}
 		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'parseuci': dict ({'display': 'Parse UCI options', 'cmds': list (['r', 'parseuci'])}), 'd15': dict ({'display': 'd15', 'cmds': list (['go depth 15'])})});
-		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r', 'lc', 'sc'])})});
+		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r'])})});
 		var socket = null;
 		var processconsoles = dict ({'engine': null, 'bot': null});
 		var mainlogpane = null;

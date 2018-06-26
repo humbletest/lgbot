@@ -1756,7 +1756,7 @@ ENGINE_CMD_ALIASES = {
 BOT_CMD_ALIASES = {
     "start": {"display":"R", "cmds":["r"]},
     "stop": {"display":"S", "cmds":["s"]},    
-    "loadconfig": {"display":"LC", "cmds":["s", "r", "lc", "sc"]}
+    "loadconfig": {"display":"LC", "cmds":["s", "r"]}
 }
 ######################################################
 
