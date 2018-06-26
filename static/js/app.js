@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-25 17:09:15
+// Transcrypt'ed from Python, 2018-06-26 10:29:54
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2243,7 +2243,7 @@ function app () {
 		};
 		var striplonglines = function (content, maxlen) {
 			if (typeof maxlen == 'undefined' || (maxlen != null && maxlen .hasOwnProperty ("__kwargtrans__"))) {;
-				var maxlen = 200;
+				var maxlen = 500;
 			};
 			var lines = content.py_split ('\n');
 			var strippedlines = list ([]);

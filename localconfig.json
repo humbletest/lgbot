@@ -5,8 +5,8 @@
       "HumbleTestBot",
       {
         "token": "JmEKjUOpgC0WYTLW",
-        "selectmove": "mostdrawish",
-        "multipv": 500,
+        "selectmove": "best",
+        "multipv": 1,
         "ucioptions": {
           "Debug Log File": "",
           "Contempt": 12,
@@ -57,9 +57,10 @@
           ]
         },
         "book": {
-          "strategy": "weighted",
+          "strategy": "none",
           "minweight": 3
-        }
+        },
+        "ponder": "naive"
       }
     ]
   },
@@ -183,7 +184,7 @@
                       "items": [
                         {
                           "kind": "scalar",
-                          "enabled": false,
+                          "enabled": true,
                           "help": "No help available for this item.",
                           "writepreference": {
                             "addchild": true,
@@ -203,7 +204,7 @@
                         },
                         {
                           "kind": "scalar",
-                          "enabled": true,
+                          "enabled": false,
                           "help": "No help available for this item.",
                           "writepreference": {
                             "addchild": true,
@@ -302,7 +303,7 @@
                         "check": false,
                         "showhelpashtml": true
                       },
-                      "value": 500,
+                      "value": 1,
                       "minvalue": 1,
                       "maxvalue": 500
                     }
@@ -1797,7 +1798,7 @@
                               },
                               {
                                 "kind": "scalar",
-                                "enabled": true,
+                                "enabled": false,
                                 "help": "No help available for this item.",
                                 "writepreference": {
                                   "addchild": true,
@@ -1837,7 +1838,7 @@
                               },
                               {
                                 "kind": "scalar",
-                                "enabled": false,
+                                "enabled": true,
                                 "help": "No help available for this item.",
                                 "writepreference": {
                                   "addchild": true,
@@ -1880,6 +1881,88 @@
                             "minvalue": 1,
                             "maxvalue": 10000
                           }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "key": "ponder",
+                    "item": {
+                      "kind": "list",
+                      "enabled": true,
+                      "help": "No help available for this item.",
+                      "writepreference": {
+                        "addchild": true,
+                        "remove": true,
+                        "childsopened": false,
+                        "editenabled": true,
+                        "editkey": true,
+                        "editvalue": true,
+                        "radio": true,
+                        "slider": false,
+                        "check": false,
+                        "showhelpashtml": true
+                      },
+                      "items": [
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "none",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": true,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "naive",
+                          "minvalue": 1,
+                          "maxvalue": 100
+                        },
+                        {
+                          "kind": "scalar",
+                          "enabled": false,
+                          "help": "No help available for this item.",
+                          "writepreference": {
+                            "addchild": true,
+                            "remove": true,
+                            "childsopened": false,
+                            "editenabled": true,
+                            "editkey": true,
+                            "editvalue": true,
+                            "radio": false,
+                            "slider": false,
+                            "check": false,
+                            "showhelpashtml": true
+                          },
+                          "value": "uci",
+                          "minvalue": 1,
+                          "maxvalue": 100
                         }
                       ]
                     }
