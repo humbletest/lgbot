@@ -7,6 +7,8 @@ from urllib.parse import unquote
 import sys
 import os
 import json
+import threading
+import time
 #############################################
 
 #############################################
@@ -181,6 +183,19 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(bytes(message, "utf8"))
 
 #############################################
+
+def scheduler_thread_func(processmanagers):
+    delay = config.autostartbot
+    if delay > 0:
+        print("waiting {} seconds to start bot".format(delay))
+        time.sleep(delay)
+        print("auto starting bot")
+        processmanagers["bot"].start()
+    else:
+        print("auto start bot disabled")
+
+print("starting scheduler...")
+threading.Thread(target = scheduler_thread_func, args = (processmanagers,)).start()
 
 def start_server():
   print('starting server...')

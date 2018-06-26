@@ -195,6 +195,18 @@ def update_board(board, move):
 #########################################################
 
 class Bot:
+    def bot_startup_thread_func(self):
+        delay = config.autostartbot
+        if delay > 0:
+            print("waiting {} seconds to start bot".format(delay))
+            time.sleep(delay)
+            print("auto starting bot")
+            self.createli()
+            self.loadprofile()
+            self.startcontrol()
+        else:
+            print("auto start bot disabled")
+
     def __init__(self, cfg):
         self.cfg = cfg
         self.li = None
@@ -204,6 +216,8 @@ class Bot:
         self.username = "!nouser"
         self.controlstarted = False
         self.ponder = None
+        print("scheduling bot startup...")
+        threading.Thread(target = self.bot_startup_thread_func, args = ()).start()
 
     def modify_num_playing_atomic(self, delta):    
         self.lock.acquire()
@@ -396,9 +410,10 @@ class Bot:
         board = setup_board(game)    
         print(board)    
         # spawn fresh engine
-        print(json.dumps({
-            "enginecmd": "restart"
-        }))        
+        if self.cfg.needsengine():
+            print(json.dumps({
+                "enginecmd": "restart"
+            }))        
         self.sendcorrecteducioptions(board)
         sendenginelog(False)
         empty_queue(self.engine_queue)
