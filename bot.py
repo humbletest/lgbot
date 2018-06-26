@@ -201,8 +201,7 @@ class Bot:
             print("waiting {} seconds to start bot".format(delay))
             time.sleep(delay)
             print("auto starting bot")
-            self.createli()
-            self.loadprofile()
+            self.createli()            
             self.startcontrol()
         else:
             print("auto start bot disabled")
