@@ -270,12 +270,12 @@ class Bot:
                         entry = entries[0]
                         move = entry.move()
                         print("best book move found in {} : {} , weight {}".format(book_path, move, entry.weight))
-                        return move
+                        return (move, None)
                     if strategy == "random":
                         entry = random.choice(entries)
                         move = entry.move()
                         print("random book move found in {} : {} , weight {}".format(book_path, move, entry.weight))
-                        return move                        
+                        return (move, None)
                     # weighted                    
                     total_weights = sum(entry.weight for entry in entries)
                     choice = random.randint(0, total_weights - 1)
@@ -285,7 +285,7 @@ class Bot:
                         if current_sum > choice:
                             move = entry.move()
                             print("weighted book move found in {} : {} , total weights {} , choice {} , weight {}".format(book_path, move, total_weights, choice, entry.weight))
-                            return move                        
+                            return (move, None)
 
     def get_engine_best_move(self, game, board, tc, ponderhit):
         book_best_move = self.get_book_best_move(game, board)

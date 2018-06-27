@@ -185,7 +185,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 #############################################
 
 def scheduler_thread_func(processmanagers):
-    delay = config.autostartbot
+    delay = config.autostartbot * 2
     if delay > 0:
         print("waiting {} seconds to start bot".format(delay))
         time.sleep(delay)

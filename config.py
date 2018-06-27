@@ -47,7 +47,7 @@ class Config:
         for fieldname in self.fieldnames:
             value = self.__dict__[fieldname]
             repr+=" - {:15} : {} {}\n".format(fieldname, value, type(value))
-        repr += " - needs engine: {}".format(self.needsengine())
+        repr += " - needs engine : {}".format(self.needsengine())
         return repr
 
     def parse(self,
@@ -107,7 +107,7 @@ class Config:
         self.fieldnames = []        
         self.parse(self.globalobj, "simpleserverurl", devdefault = "http://localhost:4000", proddefault = "http://localhost:4000")        
         self.parse(self.globalobj, "flaskserverurl", devdefault = "http://localhost:5000", proddefault = "http://liguibot.herokuapp.com")        
-        self.parse(self.globalobj, "autostartbot", default = 30, conv = int, check = lambda i: i>=0 and i<=300)
+        self.parse(self.globalobj, "autostartbot", default = 10, conv = int, check = lambda i: i>=0 and i<=300)
         self.parse(self.profileobj, "token", default = "xxxxxxxxxxxxxxxx")        
         self.parse(self.profileobj, "concurrency", default = 1, conv = int, check = lambda i: i>=1 and i<=10)        
         self.parse(self.profileobj, "enginename", devdefault = "stockfish9.exe", proddefault = "stockfish9")
