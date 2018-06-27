@@ -5,8 +5,8 @@
       "HumbleTestBot",
       {
         "token": "JmEKjUOpgC0WYTLW",
-        "selectmove": "best",
-        "multipv": 1,
+        "selectmove": "mostdrawish",
+        "multipv": 500,
         "ucioptions": {
           "Debug Log File": "",
           "Contempt": 12,
@@ -60,7 +60,7 @@
           "strategy": "none",
           "minweight": 3
         },
-        "ponder": "naive"
+        "ponder": "none"
       }
     ]
   },
@@ -184,7 +184,7 @@
                       "items": [
                         {
                           "kind": "scalar",
-                          "enabled": true,
+                          "enabled": false,
                           "help": "No help available for this item.",
                           "writepreference": {
                             "addchild": true,
@@ -204,7 +204,7 @@
                         },
                         {
                           "kind": "scalar",
-                          "enabled": false,
+                          "enabled": true,
                           "help": "No help available for this item.",
                           "writepreference": {
                             "addchild": true,
@@ -303,7 +303,7 @@
                         "check": false,
                         "showhelpashtml": true
                       },
-                      "value": 1,
+                      "value": 500,
                       "minvalue": 1,
                       "maxvalue": 500
                     }
@@ -1906,7 +1906,7 @@
                       "items": [
                         {
                           "kind": "scalar",
-                          "enabled": false,
+                          "enabled": true,
                           "help": "No help available for this item.",
                           "writepreference": {
                             "addchild": true,
@@ -1926,7 +1926,7 @@
                         },
                         {
                           "kind": "scalar",
-                          "enabled": true,
+                          "enabled": false,
                           "help": "No help available for this item.",
                           "writepreference": {
                             "addchild": true,
