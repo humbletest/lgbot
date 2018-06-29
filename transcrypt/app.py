@@ -102,6 +102,13 @@ def patchclasses(selfref, args):
         elif action == "r":
             selfref[membername].rc(classname)
 
+def parsejson(jsonstr, callback, errcallback):
+    try:
+        obj = JSON.parse(jsonstr)
+        callback(obj)
+    except:
+        errcallback("error parsing json")
+
 __pragma__("jsiter")
 
 def putjsonbin(json, id, callback, errcallback):
@@ -145,6 +152,23 @@ def getjsonbin(id, callback, errcallback, version = "latest"):
     fetch("https://api.jsonbin.io/b/" + id + "/" + version, args).then(
         lambda response: response.text().then(
             lambda content: callback(content),
+            lambda err: errcalback(err)
+        ),
+        lambda err: errcallback(err)
+    )
+
+def getjson(path, callback, errcallback):
+
+    args = {
+        "method": "GET",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+
+    fetch(path, args).then(
+        lambda response: response.text().then(
+            lambda content: parsejson(content, callback, errcallback),
             lambda err: errcalback(err)
         ),
         lambda err: errcallback(err)
@@ -1719,7 +1743,48 @@ def schemafromucioptionsobj(obj):
 
 schemaclipboard = NamedSchemaItem({})
 ######################################################
-######################################################
+class DirBrowser(e):
+    def __init__(self):
+        super().__init__("div")
+        self.pathlist = []
+        self.loadpathlist(self.pathlist)
+
+    def loadpathlist(self):        
+        getjson("/dirlist/root/{}".format(self.path()), self.build, lambda err: print(err))
+
+    def toparentdir(self):
+        if len(self.pathlist) > 0:
+            self.pathlist.pop()
+        self.loadpathlist()
+
+    def opendirfactory(self, name):
+        def opendir():
+            self.pathlist.append(name)
+            self.loadpathlist()
+        return opendir
+
+    def path(self):
+        return "/".join(self.pathlist)
+
+    def namepath(self, name):
+        if len(self.pathlist) <= 0:
+            return name
+        return "/".join([self.path(), name])
+
+    def build(self, statsobj):
+        self.x()
+        sortedobj = sorted(statsobj, key = lambda item: item["name"].toLowerCase())
+        #sortedobj = sorted(sortedobj, key = lambda item: item["isdir"], reverse = True)                
+        if len(self.pathlist) > 0:
+            self.a(Div().html("..").aac(["dirbrowseritem", "dirbrowserdir"]).ae("mousedown", self.toparentdir))
+        for item in sortedobj:            
+            itemdiv = Div().ac("dirbrowseritem")
+            if item["isdir"]:
+                itemdiv.ac("dirbrowserdir").html(item["name"]).ae("mousedown", self.opendirfactory(item["name"]))                
+            else:
+                itemdiv.ac("dirbrowserfile").html("<a href='/file/{}'>{}</a>".format(self.namepath(item["name"]), item["name"]))
+            self.a(itemdiv)
+    ######################################################
 # client
 
 ######################################################
@@ -1918,6 +1983,7 @@ def build():
             Tab("engineconsole", "Engine console", processconsoles["engine"]),
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("cbuildconsole", "Cbuild console", processconsoles["cbuild"]),
+            Tab("dirbrowser", "Dirbrowser", DirBrowser()),
             Tab("config", "Config", buildconfigdiv()),
             Tab("log", "Log", mainlogpane),
             Tab("src", "Src", srcdiv),

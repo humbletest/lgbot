@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-29 02:30:18
+// Transcrypt'ed from Python, 2018-06-29 12:41:51
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2319,6 +2319,15 @@ function app () {
 				}
 			}
 		};
+		var parsejson = function (jsonstr, callback, errcallback) {
+			try {
+				var obj = JSON.parse (jsonstr);
+				callback (obj);
+			}
+			catch (__except0__) {
+				errcallback ('error parsing json');
+			}
+		};
 		var putjsonbin = function (json, id, callback, errcallback) {
 			var method = 'POST';
 			var url = 'https://api.jsonbin.io/b';
@@ -2348,6 +2357,18 @@ function app () {
 			fetch ((('https://api.jsonbin.io/b/' + id) + '/') + version, args).then ((function __lambda__ (response) {
 				return response.text ().then ((function __lambda__ (content) {
 					return callback (content);
+				}), (function __lambda__ (err) {
+					return errcalback (err);
+				}));
+			}), (function __lambda__ (err) {
+				return errcallback (err);
+			}));
+		};
+		var getjson = function (path, callback, errcallback) {
+			var args = {'method': 'GET', 'headers': {'Content-Type': 'application/json'}};
+			fetch (path, args).then ((function __lambda__ (response) {
+				return response.text ().then ((function __lambda__ (content) {
+					return parsejson (content, callback, errcallback);
 				}), (function __lambda__ (err) {
 					return errcalback (err);
 				}));
@@ -3480,6 +3501,26 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
+			get elementdragstart () {return __get__ (this, function (self, ev) {
+				self.dragstartvect = getClientVect (ev);
+			});},
+			get elementdrag () {return __get__ (this, function (self, ev) {
+				// pass;
+			});},
+			get move () {return __get__ (this, function (self, dir) {
+				if (self.childparent === null) {
+					return ;
+				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4152,6 +4193,62 @@ function app () {
 			return ucioptions;
 		};
 		var schemaclipboard = NamedSchemaItem (dict ({}));
+		var DirBrowser = __class__ ('DirBrowser', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (DirBrowser, '__init__') (self, 'div');
+				self.pathlist = list ([]);
+				self.loadpathlist (self.pathlist);
+			});},
+			get loadpathlist () {return __get__ (this, function (self) {
+				getjson ('/dirlist/root/{}'.format (self.path ()), self.build, (function __lambda__ (err) {
+					return print (err);
+				}));
+			});},
+			get toparentdir () {return __get__ (this, function (self) {
+				if (len (self.pathlist) > 0) {
+					self.pathlist.py_pop ();
+				}
+				self.loadpathlist ();
+			});},
+			get opendirfactory () {return __get__ (this, function (self, py_name) {
+				var opendir = function () {
+					self.pathlist.append (py_name);
+					self.loadpathlist ();
+				};
+				return opendir;
+			});},
+			get path () {return __get__ (this, function (self) {
+				return '/'.join (self.pathlist);
+			});},
+			get namepath () {return __get__ (this, function (self, py_name) {
+				if (len (self.pathlist) <= 0) {
+					return py_name;
+				}
+				return '/'.join (list ([self.path (), py_name]));
+			});},
+			get build () {return __get__ (this, function (self, statsobj) {
+				self.x ();
+				var sortedobj = sorted (statsobj, __kwargtrans__ ({key: (function __lambda__ (item) {
+					return item ['name'].toLowerCase ();
+				})}));
+				if (len (self.pathlist) > 0) {
+					self.a (Div ().html ('..').aac (list (['dirbrowseritem', 'dirbrowserdir'])).ae ('mousedown', self.toparentdir));
+				}
+				var __iterable0__ = sortedobj;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					var itemdiv = Div ().ac ('dirbrowseritem');
+					if (item ['isdir']) {
+						itemdiv.ac ('dirbrowserdir').html (item ['name']).ae ('mousedown', self.opendirfactory (item ['name']));
+					}
+					else {
+						itemdiv.ac ('dirbrowserfile').html ("<a href='/file/{}'>{}</a>".format (self.namepath (item ['name']), item ['name']));
+					}
+					self.a (itemdiv);
+				}
+			});}
+		});
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
 		}
@@ -4285,7 +4382,7 @@ function app () {
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -4395,6 +4492,7 @@ function app () {
 			__all__.ComboOption = ComboOption;
 			__all__.DEFAULT_ENABLED = DEFAULT_ENABLED;
 			__all__.DEFAULT_HELP = DEFAULT_HELP;
+			__all__.DirBrowser = DirBrowser;
 			__all__.Div = Div;
 			__all__.ENGINE_CMD_ALIASES = ENGINE_CMD_ALIASES;
 			__all__.Input = Input;
@@ -4447,6 +4545,7 @@ function app () {
 			__all__.getfromobj = getfromobj;
 			__all__.getglobalcssvar = getglobalcssvar;
 			__all__.getglobalcssvarpxint = getglobalcssvarpxint;
+			__all__.getjson = getjson;
 			__all__.getjsonbin = getjsonbin;
 			__all__.getlocalconfig = getlocalconfig;
 			__all__.getpathfromschema = getpathfromschema;
@@ -4461,6 +4560,7 @@ function app () {
 			__all__.maintabpane = maintabpane;
 			__all__.onconnect = onconnect;
 			__all__.onevent = onevent;
+			__all__.parsejson = parsejson;
 			__all__.parts = parts;
 			__all__.patchclasses = patchclasses;
 			__all__.processconsoles = processconsoles;
