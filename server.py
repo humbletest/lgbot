@@ -54,37 +54,6 @@ print("importing pyrebase done")
 #########################################################
 
 #########################################################
-# global imports
-import time
-import os
-import sys
-import traceback
-from urllib.parse import quote
-import random
-import json
-print("importing pyrebase")
-import pyrebase
-print("initializing firebase")
-try:    
-    fbcreds = json.loads(open("firebase/fbcreds.json").read())
-    firebase = pyrebase.initialize_app(fbcreds)
-    db = firebase.database()
-    print("initializing firebase done")
-except:
-    print("initializing firebase failed")
-print("getting stored config")
-try:
-    #db.child("lgbotconfig").set(read_string_from_file("configbackup.json","{}"))
-    storedconfig = db.child("lgbotconfig").get().val()    
-    write_string_to_file("localconfig.json", storedconfig)
-    print("getting stored config done, size", len(storedconfig))
-except:
-    print("getting stored config failed")
-    traceback.print_exc(file=sys.stderr)
-print("importing pyrebase done")
-#########################################################
-
-#########################################################
 # create app
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = 'secret!'
@@ -201,6 +170,9 @@ def read():
 
 @app.route("/file/<path:path>")
 def serve_static_envs(path):
+    parts = path.split("/")
+    if parts[0] == "firebase":
+        return "sorry, firebase directory content is confidential"
     return send_from_directory('.', path)
 
 @app.route("/dirlist/<path:path>")
