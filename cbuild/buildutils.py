@@ -1,5 +1,6 @@
 import os
 from cbuild.utils import create_dir
+from cbuild.utils import read_string_from_file
 from cbuild.utils import write_string_to_file
 from cbuild.utils import load_yaml
 from cbuild.utils import dump_yaml
@@ -39,7 +40,7 @@ def default_config():
 	return ""
 
 def default_filter_logic():
-	return ""
+	return read_string_from_file("cbuild/filter_logic.py","")
 
 def create_env(env, force):
 	create_dir("envs")
