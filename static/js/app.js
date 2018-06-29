@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-29 18:58:19
+// Transcrypt'ed from Python, 2018-06-29 19:19:10
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4213,7 +4213,7 @@ function app () {
 					return item ['name'].toLowerCase ();
 				})}));
 				if (len (self.pathlist) > 0) {
-					var updiv = Div ().aac (list (['dirbrowseritem', 'dirbrowserdir'])).ae ('mousedown', self.toparentdir);
+					var updiv = Div ().aac (list (['dirbrowseritem', 'dirbrowserdir', 'noselect'])).ae ('mousedown', self.toparentdir);
 					updiv.a (Div ().aac (list (['dirbrowsertoparent', 'dirbrowserdirname'])).html ('..'));
 					self.a (updiv);
 				}
@@ -4238,6 +4238,8 @@ function app () {
 					itemdiv.a (namediv);
 					itemdiv.a (Div ().ac ('dirbrowsermodat').html (new Date (item ['st_mtime'] * 1000).toLocaleString ()));
 					itemdiv.a (sizediv);
+					var rwxdiv = Div ().ac ('dirbrowserrwx').html (item ['st_mode_unix_rwx']);
+					itemdiv.a (rwxdiv);
 					self.a (itemdiv);
 				}
 			});}
