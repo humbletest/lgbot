@@ -5,6 +5,9 @@
 !/lbot/model.py
 
 
+envs/*
+
+
 #driver/
 
 

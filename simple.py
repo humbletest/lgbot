@@ -140,9 +140,47 @@ class BotProcessManager(SimpleProcessManager):
             ignore_cwd = True
         )
 
+class CbuildProcessManager(SimpleProcessManager):
+    global processmanagers
+
+    def __init__(self, key):
+        super().__init__(key)
+
+    def read_line_callback(self, sline):
+        pass
+
+    def start(self):
+        msg = "start not supported on one off process"
+        print(msg)
+        return msg
+
+    def stop(self):
+        msg = "stop not supported on one off process"
+        print(msg)
+        return msg
+
+    def popen(self):
+        return process.PopenProcess(
+            "python",
+            self.base_read_line_callback,
+            proc_args = ["cbuild.py"],
+            ignore_cwd = True
+        )
+
+    def send_line(self, sline):
+        args = sline.split(" ")
+        process.PopenProcess(
+            "python",
+            self.base_read_line_callback,
+            proc_args = ["cbuild.py"] +  args,
+            ignore_cwd = True
+        )
+        return ""
+
 processmanagers = {
     "engine": EngineProcessManager("engine"),
-    "bot": BotProcessManager("bot")
+    "bot": BotProcessManager("bot"),
+    "cbuild": CbuildProcessManager("cbuild")
 }
 
 #############################################

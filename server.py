@@ -2,7 +2,7 @@ from config import config
 
 #########################################################
 # flask imports
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 #########################################################
 
 #########################################################
@@ -52,7 +52,7 @@ print("importing pyrebase done")
 
 #########################################################
 # create app
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = 'secret!'
 #########################################################
 
@@ -164,6 +164,10 @@ def read():
     obj = request.get_json()
     my_broadcast(obj)
     return ""
+
+@app.route("/envs/<path:path>")
+def serve_static_envs(path):
+    return send_from_directory('envs', path)
 #########################################################
 
 #########################################################
