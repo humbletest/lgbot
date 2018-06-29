@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-29 12:41:51
+// Transcrypt'ed from Python, 2018-06-29 13:41:52
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3480,6 +3480,26 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
+			});},
+			get elementdragstart () {return __get__ (this, function (self, ev) {
+				self.dragstartvect = getClientVect (ev);
+			});},
+			get elementdrag () {return __get__ (this, function (self, ev) {
+				// pass;
+			});},
+			get move () {return __get__ (this, function (self, dir) {
+				if (self.childparent === null) {
+					return ;
+				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
