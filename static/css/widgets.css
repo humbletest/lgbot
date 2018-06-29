@@ -377,9 +377,30 @@
 .dirbrowseritem {
     display: flex; justify-content: left; align-items: center;
     width: 600px;
-    height: 25px;    
+    height: 35px;    
     cursor: pointer;
     padding: 2px; padding-left: 5px;
+    font-family: monospace;
+}
+
+.dirbrowsername {
+    background-color: #aef;
+    font-size: 20px;
+    padding: 2px;
+}
+
+.dirbrowsersize {
+    background-color: #fee;
+    font-size: 18px;
+    padding: 3px;    
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+.dirbrowserdirname {
+    background-color: #afa;
+    font-size: 25px;
+    padding: 3px;
 }
 
 .dirbrowserfile {
@@ -398,4 +419,16 @@
 .dirbrowserdir:nth-of-type(odd) {
     background-color: #f7f7dd;    
     font-weight: bold;
+}
+
+.dirbrowsertoparent {            
+    background-color: #fcc;
+    width: 100px;
+    padding-left: 5px;
+}
+
+.dirbrowsermodat {
+    font-size: 10px;
+    background-color: #dde;
+    padding: 2px; margin-left: 5px;
 }

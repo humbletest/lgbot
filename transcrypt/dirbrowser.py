@@ -31,12 +31,24 @@ class DirBrowser(e):
         sortedobj = sorted(statsobj, key = lambda item: item["name"].toLowerCase())
         #sortedobj = sorted(sortedobj, key = lambda item: item["isdir"], reverse = True)                
         if len(self.pathlist) > 0:
-            self.a(Div().html("..").aac(["dirbrowseritem", "dirbrowserdir"]).ae("mousedown", self.toparentdir))
+            updiv = Div().aac(["dirbrowseritem", "dirbrowserdir"]).ae("mousedown", self.toparentdir)
+            updiv.a(Div().aac(["dirbrowsertoparent","dirbrowserdirname"]).html(".."))
+            self.a(updiv)
         for item in sortedobj:            
-            itemdiv = Div().ac("dirbrowseritem")
+            itemdiv = Div().aac(["dirbrowseritem","noselect"])
+            namediv = Div().ac("dirbrowsername")
+            sizediv = Div().ac("dirbrowsersize")
             if item["isdir"]:
-                itemdiv.ac("dirbrowserdir").html(item["name"]).ae("mousedown", self.opendirfactory(item["name"]))                
+                text = item["name"]
+                itemdiv.ac("dirbrowserdir").ae("mousedown", self.opendirfactory(item["name"]))
+                namediv.ac("dirbrowserdirname").html(text)
+                sizediv.html("dir")
             else:
-                itemdiv.ac("dirbrowserfile").html("<a href='/file/{}'>{}</a>".format(self.namepath(item["name"]), item["name"]))
-            self.a(itemdiv)
-    
+                text = "<a href='/file/{}'>{}</a>".format(self.namepath(item["name"]), item["name"])
+                itemdiv.ac("dirbrowserfile")
+                namediv.html(text)
+                sizediv.html("{} bytes".format(item["st_size"]))
+            itemdiv.a(namediv)
+            itemdiv.a(Div().ac("dirbrowsermodat").html(__new__ (Date(item["st_mtime"] * 1000)).toLocaleString()))
+            itemdiv.a(sizediv)
+            self.a(itemdiv)            
