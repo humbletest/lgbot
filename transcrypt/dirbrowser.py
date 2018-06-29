@@ -31,7 +31,7 @@ class DirBrowser(e):
         sortedobj = sorted(statsobj, key = lambda item: item["name"].toLowerCase())
         #sortedobj = sorted(sortedobj, key = lambda item: item["isdir"], reverse = True)                
         if len(self.pathlist) > 0:
-            updiv = Div().aac(["dirbrowseritem", "dirbrowserdir"]).ae("mousedown", self.toparentdir)
+            updiv = Div().aac(["dirbrowseritem", "dirbrowserdir", "noselect"]).ae("mousedown", self.toparentdir)
             updiv.a(Div().aac(["dirbrowsertoparent","dirbrowserdirname"]).html(".."))
             self.a(updiv)
         for item in sortedobj:            
@@ -51,4 +51,6 @@ class DirBrowser(e):
             itemdiv.a(namediv)
             itemdiv.a(Div().ac("dirbrowsermodat").html(__new__ (Date(item["st_mtime"] * 1000)).toLocaleString()))
             itemdiv.a(sizediv)
+            rwxdiv = Div().ac("dirbrowserrwx").html(item["st_mode_unix_rwx"])
+            itemdiv.a(rwxdiv)
             self.a(itemdiv)            

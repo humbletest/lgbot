@@ -3,7 +3,7 @@ import inspect
 import certifi
 import urllib3
 import json
-import os
+import os, stat
 
 #############################################
 
@@ -98,6 +98,7 @@ def os_stats_as_dict(stats, name, isdir):
         "name": name,
         "isdir": isdir,
         "st_mode": stats.st_mode,
+        "st_mode_unix_rwx": stat.filemode(stats.st_mode),
         "st_ino": stats.st_ino,
         "st_dev": stats.st_dev,
         "st_nlink": stats.st_nlink,

@@ -432,3 +432,10 @@
     background-color: #dde;
     padding: 2px; margin-left: 5px;
 }
+
+.dirbrowserrwx {
+    font-size: 16px;
+    background-color: #ffc;
+    color: #00f;
+    padding: 2px; margin-left: 5px;
+}
