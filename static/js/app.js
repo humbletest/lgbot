@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-27 07:32:04
+// Transcrypt'ed from Python, 2018-06-29 02:30:18
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4173,8 +4173,9 @@ function app () {
 		}
 		var ENGINE_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'parseuci': dict ({'display': 'Parse UCI options', 'cmds': list (['r', 'parseuci'])}), 'd15': dict ({'display': 'd15', 'cmds': list (['go depth 15'])})});
 		var BOT_CMD_ALIASES = dict ({'start': dict ({'display': 'R', 'cmds': list (['r'])}), 'stop': dict ({'display': 'S', 'cmds': list (['s'])}), 'loadconfig': dict ({'display': 'LC', 'cmds': list (['s', 'r'])})});
+		var CBUILD_CMD_ALIASES = dict ({'help': dict ({'display': 'help', 'cmds': list (['-h'])})});
 		var socket = null;
-		var processconsoles = dict ({'engine': null, 'bot': null});
+		var processconsoles = dict ({'engine': null, 'bot': null, 'cbuild': null});
 		var mainlogpane = null;
 		var maintabpane = null;
 		var configschema = SchemaDict (dict ({}));
@@ -4281,9 +4282,10 @@ function app () {
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
+			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -4387,6 +4389,7 @@ function app () {
 		__pragma__ ('<all>')
 			__all__.BOT_CMD_ALIASES = BOT_CMD_ALIASES;
 			__all__.Button = Button;
+			__all__.CBUILD_CMD_ALIASES = CBUILD_CMD_ALIASES;
 			__all__.CheckBox = CheckBox;
 			__all__.ComboBox = ComboBox;
 			__all__.ComboOption = ComboOption;

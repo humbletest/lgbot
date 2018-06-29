@@ -1758,6 +1758,10 @@ BOT_CMD_ALIASES = {
     "stop": {"display":"S", "cmds":["s"]},    
     "loadconfig": {"display":"LC", "cmds":["s", "r"]}
 }
+
+CBUILD_CMD_ALIASES = {    
+    "help": {"display":"help", "cmds":["-h"]},    
+}
 ######################################################
 
 ######################################################
@@ -1765,7 +1769,8 @@ BOT_CMD_ALIASES = {
 socket = None
 processconsoles = {
     "engine": None,
-    "bot": None
+    "bot": None,
+    "cbuild": None
 }
 mainlogpane = None
 maintabpane = None
@@ -1899,6 +1904,12 @@ def build():
         "cmdaliases": BOT_CMD_ALIASES
     })
 
+    processconsoles["cbuild"] = ProcessConsole({
+        "key": "cbuild",
+        "cmdinpcallback": cmdinpcallback,
+        "cmdaliases": CBUILD_CMD_ALIASES
+    })
+
     mainlogpane = LogPane()
 
     maintabpane = TabPane({"kind":"main", "id":"main"})
@@ -1906,6 +1917,7 @@ def build():
         [
             Tab("engineconsole", "Engine console", processconsoles["engine"]),
             Tab("botconsole", "Bot console", processconsoles["bot"]),
+            Tab("cbuildconsole", "Cbuild console", processconsoles["cbuild"]),
             Tab("config", "Config", buildconfigdiv()),
             Tab("log", "Log", mainlogpane),
             Tab("src", "Src", srcdiv),
