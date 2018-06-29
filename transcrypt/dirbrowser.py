@@ -27,9 +27,21 @@ class DirBrowser(e):
         return "/".join([self.path(), name])
 
     def build(self, statsobj):
-        self.x()
-        sortedobj = sorted(statsobj, key = lambda item: item["name"].toLowerCase())
-        #sortedobj = sorted(sortedobj, key = lambda item: item["isdir"], reverse = True)                
+        self.x()        
+        dirs = []
+        files = []
+        for item in statsobj:
+            if item["isdir"]:
+                dirs.append(item)
+            else:
+                files.append(item)        
+        sorteddirs = sorted(dirs, key = lambda item: item["name"].toLowerCase())
+        sortedfiles = sorted(files, key = lambda item: item["name"].toLowerCase())
+        sortedobj = []
+        for item in sorteddirs:
+            sortedobj.append(item)
+        for item in sortedfiles:
+            sortedobj.append(item)
         if len(self.pathlist) > 0:
             updiv = Div().aac(["dirbrowseritem", "dirbrowserdir", "noselect"]).ae("mousedown", self.toparentdir)
             updiv.a(Div().aac(["dirbrowsertoparent","dirbrowserdirname"]).html(".."))

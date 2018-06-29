@@ -16,11 +16,13 @@ class PopenProcess(object):
             read_error_callback = None,
             proc_args = None,
             ignore_cwd = False,
+            terminated_callback = None,
             **kwargs
             ):
 
         self.proc_args = proc_args
         self.ignore_cwd = ignore_cwd
+        self.terminated_callback = terminated_callback
 
         self.read_line_callback = read_line_callback
 
@@ -93,6 +95,9 @@ class PopenProcess(object):
         if self.is_alive():
             self.terminate()
             self.wait_for_return_code()
+
+        if not ( self.terminated_callback is None ):
+            self.terminated_callback()
 
     def _recerror_thread_target(self):
         while True:

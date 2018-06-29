@@ -150,32 +150,29 @@ class CbuildProcessManager(SimpleProcessManager):
         pass
 
     def start(self):
-        msg = "start not supported on one off process"
-        print(msg)
-        return msg
+        return self.send_line("-h")
 
-    def stop(self):
-        msg = "stop not supported on one off process"
-        print(msg)
-        return msg
-
-    def popen(self):
-        return process.PopenProcess(
-            "python",
-            self.base_read_line_callback,
-            proc_args = ["cbuild.py"],
-            ignore_cwd = True
-        )
+    def terminated_callback(self):
+        print("cbuild terminated")
+        self.process = None
 
     def send_line(self, sline):
-        args = sline.split(" ")
-        process.PopenProcess(
-            "python",
-            self.base_read_line_callback,
-            proc_args = ["cbuild.py"] +  args,
-            ignore_cwd = True
-        )
-        return ""
+        if self.process is None:
+            args = sline.split(" ")
+            self.process = process.PopenProcess(
+                "python",
+                self.base_read_line_callback,
+                proc_args = ["-u", "cbuild.py"] +  args,
+                ignore_cwd = True,
+                terminated_callback = self.terminated_callback
+            )
+            msg = "cbuild started"
+            print(msg)
+            return msg
+        else:
+            msg = "cbuild already running"
+            print(msg)
+            return msg
 
 processmanagers = {
     "engine": EngineProcessManager("engine"),
