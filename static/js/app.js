@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-29 19:19:10
+// Transcrypt'ed from Python, 2018-06-29 20:47:21
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4209,9 +4209,35 @@ function app () {
 			});},
 			get build () {return __get__ (this, function (self, statsobj) {
 				self.x ();
-				var sortedobj = sorted (statsobj, __kwargtrans__ ({key: (function __lambda__ (item) {
+				var dirs = list ([]);
+				var files = list ([]);
+				var __iterable0__ = statsobj;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					if (item ['isdir']) {
+						dirs.append (item);
+					}
+					else {
+						files.append (item);
+					}
+				}
+				var sorteddirs = sorted (dirs, __kwargtrans__ ({key: (function __lambda__ (item) {
 					return item ['name'].toLowerCase ();
 				})}));
+				var sortedfiles = sorted (files, __kwargtrans__ ({key: (function __lambda__ (item) {
+					return item ['name'].toLowerCase ();
+				})}));
+				var sortedobj = list ([]);
+				var __iterable0__ = sorteddirs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					sortedobj.append (item);
+				}
+				var __iterable0__ = sortedfiles;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					sortedobj.append (item);
+				}
 				if (len (self.pathlist) > 0) {
 					var updiv = Div ().aac (list (['dirbrowseritem', 'dirbrowserdir', 'noselect'])).ae ('mousedown', self.toparentdir);
 					updiv.a (Div ().aac (list (['dirbrowsertoparent', 'dirbrowserdirname'])).html ('..'));
