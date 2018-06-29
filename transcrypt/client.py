@@ -39,7 +39,9 @@ BOT_CMD_ALIASES = {
 }
 
 CBUILD_CMD_ALIASES = {    
-    "help": {"display":"help", "cmds":["-h"]},    
+    "stop": {"display":"S", "cmds":["s"]},    
+    "example": {"display":"example build", "cmds":["-e antichess --variant antichess --nextlichessdb -a"]},
+    "help": {"display":"help", "cmds":["-h"]}    
 }
 ######################################################
 
