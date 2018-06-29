@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-29 13:41:52
+// Transcrypt'ed from Python, 2018-06-29 18:58:19
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3501,46 +3501,6 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4253,18 +4213,31 @@ function app () {
 					return item ['name'].toLowerCase ();
 				})}));
 				if (len (self.pathlist) > 0) {
-					self.a (Div ().html ('..').aac (list (['dirbrowseritem', 'dirbrowserdir'])).ae ('mousedown', self.toparentdir));
+					var updiv = Div ().aac (list (['dirbrowseritem', 'dirbrowserdir'])).ae ('mousedown', self.toparentdir);
+					updiv.a (Div ().aac (list (['dirbrowsertoparent', 'dirbrowserdirname'])).html ('..'));
+					self.a (updiv);
 				}
 				var __iterable0__ = sortedobj;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					var itemdiv = Div ().ac ('dirbrowseritem');
+					var itemdiv = Div ().aac (list (['dirbrowseritem', 'noselect']));
+					var namediv = Div ().ac ('dirbrowsername');
+					var sizediv = Div ().ac ('dirbrowsersize');
 					if (item ['isdir']) {
-						itemdiv.ac ('dirbrowserdir').html (item ['name']).ae ('mousedown', self.opendirfactory (item ['name']));
+						var text = item ['name'];
+						itemdiv.ac ('dirbrowserdir').ae ('mousedown', self.opendirfactory (item ['name']));
+						namediv.ac ('dirbrowserdirname').html (text);
+						sizediv.html ('dir');
 					}
 					else {
-						itemdiv.ac ('dirbrowserfile').html ("<a href='/file/{}'>{}</a>".format (self.namepath (item ['name']), item ['name']));
+						var text = "<a href='/file/{}'>{}</a>".format (self.namepath (item ['name']), item ['name']);
+						itemdiv.ac ('dirbrowserfile');
+						namediv.html (text);
+						sizediv.html ('{} bytes'.format (item ['st_size']));
 					}
+					itemdiv.a (namediv);
+					itemdiv.a (Div ().ac ('dirbrowsermodat').html (new Date (item ['st_mtime'] * 1000).toLocaleString ()));
+					itemdiv.a (sizediv);
 					self.a (itemdiv);
 				}
 			});}
