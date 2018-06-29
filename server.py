@@ -2,7 +2,7 @@ from config import config
 
 #########################################################
 # flask imports
-from flask import Flask, render_template, request, redirect, send_from_directory
+from flask import Flask, Response, render_template, request, redirect, send_from_directory
 #########################################################
 
 #########################################################
@@ -17,6 +17,40 @@ from serverutils.utils import prettylog
 from serverutils.utils import geturl
 from serverutils.utils import write_string_to_file
 from serverutils.utils import read_string_from_file
+from serverutils.utils import dir_listing_as_obj
+#########################################################
+
+#########################################################
+# global imports
+import time
+import os
+import sys
+import traceback
+from urllib.parse import quote
+import random
+import json
+import functools
+
+print("importing pyrebase")
+import pyrebase
+print("initializing firebase")
+try:    
+    fbcreds = json.loads(open("firebase/fbcreds.json").read())
+    firebase = pyrebase.initialize_app(fbcreds)
+    db = firebase.database()
+    print("initializing firebase done")
+except:
+    print("initializing firebase failed")
+print("getting stored config")
+try:
+    #db.child("lgbotconfig").set(read_string_from_file("configbackup.json","{}"))
+    storedconfig = db.child("lgbotconfig").get().val()    
+    write_string_to_file("localconfig.json", storedconfig)
+    print("getting stored config done, size", len(storedconfig))
+except:
+    print("getting stored config failed")
+    traceback.print_exc(file=sys.stderr)
+print("importing pyrebase done")
 #########################################################
 
 #########################################################
@@ -165,9 +199,14 @@ def read():
     my_broadcast(obj)
     return ""
 
-@app.route("/envs/<path:path>")
+@app.route("/file/<path:path>")
 def serve_static_envs(path):
-    return send_from_directory('envs', path)
+    return send_from_directory('.', path)
+
+@app.route("/dirlist/<path:path>")
+def dirlist_of_path(path):
+    path = functools.reduce(os.path.join, path.split("/")[1:], ".")
+    return Response(json.dumps(dir_listing_as_obj(path)), content_type = "application/json")
 #########################################################
 
 #########################################################

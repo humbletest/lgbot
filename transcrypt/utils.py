@@ -102,6 +102,13 @@ def patchclasses(selfref, args):
         elif action == "r":
             selfref[membername].rc(classname)
 
+def parsejson(jsonstr, callback, errcallback):
+    try:
+        obj = JSON.parse(jsonstr)
+        callback(obj)
+    except:
+        errcallback("error parsing json")
+
 __pragma__("jsiter")
 
 def putjsonbin(json, id, callback, errcallback):
@@ -145,6 +152,23 @@ def getjsonbin(id, callback, errcallback, version = "latest"):
     fetch("https://api.jsonbin.io/b/" + id + "/" + version, args).then(
         lambda response: response.text().then(
             lambda content: callback(content),
+            lambda err: errcalback(err)
+        ),
+        lambda err: errcallback(err)
+    )
+
+def getjson(path, callback, errcallback):
+
+    args = {
+        "method": "GET",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+
+    fetch(path, args).then(
+        lambda response: response.text().then(
+            lambda content: parsejson(content, callback, errcallback),
             lambda err: errcalback(err)
         ),
         lambda err: errcallback(err)

@@ -93,6 +93,25 @@ def read_string_from_file(path, default):
 	except:
 		return default
 
+def os_stats_as_dict(stats, name, isdir):
+    return {
+        "name": name,
+        "isdir": isdir,
+        "st_mode": stats.st_mode,
+        "st_ino": stats.st_ino,
+        "st_dev": stats.st_dev,
+        "st_nlink": stats.st_nlink,
+        "st_uid": stats.st_uid,
+        "st_gid": stats.st_gid,
+        "st_size": stats.st_size,
+        "st_atime": stats.st_atime,
+        "st_mtime": stats.st_mtime,
+        "st_ctime": stats.st_ctime
+    }
+
+def dir_listing_as_obj(path):
+    return [os_stats_as_dict(os.stat(os.path.join(path, name)), name, os.path.isdir(os.path.join(path, name))) for name in os.listdir(path)]
+
 #############################################
 
 class ProcessManager:
@@ -142,4 +161,3 @@ class ProcessManager:
             return msg
 
 #############################################
-

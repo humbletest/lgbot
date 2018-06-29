@@ -1,2 +1,2 @@
 cd transcrypt
-copy /b utils.py + dom.py + widgets.py + schemawidgets.py + client.py app.py
+copy /b utils.py + dom.py + widgets.py + schemawidgets.py + dirbrowser.py + client.py app.py

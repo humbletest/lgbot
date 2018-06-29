@@ -4,6 +4,7 @@ apppy:
     - transcrypt/dom.py
     - transcrypt/widgets.py
     - transcrypt/schemawidgets.py
+    - transcrypt/dirbrowser.py
     - transcrypt/client.py
   cmds:
     - cc.bat
