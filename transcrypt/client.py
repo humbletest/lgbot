@@ -200,6 +200,7 @@ def build():
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("cbuildconsole", "Cbuild console", processconsoles["cbuild"]),
             Tab("dirbrowser", "Dirbrowser", DirBrowser()),
+            Tab("board", "Board", Board()),
             Tab("config", "Config", buildconfigdiv()),
             Tab("log", "Log", mainlogpane),
             Tab("src", "Src", srcdiv),

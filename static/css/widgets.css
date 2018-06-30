@@ -439,3 +439,29 @@
     color: #00f;
     padding: 2px; margin-left: 5px;
 }
+
+.boardoutercontainer {
+    position: relative;
+    background-color: #777;
+}
+
+.boardcontainer {
+    position: absolute;
+    background-color: #ddd;
+}
+
+.boardsquare {
+    position: absolute;
+}
+
+.boardsquaredark {
+    background-color: #aaa;
+}
+
+.boardsquarelight {
+    background-color: #eee;
+}
+
+.boardpiece {
+    position: absolute;    
+}
