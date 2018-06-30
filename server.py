@@ -68,6 +68,10 @@ socketio = SocketIO(app)
 # global context
 SIMPLE_SERVER_URL = config.simpleserverurl
 MAX_CONNS = 3
+CONFIDENTIAL_DIRS = [
+    "firebase",
+    ".git"
+]
 
 def sids_overflow_callback(sid):    
     socketio.emit("siores", {"data": "conn removed"}, room = sid)
@@ -171,8 +175,9 @@ def read():
 @app.route("/file/<path:path>")
 def serve_static_envs(path):
     parts = path.split("/")
-    if parts[0] == "firebase":
-        return "sorry, firebase directory content is confidential"
+    basedir = parts[0]
+    if basedir in CONFIDENTIAL_DIRS:
+        return "sorry, {} directory content is confidential".format(basedir)
     return send_from_directory('.', path)
 
 @app.route("/dirlist/<path:path>")
