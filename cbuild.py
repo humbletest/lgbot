@@ -55,6 +55,7 @@ parser.add_argument('-m', '--merge',  action="store_true", help='merge books')
 parser.add_argument('--force', action="append", help='force [ env , unzip , filter , build ]')
 parser.add_argument('--variant', action="store", help='variant')
 parser.add_argument('--nextlichessdb', action="store_true", help='download next lichess db')
+parser.add_argument('--alllichessdbs', action="store_true", help='download all lichess dbs')
 
 args = parser.parse_args()
 
@@ -96,13 +97,25 @@ if not args.env is None:
 	print("environment {} created ok".format(env))
 	defaults["env"] = env
 
-if args.nextlichessdb:
-	assert_env()
+def load_next_lichess_db():
 	dbname = get_next_lichess_db_name(zip_path(env), variant)
 	dburl = get_lichess_db_url(variant, dbname)
 	dbpath = os.path.join(zip_path(env), dbname)
 	print("retrieving {}".format(dbname))
 	store_url(dburl, dbpath)
+
+if args.nextlichessdb:
+	assert_env()
+	load_next_lichess_db()
+
+if args.alllichessdbs:
+	assert_env()
+	while True:
+		try:
+			load_next_lichess_db()
+		except:
+			print("warning: loading lichess db failed")
+			break
 
 if args.unzip or args.all:
 	assert_env()
@@ -135,12 +148,14 @@ if args.merge or args.all:
 	assert_env()
 	book = Book()
 	for name in os.listdir(book_path(env)):
-		bookpath = os.path.join(book_path(env), name)		
-		mergepath = os.path.join(env_path(env), "merged.bin")
+		bookpath = os.path.join(book_path(env), name)				
 		print("merging {}".format(bookpath))
 		book.merge_file(bookpath)
 	book.normalize_weights()		
+	mergepath = os.path.join(env_path(env), "merged.bin")
 	book.save_as_polyglot(mergepath)
+	altmergepath = os.path.join("envs", "{}.bin".format(env))
+	book.save_as_polyglot(altmergepath)
 
 #########################################################################
 # store defaults
