@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-30 13:35:23
+// Transcrypt'ed from Python, 2018-06-30 16:08:36
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3480,6 +3480,15 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -4270,6 +4279,181 @@ function app () {
 				}
 			});}
 		});
+		var STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+		var PIECE_KINDS = list (['p', 'n', 'b', 'r', 'q', 'k']);
+		var WHITE = 1;
+		var BLACK = 0;
+		var getstartfenforvariantkey = function (variantkey) {
+			return STANDARD_START_FEN;
+		};
+		var Piece = __class__ ('Piece', [object], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, kind, color) {
+				if (typeof kind == 'undefined' || (kind != null && kind .hasOwnProperty ("__kwargtrans__"))) {;
+					var kind = null;
+				};
+				if (typeof color == 'undefined' || (color != null && color .hasOwnProperty ("__kwargtrans__"))) {;
+					var color = null;
+				};
+				self.kind = kind;
+				self.color = color;
+			});},
+			get isempty () {return __get__ (this, function (self) {
+				return self.kind === null;
+			});},
+			get ispiece () {return __get__ (this, function (self) {
+				return !(self.isempty ());
+			});}
+		});
+		var isvalidpieceletter = function (pieceletter) {
+			if (__in__ (pieceletter, PIECE_KINDS)) {
+				return true;
+			}
+			if (__in__ (pieceletter.toLowerCase (), PIECE_KINDS)) {
+				return true;
+			}
+			return false;
+		};
+		var piecelettertopiece = function (pieceletter) {
+			if (isvalidpieceletter (pieceletter)) {
+				var pieceletterlower = pieceletter.toLowerCase ();
+				if (pieceletterlower == pieceletter) {
+					return Piece (pieceletterlower, BLACK);
+				}
+				return Piece (pieceletterlower, WHITE);
+			}
+		};
+		var getclassforpiece = function (p, style) {
+			var kind = p.kind;
+			if (p.color == WHITE) {
+				var kind = 'w' + kind;
+			}
+			return (style + 'piece') + kind;
+		};
+		var BasicBoard = __class__ ('BasicBoard', [e], {
+			__module__: __name__,
+			get islight () {return __get__ (this, function (self, file, rank) {
+				return __mod__ (file + rank, 2) == 0;
+			});},
+			get buildsquares () {return __get__ (this, function (self) {
+				self.container.x ();
+				for (var file = 0; file < self.numfiles; file++) {
+					for (var rank = 0; rank < self.numranks; rank++) {
+						var sqclass = 'boardsquaredark';
+						if (self.islight (file, rank)) {
+							var sqclass = 'boardsquarelight';
+						}
+						var sqdiv = Div ().aac (list (['boardsquare', sqclass])).w (self.squaresize).h (self.squaresize);
+						sqdiv.t (rank * self.squaresize).l (file * self.squaresize);
+						var p = self.getpieceatfilerank (file, rank);
+						if (p.ispiece ()) {
+							var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).t (self.squarepadding).l (self.squarepadding);
+							var pclass = getclassforpiece (p, self.piecestyle);
+							pdiv.ac (pclass);
+							sqdiv.a (pdiv);
+						}
+						self.container.a (sqdiv);
+					}
+				}
+			});},
+			get build () {return __get__ (this, function (self) {
+				self.outercontainer = Div ().ac ('boardoutercontainer').w (self.outerwidth).h (self.outerheight);
+				self.container = Div ().ac ('boardcontainer').w (self.width).h (self.height).t (self.margin).l (self.margin);
+				self.outercontainer.a (self.container);
+				self.x ().a (self.outercontainer);
+				self.buildsquares ();
+				return self;
+			});},
+			get calcsizes () {return __get__ (this, function (self) {
+				self.area = self.numfiles * self.numranks;
+				self.width = self.numfiles * self.squaresize;
+				self.height = self.numranks * self.squaresize;
+				self.avgsize = (self.width + self.height) / 2;
+				self.margin = self.marginratio * self.avgsize;
+				self.squarepadding = self.squarepaddingratio * self.squaresize;
+				self.piecesize = self.squaresize - 2 * self.squarepadding;
+				self.outerwidth = self.width + 2 * self.margin;
+				self.outerheight = self.height + 2 * self.margin;
+			});},
+			get parseargs () {return __get__ (this, function (self, args) {
+				self.squaresize = args.py_get ('squaresize', 50);
+				self.squarepaddingratio = args.py_get ('squarepaddingratio', 0.04);
+				self.marginratio = args.py_get ('marginratio', 0.02);
+				self.numfiles = args.py_get ('numfiles', 8);
+				self.numranks = args.py_get ('numranks', 8);
+				self.piecestyle = args.py_get ('piecestyle', 'alpha');
+				self.calcsizes ();
+			});},
+			get setpieceati () {return __get__ (this, function (self, i, p) {
+				if (i >= 0 && i < self.area) {
+					self.rep [i] = p;
+				}
+			});},
+			get getpieceati () {return __get__ (this, function (self, i) {
+				if (i >= 0 && i < self.area) {
+					return self.rep [i];
+				}
+				return Piece ();
+			});},
+			get getpieceatfilerank () {return __get__ (this, function (self, file, rank) {
+				var i = rank * self.numfiles + file;
+				return self.getpieceati (i);
+			});},
+			get initrep () {return __get__ (this, function (self, args) {
+				self.variantkey = args.py_get ('variantkey', 'standard');
+				self.fen = args.py_get ('fen', getstartfenforvariantkey (self.variantkey));
+				self.rep = (function () {
+					var __accu0__ = [];
+					for (var i = 0; i < self.area; i++) {
+						__accu0__.append (Piece ());
+					}
+					return __accu0__;
+				}) ();
+				var fenparts = self.fen.py_split (' ');
+				var rawfen = fenparts [0];
+				var rawfenparts = rawfen.py_split ('/');
+				var i = 0;
+				var __iterable0__ = rawfenparts;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var rawfenpart = __iterable0__ [__index0__];
+					var pieceletters = rawfenpart.py_split ('');
+					var __iterable1__ = pieceletters;
+					for (var __index1__ = 0; __index1__ < len (__iterable1__); __index1__++) {
+						var pieceletter = __iterable1__ [__index1__];
+						if (isvalidpieceletter (pieceletter)) {
+							self.setpieceati (i, piecelettertopiece (pieceletter));
+							i++;
+						}
+						else {
+							try {
+								var mul = int (pieceletter);
+								for (var j = 0; j < mul; j++) {
+									self.setpieceati (i, Piece ());
+									i++;
+								}
+							}
+							catch (__except0__) {
+								// pass;
+							}
+						}
+					}
+				}
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (BasicBoard, '__init__') (self, 'div');
+				self.parseargs (args);
+				self.initrep (args);
+				self.build ();
+			});}
+		});
+		var Board = __class__ ('Board', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (Board, '__init__') (self, 'div');
+				self.a (Div ().html ('Board'));
+				self.a (BasicBoard (dict ({})));
+			});}
+		});
 		if (window.location.protocol == 'https:') {
 			var ws_scheme = 'wss://';
 		}
@@ -4403,7 +4587,7 @@ function app () {
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', Board ()), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -4505,7 +4689,10 @@ function app () {
 		}
 		startup ();
 		__pragma__ ('<all>')
+			__all__.BLACK = BLACK;
 			__all__.BOT_CMD_ALIASES = BOT_CMD_ALIASES;
+			__all__.BasicBoard = BasicBoard;
+			__all__.Board = Board;
 			__all__.Button = Button;
 			__all__.CBUILD_CMD_ALIASES = CBUILD_CMD_ALIASES;
 			__all__.CheckBox = CheckBox;
@@ -4527,10 +4714,13 @@ function app () {
 			__all__.LogPane = LogPane;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
+			__all__.PIECE_KINDS = PIECE_KINDS;
+			__all__.Piece = Piece;
 			__all__.ProcessConsole = ProcessConsole;
 			__all__.RawTextInput = RawTextInput;
 			__all__.SCHEMA_WRITE_PREFERENCE_DEFAULTS = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 			__all__.SCROLL_BAR_WIDTH = SCROLL_BAR_WIDTH;
+			__all__.STANDARD_START_FEN = STANDARD_START_FEN;
 			__all__.SUBMIT_URL = SUBMIT_URL;
 			__all__.SchemaCollection = SchemaCollection;
 			__all__.SchemaDict = SchemaDict;
@@ -4547,6 +4737,7 @@ function app () {
 			__all__.TextArea = TextArea;
 			__all__.TextInputWithButton = TextInputWithButton;
 			__all__.Vect = Vect;
+			__all__.WHITE = WHITE;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;
@@ -4563,6 +4754,7 @@ function app () {
 			__all__.getScrollBarWidth = getScrollBarWidth;
 			__all__.getbincallback = getbincallback;
 			__all__.getbinerrcallback = getbinerrcallback;
+			__all__.getclassforpiece = getclassforpiece;
 			__all__.getfromobj = getfromobj;
 			__all__.getglobalcssvar = getglobalcssvar;
 			__all__.getglobalcssvarpxint = getglobalcssvarpxint;
@@ -4571,7 +4763,9 @@ function app () {
 			__all__.getlocalconfig = getlocalconfig;
 			__all__.getpathfromschema = getpathfromschema;
 			__all__.getpathlistfromschema = getpathlistfromschema;
+			__all__.getstartfenforvariantkey = getstartfenforvariantkey;
 			__all__.id = id;
+			__all__.isvalidpieceletter = isvalidpieceletter;
 			__all__.loadlocal = loadlocal;
 			__all__.log = log;
 			__all__.mainlog = mainlog;
@@ -4584,6 +4778,7 @@ function app () {
 			__all__.parsejson = parsejson;
 			__all__.parts = parts;
 			__all__.patchclasses = patchclasses;
+			__all__.piecelettertopiece = piecelettertopiece;
 			__all__.processconsoles = processconsoles;
 			__all__.putjsonbin = putjsonbin;
 			__all__.queryparams = queryparams;
