@@ -1874,6 +1874,11 @@ class Square(Vect):
         return "Sq[f:{},r:{}]".format(self.file(), self.rank())
 
 class BasicBoard(e):
+    def squareuci(self, sq):
+        fileletter = String.fromCharCode(sq.file() + "a".charCodeAt(0))
+        rankletter = String.fromCharCode(self.lastrank - sq.rank() + "1".charCodeAt(0))
+        return fileletter + rankletter
+
     def islightfilerank(self, file, rank):
         return ( ( ( file + rank ) % 2 ) == 0 )
 
@@ -1895,16 +1900,44 @@ class BasicBoard(e):
             return Square(self.lastfile - sq.file(), self.lastrank - sq.rank())
         return sq
 
+    def piecedragstartfactory(self, sq, pdiv):
+        def piecedragstart(ev):
+            self.draggedsq = sq            
+            pdiv.e.style.opacity = "0.1"            
+        return piecedragstart
+
+    def piecedragendfactory(self, sq, pdiv):
+        def piecedragend(ev):                        
+            pdiv.e.style.opacity = "1.0"
+        return piecedragend
+
+    def piecedragoverfactory(self, sq):
+        def piecedragover(ev):
+            ev.preventDefault()            
+        return piecedragover
+
+    def piecedropfactory(self, sq):
+        def piecedrop(ev):
+            ev.preventDefault()            
+            moveuci = self.squareuci(self.draggedsq) + self.squareuci(sq)
+            if not ( self.movecallback is None ):
+                self.movecallback(self.variantkey, self.fen, moveuci)
+        return piecedrop
+
     def buildsquares(self):
         self.container.x()
         for sq in self.squarelist():
             sqclass = choose(self.islightsquare(sq), "boardsquarelight", "boardsquaredark")
             sqdiv = Div().aac(["boardsquare", sqclass]).w(self.squaresize).h(self.squaresize)            
             sqdiv.pv(self.squarecoordsvect(self.flipawaresquare(sq)))
+            sqdiv.ae("dragover", self.piecedragoverfactory(sq))
+            sqdiv.ae("drop", self.piecedropfactory(sq))
             p = self.getpieceatsquare(sq)
             if p.ispiece():
                 pdiv = Div().ac("boardpiece").w(self.piecesize).h(self.piecesize).t(self.squarepadding).l(self.squarepadding)
-                pdiv.ac(getclassforpiece(p, self.piecestyle))
+                pdiv.ac(getclassforpiece(p, self.piecestyle)).sa("draggable", True)
+                pdiv.ae("dragstart", self.piecedragstartfactory(sq, pdiv))
+                pdiv.ae("dragend", self.piecedragendfactory(sq, pdiv))
                 sqdiv.a(pdiv)
             self.container.a(sqdiv)
 
@@ -1941,6 +1974,7 @@ class BasicBoard(e):
         self.numranks = args.get("numranks", 8)        
         self.piecestyle = args.get("piecestyle", "alpha")
         self.flip = args.get("flip", False)
+        self.movecallback = args.get("movecallback", None)
         self.calcsizes()
 
     def setpieceati(self, i, p):
@@ -1959,9 +1993,8 @@ class BasicBoard(e):
     def getpieceatsquare(self, sq):
         return self.getpieceatfilerank(sq.file(), sq.rank())
 
-    def initrep(self, args):
-        self.variantkey = args.get("variantkey", "standard")
-        self.fen = args.get("fen", getstartfenforvariantkey(self.variantkey))
+    def setrepfromfen(self, fen):  
+        self.fen = fen
         self.rep = [Piece() for i in range(self.area)]
         fenparts = self.fen.split(" ")
         rawfen = fenparts[0]
@@ -1982,6 +2015,17 @@ class BasicBoard(e):
                     except:
                         pass
 
+    def initrep(self, args):
+        self.variantkey = args.get("variantkey", "standard")
+        self.setrepfromfen(args.get("fen", getstartfenforvariantkey(self.variantkey)))
+
+    def setfromfen(self, fen):
+        self.setrepfromfen(fen)
+        self.build()
+
+    def reset(self):
+        self.setfromfen(getstartfenforvariantkey(self.variantkey))
+
     def __init__(self, args):
         super().__init__("div")        
         self.parseargs(args)
@@ -1991,6 +2035,19 @@ class BasicBoard(e):
 class Board(e):
     def flipcallback(self):
         self.basicboard.setflip(not self.basicboard.flip)
+
+    def resetcallback(self):
+        self.basicboard.reset()
+
+    def setfromfen(self, fen):
+        self.basicboard.setfromfen(fen)
+
+    def __init__(self, args):
+        super().__init__("div")
+        self.basicboard = BasicBoard(args)
+        self.a(Button("Flip", self.flipcallback))
+        self.a(Button("Reset", self.resetcallback))
+        self.a(self.basicboard)
 
     def __init__(self):
         super().__init__("div")
@@ -2315,6 +2372,7 @@ processconsoles = {
 }
 mainlogpane = None
 maintabpane = None
+mainboard = None
 configschema = SchemaDict({})
 id = None
 srcdiv = Div().ms().fs(20)
@@ -2426,12 +2484,16 @@ def serializecallback():
 
 def reloadcallback():
     document.location.href = "/"
+
+def mainboardmovecallback(variantkey, fen, moveuci):
+    global socket
+    socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci})
 ######################################################
 
 ######################################################
 # app
 def build():
-    global processconsoles, maintabpane, mainlogpane
+    global processconsoles, maintabpane, mainlogpane, mainboard
 
     processconsoles["engine"] = ProcessConsole({
         "key": "engine",
@@ -2453,6 +2515,10 @@ def build():
 
     mainlogpane = LogPane()
 
+    mainboard = Board({
+        "movecallback": mainboardmovecallback
+    })
+
     maintabpane = TabPane({"kind":"main", "id":"main"})
     maintabpane.setTabs(
         [
@@ -2460,7 +2526,7 @@ def build():
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("cbuildconsole", "Cbuild console", processconsoles["cbuild"]),
             Tab("dirbrowser", "Dirbrowser", DirBrowser()),
-            Tab("board", "Board", Board()),
+            Tab("board", "Board", mainboard),
             Tab("config", "Config", buildconfigdiv()),
             Tab("log", "Log", mainlogpane),
             Tab("src", "Src", srcdiv),
@@ -2482,9 +2548,9 @@ def onconnect():
         getlocalconfig()
 
 def onevent(json):    
-    global configschema
-    dest = "engine"
-    logitem = None
+    global configschema, mainboard
+    dest = None
+    logitem = None    
     if "kind" in json:
         kind = json["kind"]
         if kind == "procreadline":
@@ -2523,8 +2589,11 @@ def onevent(json):
                 data = response["data"]                
                 deserializeconfigcontent(data)
             elif kind == "configstored":
-                window.alert("Config storing status: " + status + ".")
-    if logitem is None:
+                window.alert("Config storing status: " + status + ".")            
+            elif kind == "setmainboardfen":                
+                fen = response["fen"]
+                mainboard.setfromfen(fen)
+    if ( logitem is None ) or ( dest is None ):
         jsonstr = JSON.stringify(json, null, 2)
         mainlog(LogItem(jsonstr))
     else:

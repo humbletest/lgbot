@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-01 16:10:12
+// Transcrypt'ed from Python, 2018-07-01 23:33:00
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3539,6 +3539,26 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
+			get elementdragstart () {return __get__ (this, function (self, ev) {
+				self.dragstartvect = getClientVect (ev);
+			});},
+			get elementdrag () {return __get__ (this, function (self, ev) {
+				// pass;
+			});},
+			get move () {return __get__ (this, function (self, dir) {
+				if (self.childparent === null) {
+					return ;
+				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4377,6 +4397,11 @@ function app () {
 		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
+			get squareuci () {return __get__ (this, function (self, sq) {
+				var fileletter = String.fromCharCode (sq.file () + 'a'.charCodeAt (0));
+				var rankletter = String.fromCharCode ((self.lastrank - sq.rank ()) + '1'.charCodeAt (0));
+				return fileletter + rankletter;
+			});},
 			get islightfilerank () {return __get__ (this, function (self, file, rank) {
 				return __mod__ (file + rank, 2) == 0;
 			});},
@@ -4401,6 +4426,35 @@ function app () {
 				}
 				return sq;
 			});},
+			get piecedragstartfactory () {return __get__ (this, function (self, sq, pdiv) {
+				var piecedragstart = function (ev) {
+					self.draggedsq = sq;
+					pdiv.e.style.opacity = '0.1';
+				};
+				return piecedragstart;
+			});},
+			get piecedragendfactory () {return __get__ (this, function (self, sq, pdiv) {
+				var piecedragend = function (ev) {
+					pdiv.e.style.opacity = '1.0';
+				};
+				return piecedragend;
+			});},
+			get piecedragoverfactory () {return __get__ (this, function (self, sq) {
+				var piecedragover = function (ev) {
+					ev.preventDefault ();
+				};
+				return piecedragover;
+			});},
+			get piecedropfactory () {return __get__ (this, function (self, sq) {
+				var piecedrop = function (ev) {
+					ev.preventDefault ();
+					var moveuci = self.squareuci (self.draggedsq) + self.squareuci (sq);
+					if (!(self.movecallback === null)) {
+						self.movecallback (self.variantkey, self.fen, moveuci);
+					}
+				};
+				return piecedrop;
+			});},
 			get buildsquares () {return __get__ (this, function (self) {
 				self.container.x ();
 				var __iterable0__ = self.squarelist ();
@@ -4409,10 +4463,14 @@ function app () {
 					var sqclass = choose (self.islightsquare (sq), 'boardsquarelight', 'boardsquaredark');
 					var sqdiv = Div ().aac (list (['boardsquare', sqclass])).w (self.squaresize).h (self.squaresize);
 					sqdiv.pv (self.squarecoordsvect (self.flipawaresquare (sq)));
+					sqdiv.ae ('dragover', self.piecedragoverfactory (sq));
+					sqdiv.ae ('drop', self.piecedropfactory (sq));
 					var p = self.getpieceatsquare (sq);
 					if (p.ispiece ()) {
 						var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).t (self.squarepadding).l (self.squarepadding);
-						pdiv.ac (getclassforpiece (p, self.piecestyle));
+						pdiv.ac (getclassforpiece (p, self.piecestyle)).sa ('draggable', true);
+						pdiv.ae ('dragstart', self.piecedragstartfactory (sq, pdiv));
+						pdiv.ae ('dragend', self.piecedragendfactory (sq, pdiv));
 						sqdiv.a (pdiv);
 					}
 					self.container.a (sqdiv);
@@ -4451,6 +4509,7 @@ function app () {
 				self.numranks = args.py_get ('numranks', 8);
 				self.piecestyle = args.py_get ('piecestyle', 'alpha');
 				self.flip = args.py_get ('flip', false);
+				self.movecallback = args.py_get ('movecallback', null);
 				self.calcsizes ();
 			});},
 			get setpieceati () {return __get__ (this, function (self, i, p) {
@@ -4471,9 +4530,8 @@ function app () {
 			get getpieceatsquare () {return __get__ (this, function (self, sq) {
 				return self.getpieceatfilerank (sq.file (), sq.rank ());
 			});},
-			get initrep () {return __get__ (this, function (self, args) {
-				self.variantkey = args.py_get ('variantkey', 'standard');
-				self.fen = args.py_get ('fen', getstartfenforvariantkey (self.variantkey));
+			get setrepfromfen () {return __get__ (this, function (self, fen) {
+				self.fen = fen;
 				self.rep = (function () {
 					var __accu0__ = [];
 					for (var i = 0; i < self.area; i++) {
@@ -4511,6 +4569,17 @@ function app () {
 					}
 				}
 			});},
+			get initrep () {return __get__ (this, function (self, args) {
+				self.variantkey = args.py_get ('variantkey', 'standard');
+				self.setrepfromfen (args.py_get ('fen', getstartfenforvariantkey (self.variantkey)));
+			});},
+			get setfromfen () {return __get__ (this, function (self, fen) {
+				self.setrepfromfen (fen);
+				self.build ();
+			});},
+			get reset () {return __get__ (this, function (self) {
+				self.setfromfen (getstartfenforvariantkey (self.variantkey));
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (BasicBoard, '__init__') (self, 'div');
 				self.parseargs (args);
@@ -4523,10 +4592,17 @@ function app () {
 			get flipcallback () {return __get__ (this, function (self) {
 				self.basicboard.setflip (!(self.basicboard.flip));
 			});},
-			get __init__ () {return __get__ (this, function (self) {
+			get resetcallback () {return __get__ (this, function (self) {
+				self.basicboard.reset ();
+			});},
+			get setfromfen () {return __get__ (this, function (self, fen) {
+				self.basicboard.setfromfen (fen);
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
-				self.basicboard = BasicBoard (dict ({}));
+				self.basicboard = BasicBoard (args);
 				self.a (Button ('Flip', self.flipcallback));
+				self.a (Button ('Reset', self.resetcallback));
 				self.a (self.basicboard);
 			});}
 		});
@@ -4556,6 +4632,7 @@ function app () {
 		var processconsoles = dict ({'engine': null, 'bot': null, 'cbuild': null});
 		var mainlogpane = null;
 		var maintabpane = null;
+		var mainboard = null;
 		var configschema = SchemaDict (dict ({}));
 		var id = null;
 		var srcdiv = Div ().ms ().fs (20);
@@ -4657,13 +4734,17 @@ function app () {
 		var reloadcallback = function () {
 			document.location.href = '/';
 		};
+		var mainboardmovecallback = function (variantkey, fen, moveuci) {
+			socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
+		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
+			mainboard = Board (dict ({'movecallback': mainboardmovecallback}));
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', Board ()), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -4675,7 +4756,7 @@ function app () {
 			}
 		};
 		var onevent = function (json) {
-			var dest = 'engine';
+			var dest = null;
 			var logitem = null;
 			if (__in__ ('kind', json)) {
 				var kind = json ['kind'];
@@ -4730,9 +4811,13 @@ function app () {
 					else if (kind == 'configstored') {
 						window.alert (('Config storing status: ' + status) + '.');
 					}
+					else if (kind == 'setmainboardfen') {
+						var fen = response ['fen'];
+						mainboard.setfromfen (fen);
+					}
 				}
 			}
-			if (logitem === null) {
+			if (logitem === null || dest === null) {
 				var jsonstr = JSON.stringify (json, null, 2);
 				mainlog (LogItem (jsonstr));
 			}
@@ -4846,6 +4931,8 @@ function app () {
 			__all__.isvalidpieceletter = isvalidpieceletter;
 			__all__.loadlocal = loadlocal;
 			__all__.log = log;
+			__all__.mainboard = mainboard;
+			__all__.mainboardmovecallback = mainboardmovecallback;
 			__all__.mainlog = mainlog;
 			__all__.mainlogpane = mainlogpane;
 			__all__.mainpart = mainpart;
