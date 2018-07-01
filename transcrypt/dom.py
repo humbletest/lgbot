@@ -95,6 +95,10 @@ class e:
         self.e.style.left = l + "px"
         return self
 
+    # position vector
+    def pv(self, v):
+        return self.l(v.x).t(v.y)
+
     # margin left
     def ml(self, ml):
         self.e.style.marginLeft = ml + "px"

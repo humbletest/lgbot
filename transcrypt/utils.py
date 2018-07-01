@@ -1,3 +1,8 @@
+def choose(cond, choicetrue, choicefalse):
+    if cond:
+        return choicetrue
+    return choicefalse
+
 class Vect:
     def __init__(self, x, y):
         try:
