@@ -18,6 +18,8 @@ from serverutils.utils import geturl
 from serverutils.utils import write_string_to_file
 from serverutils.utils import read_string_from_file
 from serverutils.utils import dir_listing_as_obj
+import chess
+from chess.variant import find_variant
 #########################################################
 
 #########################################################
@@ -95,6 +97,18 @@ def my_broadcast(obj):
             except:
                 print("emit failed for sid {}".format(sid))
 
+def get_variant_board(variantkey, fen):
+    if variantkey == "standard":
+        return chess.Board(fen)
+    elif variantkey == "chess960":
+        return chess.Board(fen, chess960=True)
+    elif variantkey == "fromPosition":
+        return chess.Board(fen)
+    else:
+        VariantBoard = find_variant(variantkey)
+        VariantBoard.set_fen(fen)
+        return VariantBoard()
+
 class socket_handler:
     def __init__(self, ev):
         self.ev = ev
@@ -141,6 +155,22 @@ class socket_handler:
                         except:
                             print("getting config from firebase failed, falling back to local config")
                             rjsonobj["data"] = read_string_from_file("localconfig.json", "{}")
+                    elif kind == "mainboardmove":                        
+                        try:                          
+                            variantkey = jsonobj["variantkey"]
+                            fen = jsonobj["fen"]
+                            moveuci = jsonobj["moveuci"]
+                            move = chess.Move.from_uci(moveuci)
+                            board = get_variant_board(variantkey, fen)
+                            if board.is_legal(move):
+                                board.push(move)
+                                rjsonobj["kind"] = "setmainboardfen"
+                                rjsonobj["fen"] = board.fen()
+                                rjsonobj["status"] = "making main board move ok"
+                            else:
+                                rjsonobj["status"] = "! making main board move failed, illegal move"                                
+                        except:
+                            rjsonobj["status"] = "! making main board move failed, fatal"
                 except:
                     rjsonobj["status"] = "! command error"
 

@@ -55,6 +55,7 @@ processconsoles = {
 }
 mainlogpane = None
 maintabpane = None
+mainboard = None
 configschema = SchemaDict({})
 id = None
 srcdiv = Div().ms().fs(20)
@@ -166,12 +167,16 @@ def serializecallback():
 
 def reloadcallback():
     document.location.href = "/"
+
+def mainboardmovecallback(variantkey, fen, moveuci):
+    global socket
+    socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci})
 ######################################################
 
 ######################################################
 # app
 def build():
-    global processconsoles, maintabpane, mainlogpane
+    global processconsoles, maintabpane, mainlogpane, mainboard
 
     processconsoles["engine"] = ProcessConsole({
         "key": "engine",
@@ -193,6 +198,10 @@ def build():
 
     mainlogpane = LogPane()
 
+    mainboard = Board({
+        "movecallback": mainboardmovecallback
+    })
+
     maintabpane = TabPane({"kind":"main", "id":"main"})
     maintabpane.setTabs(
         [
@@ -200,7 +209,7 @@ def build():
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("cbuildconsole", "Cbuild console", processconsoles["cbuild"]),
             Tab("dirbrowser", "Dirbrowser", DirBrowser()),
-            Tab("board", "Board", Board()),
+            Tab("board", "Board", mainboard),
             Tab("config", "Config", buildconfigdiv()),
             Tab("log", "Log", mainlogpane),
             Tab("src", "Src", srcdiv),
@@ -222,9 +231,9 @@ def onconnect():
         getlocalconfig()
 
 def onevent(json):    
-    global configschema
-    dest = "engine"
-    logitem = None
+    global configschema, mainboard
+    dest = None
+    logitem = None    
     if "kind" in json:
         kind = json["kind"]
         if kind == "procreadline":
@@ -263,8 +272,11 @@ def onevent(json):
                 data = response["data"]                
                 deserializeconfigcontent(data)
             elif kind == "configstored":
-                window.alert("Config storing status: " + status + ".")
-    if logitem is None:
+                window.alert("Config storing status: " + status + ".")            
+            elif kind == "setmainboardfen":                
+                fen = response["fen"]
+                mainboard.setfromfen(fen)
+    if ( logitem is None ) or ( dest is None ):
         jsonstr = JSON.stringify(json, null, 2)
         mainlog(LogItem(jsonstr))
     else:
