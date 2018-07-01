@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-06-30 16:08:36
+// Transcrypt'ed from Python, 2018-07-01 16:10:12
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,12 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var choose = function (cond, choicetrue, choicefalse) {
+			if (cond) {
+				return choicetrue;
+			}
+			return choicefalse;
+		};
 		var Vect = __class__ ('Vect', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, x, y) {
@@ -2459,6 +2465,9 @@ function app () {
 			get l () {return __get__ (this, function (self, l) {
 				self.e.style.left = l + 'px';
 				return self;
+			});},
+			get pv () {return __get__ (this, function (self, v) {
+				return self.l (v.x).t (v.y);
 			});},
 			get ml () {return __get__ (this, function (self, ml) {
 				self.e.style.marginLeft = ml + 'px';
@@ -3510,6 +3519,26 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
+			get elementdragstart () {return __get__ (this, function (self, ev) {
+				self.dragstartvect = getClientVect (ev);
+			});},
+			get elementdrag () {return __get__ (this, function (self, ev) {
+				// pass;
+			});},
+			get move () {return __get__ (this, function (self, dir) {
+				if (self.childparent === null) {
+					return ;
+				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4330,30 +4359,63 @@ function app () {
 			}
 			return (style + 'piece') + kind;
 		};
+		var Square = __class__ ('Square', [Vect], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, file, rank) {
+				self.x = file;
+				self.y = rank;
+			});},
+			get file () {return __get__ (this, function (self) {
+				return self.x;
+			});},
+			get rank () {return __get__ (this, function (self) {
+				return self.y;
+			});},
+			get __repr__ () {return __get__ (this, function (self) {
+				return 'Sq[f:{},r:{}]'.format (self.file (), self.rank ());
+			});}
+		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
-			get islight () {return __get__ (this, function (self, file, rank) {
+			get islightfilerank () {return __get__ (this, function (self, file, rank) {
 				return __mod__ (file + rank, 2) == 0;
+			});},
+			get islightsquare () {return __get__ (this, function (self, sq) {
+				return self.islightfilerank (sq.file (), sq.rank ());
+			});},
+			get squarelist () {return __get__ (this, function (self) {
+				var squarelist = list ([]);
+				for (var file = 0; file < self.numfiles; file++) {
+					for (var rank = 0; rank < self.numranks; rank++) {
+						squarelist.append (Square (file, rank));
+					}
+				}
+				return squarelist;
+			});},
+			get squarecoordsvect () {return __get__ (this, function (self, sq) {
+				return Vect (sq.file () * self.squaresize, sq.rank () * self.squaresize);
+			});},
+			get flipawaresquare () {return __get__ (this, function (self, sq) {
+				if (self.flip) {
+					return Square (self.lastfile - sq.file (), self.lastrank - sq.rank ());
+				}
+				return sq;
 			});},
 			get buildsquares () {return __get__ (this, function (self) {
 				self.container.x ();
-				for (var file = 0; file < self.numfiles; file++) {
-					for (var rank = 0; rank < self.numranks; rank++) {
-						var sqclass = 'boardsquaredark';
-						if (self.islight (file, rank)) {
-							var sqclass = 'boardsquarelight';
-						}
-						var sqdiv = Div ().aac (list (['boardsquare', sqclass])).w (self.squaresize).h (self.squaresize);
-						sqdiv.t (rank * self.squaresize).l (file * self.squaresize);
-						var p = self.getpieceatfilerank (file, rank);
-						if (p.ispiece ()) {
-							var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).t (self.squarepadding).l (self.squarepadding);
-							var pclass = getclassforpiece (p, self.piecestyle);
-							pdiv.ac (pclass);
-							sqdiv.a (pdiv);
-						}
-						self.container.a (sqdiv);
+				var __iterable0__ = self.squarelist ();
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var sq = __iterable0__ [__index0__];
+					var sqclass = choose (self.islightsquare (sq), 'boardsquarelight', 'boardsquaredark');
+					var sqdiv = Div ().aac (list (['boardsquare', sqclass])).w (self.squaresize).h (self.squaresize);
+					sqdiv.pv (self.squarecoordsvect (self.flipawaresquare (sq)));
+					var p = self.getpieceatsquare (sq);
+					if (p.ispiece ()) {
+						var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).t (self.squarepadding).l (self.squarepadding);
+						pdiv.ac (getclassforpiece (p, self.piecestyle));
+						sqdiv.a (pdiv);
 					}
+					self.container.a (sqdiv);
 				}
 			});},
 			get build () {return __get__ (this, function (self) {
@@ -4364,7 +4426,13 @@ function app () {
 				self.buildsquares ();
 				return self;
 			});},
+			get setflip () {return __get__ (this, function (self, flip) {
+				self.flip = flip;
+				self.build ();
+			});},
 			get calcsizes () {return __get__ (this, function (self) {
+				self.lastfile = self.numfiles - 1;
+				self.lastrank = self.numranks - 1;
 				self.area = self.numfiles * self.numranks;
 				self.width = self.numfiles * self.squaresize;
 				self.height = self.numranks * self.squaresize;
@@ -4382,6 +4450,7 @@ function app () {
 				self.numfiles = args.py_get ('numfiles', 8);
 				self.numranks = args.py_get ('numranks', 8);
 				self.piecestyle = args.py_get ('piecestyle', 'alpha');
+				self.flip = args.py_get ('flip', false);
 				self.calcsizes ();
 			});},
 			get setpieceati () {return __get__ (this, function (self, i, p) {
@@ -4398,6 +4467,9 @@ function app () {
 			get getpieceatfilerank () {return __get__ (this, function (self, file, rank) {
 				var i = rank * self.numfiles + file;
 				return self.getpieceati (i);
+			});},
+			get getpieceatsquare () {return __get__ (this, function (self, sq) {
+				return self.getpieceatfilerank (sq.file (), sq.rank ());
 			});},
 			get initrep () {return __get__ (this, function (self, args) {
 				self.variantkey = args.py_get ('variantkey', 'standard');
@@ -4448,10 +4520,14 @@ function app () {
 		});
 		var Board = __class__ ('Board', [e], {
 			__module__: __name__,
+			get flipcallback () {return __get__ (this, function (self) {
+				self.basicboard.setflip (!(self.basicboard.flip));
+			});},
 			get __init__ () {return __get__ (this, function (self) {
 				__super__ (Board, '__init__') (self, 'div');
-				self.a (Div ().html ('Board'));
-				self.a (BasicBoard (dict ({})));
+				self.basicboard = BasicBoard (dict ({}));
+				self.a (Button ('Flip', self.flipcallback));
+				self.a (self.basicboard);
 			});}
 		});
 		if (window.location.protocol == 'https:') {
@@ -4732,6 +4808,7 @@ function app () {
 			__all__.Slider = Slider;
 			__all__.Span = Span;
 			__all__.SplitPane = SplitPane;
+			__all__.Square = Square;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
 			__all__.TextArea = TextArea;
@@ -4744,6 +4821,7 @@ function app () {
 			__all__.build = build;
 			__all__.buildconfigdiv = buildconfigdiv;
 			__all__.ce = ce;
+			__all__.choose = choose;
 			__all__.cmdinpcallback = cmdinpcallback;
 			__all__.configschema = configschema;
 			__all__.deserializeconfig = deserializeconfig;
