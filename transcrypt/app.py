@@ -1,3 +1,8 @@
+def simulateserverlag(range = 1000, min_lag = 10):    
+    if "localhost" in window.location.host:
+        return int(min_lag + Math.random() * range)
+    return min_lag
+
 def choose(cond, choicetrue, choicefalse):
     if cond:
         return choicetrue
@@ -1925,12 +1930,17 @@ class BasicBoard(e):
         def piecedragstart(ev):
             self.draggedsq = sq            
             self.draggedpdiv = pdiv
-            pdiv.e.style.opacity = "0.1"            
+            pdiv.e.style.opacity = 0.1
         return piecedragstart
+
+    def piecedragfactory(self):
+        def piecedrag(ev):            
+            pass
+        return piecedrag
 
     def piecedragendfactory(self, sq, pdiv):
         def piecedragend(ev):                        
-            pdiv.e.style.opacity = "1.0"
+            pdiv.e.style.opacity = 0.5
         return piecedragend
 
     def piecedragoverfactory(self, sq):
@@ -1963,6 +1973,7 @@ class BasicBoard(e):
                 pdiv = Div().ac("boardpiece").w(self.piecesize).h(self.piecesize).pv(self.piececoordsvect(fasq))
                 pdiv.ac(getclassforpiece(p, self.piecestyle)).sa("draggable", True)
                 pdiv.ae("dragstart", self.piecedragstartfactory(sq, pdiv))
+                pdiv.ae("drag", self.piecedragfactory())
                 pdiv.ae("dragend", self.piecedragendfactory(sq, pdiv))
                 pdiv.ae("dragover", self.piecedragoverfactory(sq))
                 pdiv.ae("drop", self.piecedropfactory(sq))            
@@ -2288,7 +2299,7 @@ if window.location.protocol == "https:":
 else:
     ws_scheme = "ws://"
 
-SUBMIT_URL = ws_scheme + location.host
+SUBMIT_URL = ws_scheme + window.location.host
 
 queryparamsstring = window.location.search
 
@@ -2337,7 +2348,6 @@ mainlogpane = None
 maintabpane = None
 mainboard = None
 configschema = SchemaDict({})
-id = None
 srcdiv = Div().ms().fs(20)
 schemajson = None
 ######################################################
@@ -2347,9 +2357,6 @@ schemajson = None
 def getlocalconfig():
     global socket
     socket.emit('sioreq', {"kind":"getlocalconfig"})
-
-def loadlocal():
-    document.location.href="/?id=local"
 
 def showsrc():
     srcjsoncontent = JSON.stringify(serializeconfig(), None, 2)
@@ -2401,8 +2408,11 @@ def getbincallback(content):
     deserializeconfigcontent(content)    
 
 def getbinerrcallback(err):
-    print("get bin failed with", err)
-    loadlocal()
+    print("get bin failed with", err)    
+
+def mainlog(logitem):
+    global mainlogpane
+    mainlogpane.log.log(logitem)
 
 def mainlog(logitem):
     global mainlogpane
@@ -2418,7 +2428,6 @@ def cmdinpcallback(cmd, key):
 
 def serializeputjsonbincallback(content):
     global socket
-    #print(json);return;
     try:
         obj = JSON.parse(content)        
         binid = "local"
@@ -2431,30 +2440,27 @@ def serializeputjsonbincallback(content):
         href = window.location.protocol + "//" + window.location.host + "/?id=" + binid        
         document.location.href = href
     except:
-        print("there was an error parsing json", content)
-        loadlocal()
+        print("there was an error parsing json", content)        
         return
 
 def serializeputjsonbinerrcallback(err):
-    print("there was an error putting to json bin", err)
-    loadlocal()
+    print("there was an error putting to json bin", err)    
 
 def serializecallback():
-    global id, socket
+    global socket
     json = JSON.stringify(serializeconfig(), None, 2)        
-    socket.emit('sioreq', {"kind":"storeconfig", "data": json})
-    #putjsonbin(json, id, serializeputjsonbincallback, serializeputjsonbinerrcallback)
+    socket.emit('sioreq', {"kind":"storeconfig", "data": json})    
 
 def reloadcallback():
     document.location.href = "/"
 
 def mainboardmovecallback(variantkey, fen, moveuci):
     global socket
-    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci}), 10)
+    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci}), simulateserverlag())
 
 def mainboardvariantchangedcallback(variantkey):
     global socket
-    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey}), 10)
+    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey}), simulateserverlag())
 ######################################################
 
 ######################################################
@@ -2487,8 +2493,7 @@ def build():
         "variantchangedcallback": mainboardvariantchangedcallback
     })
 
-    maintabpane = TabPane({"kind":"main", "id":"main"})
-    maintabpane.setTabs(
+    maintabpane = TabPane({"kind":"main", "id":"main"}).setTabs(
         [
             Tab("engineconsole", "Engine console", processconsoles["engine"]),
             Tab("botconsole", "Bot console", processconsoles["bot"]),
@@ -2511,9 +2516,8 @@ def build():
 def onconnect():    
     global socket
     mainlog(LogItem("socket connected ok", "cmdstatusok"))
-    socket.emit('sioreq', {"data": "socket connected"})
-    if id == "local":
-        getlocalconfig()
+    socket.emit('sioreq', {"data": "socket connected"})    
+    getlocalconfig()
 
 def onevent(json):    
     global configschema, mainboard
@@ -2586,13 +2590,5 @@ def startup():
 ######################################################
 
 build()
-
-if "id" in queryparams:    
-    id = queryparams["id"]
-    if not ( id == "local" ):
-        #getjsonbin(id, getbincallback, getbinerrcallback)
-        loadlocal()
-else:
-    loadlocal()
 
 startup()

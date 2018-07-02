@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-02 11:43:20
+// Transcrypt'ed from Python, 2018-07-02 17:21:16
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,18 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var simulateserverlag = function (range, min_lag) {
+			if (typeof range == 'undefined' || (range != null && range .hasOwnProperty ("__kwargtrans__"))) {;
+				var range = 1000;
+			};
+			if (typeof min_lag == 'undefined' || (min_lag != null && min_lag .hasOwnProperty ("__kwargtrans__"))) {;
+				var min_lag = 10;
+			};
+			if (__in__ ('localhost', window.location.host)) {
+				return int (min_lag + Math.random () * range);
+			}
+			return min_lag;
+		};
 		var choose = function (cond, choicetrue, choicefalse) {
 			if (cond) {
 				return choicetrue;
@@ -3489,15 +3501,6 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -4402,13 +4405,19 @@ function app () {
 				var piecedragstart = function (ev) {
 					self.draggedsq = sq;
 					self.draggedpdiv = pdiv;
-					pdiv.e.style.opacity = '0.1';
+					pdiv.e.style.opacity = 0.1;
 				};
 				return piecedragstart;
 			});},
+			get piecedragfactory () {return __get__ (this, function (self) {
+				var piecedrag = function (ev) {
+					// pass;
+				};
+				return piecedrag;
+			});},
 			get piecedragendfactory () {return __get__ (this, function (self, sq, pdiv) {
 				var piecedragend = function (ev) {
-					pdiv.e.style.opacity = '1.0';
+					pdiv.e.style.opacity = 0.5;
 				};
 				return piecedragend;
 			});},
@@ -4447,6 +4456,7 @@ function app () {
 						var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).pv (self.piececoordsvect (fasq));
 						pdiv.ac (getclassforpiece (p, self.piecestyle)).sa ('draggable', true);
 						pdiv.ae ('dragstart', self.piecedragstartfactory (sq, pdiv));
+						pdiv.ae ('drag', self.piecedragfactory ());
 						pdiv.ae ('dragend', self.piecedragendfactory (sq, pdiv));
 						pdiv.ae ('dragover', self.piecedragoverfactory (sq));
 						pdiv.ae ('drop', self.piecedropfactory (sq));
@@ -4609,7 +4619,7 @@ function app () {
 		else {
 			var ws_scheme = 'ws://';
 		}
-		var SUBMIT_URL = ws_scheme + location.host;
+		var SUBMIT_URL = ws_scheme + window.location.host;
 		var queryparamsstring = window.location.search;
 		var queryparams = dict ({});
 		if (len (queryparamsstring) > 1) {
@@ -4631,14 +4641,10 @@ function app () {
 		var maintabpane = null;
 		var mainboard = null;
 		var configschema = SchemaDict (dict ({}));
-		var id = null;
 		var srcdiv = Div ().ms ().fs (20);
 		var schemajson = null;
 		var getlocalconfig = function () {
 			socket.emit ('sioreq', dict ({'kind': 'getlocalconfig'}));
-		};
-		var loadlocal = function () {
-			document.location.href = '/?id=local';
 		};
 		var showsrc = function () {
 			var srcjsoncontent = JSON.stringify (serializeconfig (), null, 2);
@@ -4683,7 +4689,9 @@ function app () {
 		};
 		var getbinerrcallback = function (err) {
 			print ('get bin failed with', err);
-			loadlocal ();
+		};
+		var mainlog = function (logitem) {
+			mainlogpane.log.log (logitem);
 		};
 		var mainlog = function (logitem) {
 			mainlogpane.log.log (logitem);
@@ -4716,13 +4724,11 @@ function app () {
 			}
 			catch (__except0__) {
 				print ('there was an error parsing json', content);
-				loadlocal ();
 				return ;
 			}
 		};
 		var serializeputjsonbinerrcallback = function (err) {
 			print ('there was an error putting to json bin', err);
-			loadlocal ();
 		};
 		var serializecallback = function () {
 			var json = JSON.stringify (serializeconfig (), null, 2);
@@ -4734,12 +4740,12 @@ function app () {
 		var mainboardmovecallback = function (variantkey, fen, moveuci) {
 			setTimeout ((function __lambda__ (ev) {
 				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
-			}), 10);
+			}), simulateserverlag ());
 		};
 		var mainboardvariantchangedcallback = function (variantkey) {
 			setTimeout ((function __lambda__ (ev) {
 				return socket.emit ('sioreq', dict ({'kind': 'mainboardsetvariant', 'variantkey': variantkey}));
-			}), 10);
+			}), simulateserverlag ());
 		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
@@ -4747,17 +4753,14 @@ function app () {
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
 			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback}));
-			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
-			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'})).setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
 		var onconnect = function () {
 			mainlog (LogItem ('socket connected ok', 'cmdstatusok'));
 			socket.emit ('sioreq', dict ({'data': 'socket connected'}));
-			if (id == 'local') {
-				getlocalconfig ();
-			}
+			getlocalconfig ();
 		};
 		var onevent = function (json) {
 			var dest = null;
@@ -4843,15 +4846,6 @@ function app () {
 			addEventListener (window, 'resize', windowresizehandler);
 		};
 		build ();
-		if (__in__ ('id', queryparams)) {
-			var id = queryparams ['id'];
-			if (!(id == 'local')) {
-				loadlocal ();
-			}
-		}
-		else {
-			loadlocal ();
-		}
 		startup ();
 		__pragma__ ('<all>')
 			__all__.BLACK = BLACK;
@@ -4934,9 +4928,7 @@ function app () {
 			__all__.getpathfromschema = getpathfromschema;
 			__all__.getpathlistfromschema = getpathlistfromschema;
 			__all__.getstartfenforvariantkey = getstartfenforvariantkey;
-			__all__.id = id;
 			__all__.isvalidpieceletter = isvalidpieceletter;
-			__all__.loadlocal = loadlocal;
 			__all__.log = log;
 			__all__.mainboard = mainboard;
 			__all__.mainboardmovecallback = mainboardmovecallback;
@@ -4969,6 +4961,7 @@ function app () {
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
 			__all__.serializeputjsonbinerrcallback = serializeputjsonbinerrcallback;
 			__all__.showsrc = showsrc;
+			__all__.simulateserverlag = simulateserverlag;
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
 			__all__.startup = startup;
