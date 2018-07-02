@@ -97,16 +97,15 @@ def my_broadcast(obj):
             except:
                 print("emit failed for sid {}".format(sid))
 
-def get_variant_board(variantkey, fen):
+def get_variant_board(variantkey):
     if variantkey == "standard":
-        return chess.Board(fen)
+        return chess.Board()
     elif variantkey == "chess960":
-        return chess.Board(fen, chess960=True)
+        return chess.Board(chess960=True)
     elif variantkey == "fromPosition":
-        return chess.Board(fen)
+        return chess.Board()
     else:
         VariantBoard = find_variant(variantkey)
-        VariantBoard.set_fen(fen)
         return VariantBoard()
 
 class socket_handler:
@@ -161,16 +160,32 @@ class socket_handler:
                             fen = jsonobj["fen"]
                             moveuci = jsonobj["moveuci"]
                             move = chess.Move.from_uci(moveuci)
-                            board = get_variant_board(variantkey, fen)
+                            board = get_variant_board(variantkey)
+                            board.set_fen(fen)
                             if board.is_legal(move):
                                 board.push(move)
                                 rjsonobj["kind"] = "setmainboardfen"
                                 rjsonobj["fen"] = board.fen()
                                 rjsonobj["status"] = "making main board move ok"
                             else:
+                                rjsonobj["kind"] = "setmainboardfen"
+                                rjsonobj["fen"] = fen
                                 rjsonobj["status"] = "! making main board move failed, illegal move"                                
                         except:
                             rjsonobj["status"] = "! making main board move failed, fatal"
+                            traceback.print_exc(file=sys.stderr)
+                    elif kind == "mainboardsetvariant":   
+                        try:    
+                            variantkey = jsonobj["variantkey"]   
+                            board = get_variant_board(variantkey)              
+                            if variantkey == "chess960":
+                                board.set_chess960_pos(random.randint(0, 959))
+                            rjsonobj["kind"] = "setmainboardfen"
+                            rjsonobj["fen"] = board.fen()
+                            rjsonobj["status"] = "main board variant selected ok"
+                        except:
+                            rjsonobj["status"] = "! main board variant selection failed"
+                            traceback.print_exc(file=sys.stderr)
                 except:
                     rjsonobj["status"] = "! command error"
 

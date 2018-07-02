@@ -171,6 +171,10 @@ def reloadcallback():
 def mainboardmovecallback(variantkey, fen, moveuci):
     global socket
     socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci})
+
+def mainboardvariantchangedcallback(variantkey):
+    global socket
+    socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey})
 ######################################################
 
 ######################################################
@@ -199,7 +203,8 @@ def build():
     mainlogpane = LogPane()
 
     mainboard = Board({
-        "movecallback": mainboardmovecallback
+        "movecallback": mainboardmovecallback,
+        "variantchangedcallback": mainboardvariantchangedcallback
     })
 
     maintabpane = TabPane({"kind":"main", "id":"main"})

@@ -465,3 +465,19 @@
 .boardpiece {
     position: absolute;    
 }
+
+.variantselect {
+    font-size: 14px; padding: 1px;
+}
+
+.variantoptionfirst {
+    font-weight: normal;
+}
+
+.variantoption {
+    font-weight: normal;
+}
+
+.boardcontrolpanel {
+    display: flex; justify-content: space-around; align-items: center; padding: 3px;
+}
