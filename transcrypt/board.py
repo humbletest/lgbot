@@ -103,12 +103,17 @@ class BasicBoard(e):
         def piecedragstart(ev):
             self.draggedsq = sq            
             self.draggedpdiv = pdiv
-            pdiv.e.style.opacity = "0.1"            
+            pdiv.e.style.opacity = 0.1
         return piecedragstart
+
+    def piecedragfactory(self):
+        def piecedrag(ev):            
+            pass
+        return piecedrag
 
     def piecedragendfactory(self, sq, pdiv):
         def piecedragend(ev):                        
-            pdiv.e.style.opacity = "1.0"
+            pdiv.e.style.opacity = 0.5
         return piecedragend
 
     def piecedragoverfactory(self, sq):
@@ -141,6 +146,7 @@ class BasicBoard(e):
                 pdiv = Div().ac("boardpiece").w(self.piecesize).h(self.piecesize).pv(self.piececoordsvect(fasq))
                 pdiv.ac(getclassforpiece(p, self.piecestyle)).sa("draggable", True)
                 pdiv.ae("dragstart", self.piecedragstartfactory(sq, pdiv))
+                pdiv.ae("drag", self.piecedragfactory())
                 pdiv.ae("dragend", self.piecedragendfactory(sq, pdiv))
                 pdiv.ae("dragover", self.piecedragoverfactory(sq))
                 pdiv.ae("drop", self.piecedropfactory(sq))            

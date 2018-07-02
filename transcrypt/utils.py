@@ -1,3 +1,8 @@
+def simulateserverlag(range = 1000, min_lag = 10):    
+    if "localhost" in window.location.host:
+        return int(min_lag + Math.random() * range)
+    return min_lag
+
 def choose(cond, choicetrue, choicefalse):
     if cond:
         return choicetrue

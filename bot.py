@@ -1,4 +1,5 @@
 from config import config
+from config import IS_DEV
 
 import backoff
 
@@ -215,8 +216,11 @@ class Bot:
         self.username = "!nouser"
         self.controlstarted = False
         self.ponder = None
-        print("scheduling bot startup...")
-        threading.Thread(target = self.bot_startup_thread_func, args = ()).start()
+        if IS_DEV():
+            print("no bot startup in development")
+        else:
+            print("scheduling bot startup...")
+            threading.Thread(target = self.bot_startup_thread_func, args = ()).start()
 
     def modify_num_playing_atomic(self, delta):    
         self.lock.acquire()

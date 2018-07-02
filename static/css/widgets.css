@@ -442,24 +442,25 @@
 
 .boardoutercontainer {
     position: relative;
-    background-color: #777;
+    background-image: url(/static/img/backgrounds/wood.jpg)
 }
 
 .boardcontainer {
     position: absolute;
-    background-color: #ddd;
+    background-image: url(/static/img/backgrounds/wood.jpg)
 }
 
 .boardsquare {
     position: absolute;
+    opacity: 0.2;
 }
 
 .boardsquaredark {
-    background-color: #aaa;
+    background-color: #777;
 }
 
 .boardsquarelight {
-    background-color: #eee;
+    background-color: #fff;
 }
 
 .boardpiece {

@@ -44,14 +44,13 @@ try:
 except:
     print("initializing firebase failed")
 print("getting stored config")
-try:
-    #db.child("lgbotconfig").set(read_string_from_file("configbackup.json","{}"))
+try:    
     storedconfig = db.child("lgbotconfig").get().val()    
     write_string_to_file("localconfig.json", storedconfig)
     print("getting stored config done, size", len(storedconfig))
 except:
     print("getting stored config failed")
-    traceback.print_exc(file=sys.stderr)
+    #traceback.print_exc(file=sys.stderr)
 print("importing pyrebase done")
 #########################################################
 
@@ -200,15 +199,8 @@ def randurl():
 #########################################################
 # app routes
 @app.route("/")
-def hello():
+def index():
     print("request root", request.full_path)
-    if request.full_path == "/?":
-        binid = read_string_from_file("binid.txt", "local")
-        # use local anyway ( comment this out to get stored binid )
-        binid = "local"
-        rurl = "/?id=" + binid
-        print("redirecting root to", rurl)
-        return redirect(rurl)
     return render_template("index.html", randurl = randurl)
 
 @app.route("/read", methods = ["POST"])
