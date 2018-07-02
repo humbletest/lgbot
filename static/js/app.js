@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-01 23:33:00
+// Transcrypt'ed from Python, 2018-07-02 11:11:02
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3539,26 +3539,6 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4329,10 +4309,19 @@ function app () {
 			});}
 		});
 		var STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+		var RACING_KINGS_START_FEN = '8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1';
+		var HORDE_START_FEN = 'rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1';
 		var PIECE_KINDS = list (['p', 'n', 'b', 'r', 'q', 'k']);
 		var WHITE = 1;
 		var BLACK = 0;
+		var VARIANT_OPTIONS = dict ({'standard': 'Standard', 'fromPosition': 'From Position', 'antichess': 'Antichess', 'atomic': 'Atomic', 'chess960': 'Chess960', 'crazyhouse': 'Crazyhouse', 'horde': 'Horde', 'kingOfTheHill': 'King of the Hill', 'racingKings': 'Racing Kings', 'threeCheck': 'Three Check'});
 		var getstartfenforvariantkey = function (variantkey) {
+			if (variantkey == 'racingKings') {
+				return RACING_KINGS_START_FEN;
+			}
+			if (variantkey == 'horde') {
+				return HORDE_START_FEN;
+			}
 			return STANDARD_START_FEN;
 		};
 		var Piece = __class__ ('Piece', [object], {
@@ -4420,6 +4409,9 @@ function app () {
 			get squarecoordsvect () {return __get__ (this, function (self, sq) {
 				return Vect (sq.file () * self.squaresize, sq.rank () * self.squaresize);
 			});},
+			get piececoordsvect () {return __get__ (this, function (self, sq) {
+				return self.squarecoordsvect (sq).p (Vect (self.squarepadding, self.squarepadding));
+			});},
 			get flipawaresquare () {return __get__ (this, function (self, sq) {
 				if (self.flip) {
 					return Square (self.lastfile - sq.file (), self.lastrank - sq.rank ());
@@ -4429,6 +4421,7 @@ function app () {
 			get piecedragstartfactory () {return __get__ (this, function (self, sq, pdiv) {
 				var piecedragstart = function (ev) {
 					self.draggedsq = sq;
+					self.draggedpdiv = pdiv;
 					pdiv.e.style.opacity = '0.1';
 				};
 				return piecedragstart;
@@ -4448,6 +4441,7 @@ function app () {
 			get piecedropfactory () {return __get__ (this, function (self, sq) {
 				var piecedrop = function (ev) {
 					ev.preventDefault ();
+					self.draggedpdiv.pv (self.piececoordsvect (sq));
 					var moveuci = self.squareuci (self.draggedsq) + self.squareuci (sq);
 					if (!(self.movecallback === null)) {
 						self.movecallback (self.variantkey, self.fen, moveuci);
@@ -4462,18 +4456,21 @@ function app () {
 					var sq = __iterable0__ [__index0__];
 					var sqclass = choose (self.islightsquare (sq), 'boardsquarelight', 'boardsquaredark');
 					var sqdiv = Div ().aac (list (['boardsquare', sqclass])).w (self.squaresize).h (self.squaresize);
-					sqdiv.pv (self.squarecoordsvect (self.flipawaresquare (sq)));
+					var fasq = self.flipawaresquare (sq);
+					sqdiv.pv (self.squarecoordsvect (fasq));
 					sqdiv.ae ('dragover', self.piecedragoverfactory (sq));
 					sqdiv.ae ('drop', self.piecedropfactory (sq));
+					self.container.a (sqdiv);
 					var p = self.getpieceatsquare (sq);
 					if (p.ispiece ()) {
-						var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).t (self.squarepadding).l (self.squarepadding);
+						var pdiv = Div ().ac ('boardpiece').w (self.piecesize).h (self.piecesize).pv (self.piececoordsvect (fasq));
 						pdiv.ac (getclassforpiece (p, self.piecestyle)).sa ('draggable', true);
 						pdiv.ae ('dragstart', self.piecedragstartfactory (sq, pdiv));
 						pdiv.ae ('dragend', self.piecedragendfactory (sq, pdiv));
-						sqdiv.a (pdiv);
+						pdiv.ae ('dragover', self.piecedragoverfactory (sq));
+						pdiv.ae ('drop', self.piecedropfactory (sq));
+						self.container.a (pdiv);
 					}
-					self.container.a (sqdiv);
 				}
 			});},
 			get build () {return __get__ (this, function (self) {
@@ -4598,11 +4595,30 @@ function app () {
 			get setfromfen () {return __get__ (this, function (self, fen) {
 				self.basicboard.setfromfen (fen);
 			});},
+			get setvariantcombo () {return __get__ (this, function (self) {
+				self.variantcombo.setoptions (VARIANT_OPTIONS, self.basicboard.variantkey);
+			});},
+			get variantchanged () {return __get__ (this, function (self, variantkey) {
+				self.basicboard.variantkey = variantkey;
+				self.basicboard.reset ();
+				if (!(self.variantchangedcallback === null)) {
+					self.variantchangedcallback (self.basicboard.variantkey);
+				}
+			});},
+			get setvariantcallback () {return __get__ (this, function (self) {
+				self.variantchanged (self.basicboard.variantkey);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
 				self.basicboard = BasicBoard (args);
-				self.a (Button ('Flip', self.flipcallback));
-				self.a (Button ('Reset', self.resetcallback));
+				self.controlpanel = Div ().ac ('boardcontrolpanel');
+				self.controlpanel.a (Button ('Flip', self.flipcallback));
+				self.variantcombo = ComboBox (dict ({'changecallback': self.variantchanged, 'selectclass': 'variantselect', 'optionfirstclass': 'variantoptionfirst', 'optionclass': 'variantoption'}));
+				self.setvariantcombo ();
+				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
+				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth);
+				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
+				self.a (self.controlpanel);
 				self.a (self.basicboard);
 			});}
 		});
@@ -4737,12 +4753,15 @@ function app () {
 		var mainboardmovecallback = function (variantkey, fen, moveuci) {
 			socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
 		};
+		var mainboardvariantchangedcallback = function (variantkey) {
+			socket.emit ('sioreq', dict ({'kind': 'mainboardsetvariant', 'variantkey': variantkey}));
+		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
-			mainboard = Board (dict ({'movecallback': mainboardmovecallback}));
+			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback}));
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'}));
 			maintabpane.setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
@@ -4864,6 +4883,7 @@ function app () {
 			__all__.DirBrowser = DirBrowser;
 			__all__.Div = Div;
 			__all__.ENGINE_CMD_ALIASES = ENGINE_CMD_ALIASES;
+			__all__.HORDE_START_FEN = HORDE_START_FEN;
 			__all__.Input = Input;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
@@ -4878,6 +4898,7 @@ function app () {
 			__all__.PIECE_KINDS = PIECE_KINDS;
 			__all__.Piece = Piece;
 			__all__.ProcessConsole = ProcessConsole;
+			__all__.RACING_KINGS_START_FEN = RACING_KINGS_START_FEN;
 			__all__.RawTextInput = RawTextInput;
 			__all__.SCHEMA_WRITE_PREFERENCE_DEFAULTS = SCHEMA_WRITE_PREFERENCE_DEFAULTS;
 			__all__.SCROLL_BAR_WIDTH = SCROLL_BAR_WIDTH;
@@ -4898,6 +4919,7 @@ function app () {
 			__all__.TabPane = TabPane;
 			__all__.TextArea = TextArea;
 			__all__.TextInputWithButton = TextInputWithButton;
+			__all__.VARIANT_OPTIONS = VARIANT_OPTIONS;
 			__all__.Vect = Vect;
 			__all__.WHITE = WHITE;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
@@ -4933,6 +4955,7 @@ function app () {
 			__all__.log = log;
 			__all__.mainboard = mainboard;
 			__all__.mainboardmovecallback = mainboardmovecallback;
+			__all__.mainboardvariantchangedcallback = mainboardvariantchangedcallback;
 			__all__.mainlog = mainlog;
 			__all__.mainlogpane = mainlogpane;
 			__all__.mainpart = mainpart;

@@ -1821,11 +1821,29 @@ class DirBrowser(e):
             itemdiv.a(rwxdiv)
             self.a(itemdiv)            
 STANDARD_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+RACING_KINGS_START_FEN = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
+HORDE_START_FEN = "rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1"
 PIECE_KINDS = ["p", "n", "b", "r", "q", "k"]
 WHITE = 1
 BLACK = 0
+VARIANT_OPTIONS = {
+    "standard": "Standard",
+    "fromPosition": "From Position",
+    "antichess" : "Antichess",
+    "atomic": "Atomic",
+    "chess960": "Chess960",
+    "crazyhouse": "Crazyhouse",
+    "horde": "Horde",
+    "kingOfTheHill": "King of the Hill",
+    "racingKings": "Racing Kings",
+    "threeCheck": "Three Check"
+}
 
 def getstartfenforvariantkey(variantkey):
+    if variantkey == "racingKings":
+        return RACING_KINGS_START_FEN
+    if variantkey == "horde":
+        return HORDE_START_FEN
     return STANDARD_START_FEN
 
 class Piece():
@@ -1895,6 +1913,9 @@ class BasicBoard(e):
     def squarecoordsvect(self, sq):
         return Vect(sq.file() * self.squaresize, sq.rank() * self.squaresize)
 
+    def piececoordsvect(self, sq):
+        return self.squarecoordsvect(sq).p(Vect(self.squarepadding, self.squarepadding))
+
     def flipawaresquare(self, sq):
         if self.flip:
             return Square(self.lastfile - sq.file(), self.lastrank - sq.rank())
@@ -1903,6 +1924,7 @@ class BasicBoard(e):
     def piecedragstartfactory(self, sq, pdiv):
         def piecedragstart(ev):
             self.draggedsq = sq            
+            self.draggedpdiv = pdiv
             pdiv.e.style.opacity = "0.1"            
         return piecedragstart
 
@@ -1919,6 +1941,7 @@ class BasicBoard(e):
     def piecedropfactory(self, sq):
         def piecedrop(ev):
             ev.preventDefault()            
+            self.draggedpdiv.pv(self.piececoordsvect(sq))
             moveuci = self.squareuci(self.draggedsq) + self.squareuci(sq)
             if not ( self.movecallback is None ):
                 self.movecallback(self.variantkey, self.fen, moveuci)
@@ -1929,17 +1952,20 @@ class BasicBoard(e):
         for sq in self.squarelist():
             sqclass = choose(self.islightsquare(sq), "boardsquarelight", "boardsquaredark")
             sqdiv = Div().aac(["boardsquare", sqclass]).w(self.squaresize).h(self.squaresize)            
-            sqdiv.pv(self.squarecoordsvect(self.flipawaresquare(sq)))
+            fasq = self.flipawaresquare(sq)
+            sqdiv.pv(self.squarecoordsvect(fasq))
             sqdiv.ae("dragover", self.piecedragoverfactory(sq))
-            sqdiv.ae("drop", self.piecedropfactory(sq))
+            sqdiv.ae("drop", self.piecedropfactory(sq))            
+            self.container.a(sqdiv)
             p = self.getpieceatsquare(sq)
             if p.ispiece():
-                pdiv = Div().ac("boardpiece").w(self.piecesize).h(self.piecesize).t(self.squarepadding).l(self.squarepadding)
+                pdiv = Div().ac("boardpiece").w(self.piecesize).h(self.piecesize).pv(self.piececoordsvect(fasq))
                 pdiv.ac(getclassforpiece(p, self.piecestyle)).sa("draggable", True)
                 pdiv.ae("dragstart", self.piecedragstartfactory(sq, pdiv))
                 pdiv.ae("dragend", self.piecedragendfactory(sq, pdiv))
-                sqdiv.a(pdiv)
-            self.container.a(sqdiv)
+                pdiv.ae("dragover", self.piecedragoverfactory(sq))
+                pdiv.ae("drop", self.piecedropfactory(sq))            
+                self.container.a(pdiv)
 
     def build(self):
         self.outercontainer = Div().ac("boardoutercontainer").w(self.outerwidth).h(self.outerheight)
@@ -2042,99 +2068,35 @@ class Board(e):
     def setfromfen(self, fen):
         self.basicboard.setfromfen(fen)
 
-    def __init__(self, args):
-        super().__init__("div")
-        self.basicboard = BasicBoard(args)
-        self.a(Button("Flip", self.flipcallback))
-        self.a(Button("Reset", self.resetcallback))
-        self.a(self.basicboard)
+    def setvariantcombo(self):        
+        self.variantcombo.setoptions(VARIANT_OPTIONS, self.basicboard.variantkey)
 
-    def __init__(self):
-        super().__init__("div")
-        self.basicboard = BasicBoard({})
-        self.a(Button("Flip", self.flipcallback))
-        self.a(self.basicboard)
+    def variantchanged(self, variantkey):
+        self.basicboard.variantkey = variantkey
+        self.basicboard.reset()
+        if not ( self.variantchangedcallback is None ):
+            self.variantchangedcallback(self.basicboard.variantkey)
 
-    def build(self):
-        self.outercontainer = Div().ac("boardoutercontainer").w(self.outerwidth).h(self.outerheight)
-        self.container = Div().ac("boardcontainer").w(self.width).h(self.height).t(self.margin).l(self.margin)
-        self.outercontainer.a(self.container)
-        self.x().a(self.outercontainer)
-        self.buildsquares()
-        return self
-
-    def calcsizes(self):
-        self.area = self.numfiles * self.numranks
-        self.width = self.numfiles * self.squaresize
-        self.height = self.numranks * self.squaresize
-        self.avgsize = ( self.width + self.height ) / 2
-        self.margin = self.marginratio * self.avgsize
-        self.squarepadding = self.squarepaddingratio * self.squaresize
-        self.piecesize = self.squaresize - 2 * self.squarepadding
-        self.outerwidth = self.width + 2 * self.margin
-        self.outerheight = self.height + 2 * self.margin
-
-    def parseargs(self, args):
-        self.squaresize = args.get("squaresize", 50)
-        self.squarepaddingratio = args.get("squarepaddingratio", 0.04)
-        self.marginratio = args.get("marginratio", 0.02)
-        self.numfiles = args.get("numfiles", 8)
-        self.numranks = args.get("numranks", 8)        
-        self.piecestyle = args.get("piecestyle", "alpha")
-        self.calcsizes()
-
-    def setpieceati(self, i, p):
-        if ( i >= 0 ) and ( i < self.area ):
-            self.rep[i] = p
-
-    def getpieceati(self, i):
-        if ( i >= 0 ) and ( i < self.area ):            
-            return self.rep[i]
-        return Piece()
-
-    def getpieceatfilerank(self, file, rank):
-        i = rank * self.numfiles + file        
-        return self.getpieceati(i)
-
-    def initrep(self, args):
-        self.variantkey = args.get("variantkey", "standard")
-        self.fen = args.get("fen", getstartfenforvariantkey(self.variantkey))
-        self.rep = [Piece() for i in range(self.area)]
-        fenparts = self.fen.split(" ")
-        rawfen = fenparts[0]
-        rawfenparts = rawfen.split("/")
-        i = 0
-        for rawfenpart in rawfenparts:
-            pieceletters = rawfenpart.split("")
-            for pieceletter in pieceletters:
-                if isvalidpieceletter(pieceletter):
-                    self.setpieceati(i, piecelettertopiece(pieceletter))
-                    i+=1
-                else:
-                    try:
-                        mul = int(pieceletter)
-                        for j in range(mul):
-                            self.setpieceati(i, Piece())
-                            i += 1
-                    except:
-                        pass
+    def setvariantcallback(self):
+        self.variantchanged(self.basicboard.variantkey)
 
     def __init__(self, args):
-        super().__init__("div")        
-        self.parseargs(args)
-        self.initrep(args)
-        self.build()
-
-class Board(e):
-    def __init__(self):
         super().__init__("div")
-        self.a(Div().html("Board"))
-        self.a(BasicBoard({}))
-
-        ucioptions.childs.append(nameditem)
-    return ucioptions
-
-schemaclipboard = NamedSchemaItem({})
+        self.basicboard = BasicBoard(args)        
+        self.controlpanel = Div().ac("boardcontrolpanel")
+        self.controlpanel.a(Button("Flip", self.flipcallback))        
+        self.variantcombo = ComboBox({
+            "changecallback": self.variantchanged,
+            "selectclass": "variantselect",
+            "optionfirstclass": "variantoptionfirst",
+            "optionclass": "variantoption"
+        })
+        self.setvariantcombo()
+        self.variantchangedcallback = args.get("variantchangedcallback", None)
+        self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth)
+        self.controlpanel.a(Button("Reset", self.setvariantcallback))
+        self.a(self.controlpanel)
+        self.a(self.basicboard)
 ######################################################
 class DirBrowser(e):
     def __init__(self):
@@ -2488,6 +2450,10 @@ def reloadcallback():
 def mainboardmovecallback(variantkey, fen, moveuci):
     global socket
     socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci})
+
+def mainboardvariantchangedcallback(variantkey):
+    global socket
+    socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey})
 ######################################################
 
 ######################################################
@@ -2516,7 +2482,8 @@ def build():
     mainlogpane = LogPane()
 
     mainboard = Board({
-        "movecallback": mainboardmovecallback
+        "movecallback": mainboardmovecallback,
+        "variantchangedcallback": mainboardvariantchangedcallback
     })
 
     maintabpane = TabPane({"kind":"main", "id":"main"})
