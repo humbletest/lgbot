@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-02 11:11:02
+// Transcrypt'ed from Python, 2018-07-02 11:20:47
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3519,26 +3519,6 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4441,7 +4421,7 @@ function app () {
 			get piecedropfactory () {return __get__ (this, function (self, sq) {
 				var piecedrop = function (ev) {
 					ev.preventDefault ();
-					self.draggedpdiv.pv (self.piececoordsvect (sq));
+					self.draggedpdiv.pv (self.piececoordsvect (self.flipawaresquare (sq)));
 					var moveuci = self.squareuci (self.draggedsq) + self.squareuci (sq);
 					if (!(self.movecallback === null)) {
 						self.movecallback (self.variantkey, self.fen, moveuci);
