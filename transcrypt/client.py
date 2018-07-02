@@ -170,11 +170,11 @@ def reloadcallback():
 
 def mainboardmovecallback(variantkey, fen, moveuci):
     global socket
-    socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci})
+    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci}), 10)
 
 def mainboardvariantchangedcallback(variantkey):
     global socket
-    socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey})
+    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey}), 10)
 ######################################################
 
 ######################################################
