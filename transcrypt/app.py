@@ -1942,6 +1942,7 @@ class BasicBoard(e):
         def piecedrop(ev):
             ev.preventDefault()            
             self.draggedpdiv.pv(self.piececoordsvect(self.flipawaresquare(sq)))
+            self.draggedpdiv.e.style.zIndex = 100
             moveuci = self.squareuci(self.draggedsq) + self.squareuci(sq)
             if not ( self.movecallback is None ):
                 self.movecallback(self.variantkey, self.fen, moveuci)
