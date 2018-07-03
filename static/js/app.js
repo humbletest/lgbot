@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-03 09:06:52
+// Transcrypt'ed from Python, 2018-07-03 12:51:37
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,21 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var xor = function (b1, b2) {
+			if (b1 && b2) {
+				return false;
+			}
+			if (b1 || b2) {
+				return true;
+			}
+			return false;
+		};
+		var cpick = function (cond, vtrue, vfalse) {
+			if (cond) {
+				return vtrue;
+			}
+			return vfalse;
+		};
 		var simulateserverlag = function (range, min_lag) {
 			if (typeof range == 'undefined' || (range != null && range .hasOwnProperty ("__kwargtrans__"))) {;
 				var range = 1000;
@@ -2413,6 +2428,18 @@ function app () {
 				self.e.style.backgroundColor = color;
 				return self;
 			});},
+			get cbc () {return __get__ (this, function (self, cond, colortrue, colorfalse) {
+				self.e.style.backgroundColor = cpick (cond, colortrue, colorfalse);
+				return self;
+			});},
+			get zi () {return __get__ (this, function (self, zindex) {
+				self.e.style.zIndex = zindex;
+				return self;
+			});},
+			get op () {return __get__ (this, function (self, opacity) {
+				self.e.style.opacity = opacity;
+				return self;
+			});},
 			get ms () {return __get__ (this, function (self) {
 				self.e.style.fontFamily = 'monospace';
 				return self;
@@ -2478,8 +2505,20 @@ function app () {
 				self.e.style.left = l + 'px';
 				return self;
 			});},
+			get cl () {return __get__ (this, function (self, cond, ltrue, lfalse) {
+				self.e.style.left = cpick (cond, ltrue, lfalse) + 'px';
+				return self;
+			});},
+			get ct () {return __get__ (this, function (self, cond, ttrue, tfalse) {
+				self.e.style.top = cpick (cond, ttrue, tfalse) + 'px';
+				return self;
+			});},
 			get pv () {return __get__ (this, function (self, v) {
 				return self.l (v.x).t (v.y);
+			});},
+			get pa () {return __get__ (this, function (self) {
+				self.e.style.position = 'absolute';
+				return self;
 			});},
 			get ml () {return __get__ (this, function (self, ml) {
 				self.e.style.marginLeft = ml + 'px';
@@ -3501,6 +3540,15 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -4343,6 +4391,8 @@ function app () {
 				}
 				return Piece (pieceletterlower, WHITE);
 			}
+			print ('warning, piece letter not valid', pieceletter);
+			return Piece ();
 		};
 		var getclassforpiece = function (p, style) {
 			var kind = p.kind;
@@ -4405,7 +4455,7 @@ function app () {
 				var piecedragstart = function (ev) {
 					self.draggedsq = sq;
 					self.draggedpdiv = pdiv;
-					pdiv.e.style.opacity = 0.1;
+					pdiv.op (0.1);
 				};
 				return piecedragstart;
 			});},
@@ -4417,7 +4467,7 @@ function app () {
 			});},
 			get piecedragendfactory () {return __get__ (this, function (self, sq, pdiv) {
 				var piecedragend = function (ev) {
-					pdiv.e.style.opacity = 0.5;
+					pdiv.op (0.5);
 				};
 				return piecedragend;
 			});},
@@ -4431,7 +4481,7 @@ function app () {
 				var piecedrop = function (ev) {
 					ev.preventDefault ();
 					self.draggedpdiv.pv (self.piececoordsvect (self.flipawaresquare (sq)));
-					self.draggedpdiv.e.style.zIndex = 100;
+					self.draggedpdiv.zi (100);
 					var moveuci = self.squareuci (self.draggedsq) + self.squareuci (sq);
 					if (!(self.movecallback === null)) {
 						self.movecallback (self.variantkey, self.fen, moveuci);
@@ -4470,6 +4520,14 @@ function app () {
 				self.outercontainer.a (self.container);
 				self.x ().a (self.outercontainer);
 				self.buildsquares ();
+				self.turndiv = Div ().pa ().w (self.turndivsize).h (self.turndivsize).cbc (self.iswhitesturn (), '#fff', '#000');
+				if (self.variantkey == 'racingKings') {
+					self.turndiv.ct (self.flip, 0, self.outerheight - self.turndivsize).cl (xor (self.isblacksturn (), self.flip), 0, self.outerwidth - self.turndivsize);
+				}
+				else {
+					self.turndiv.l (self.outerwidth - self.turndivsize).ct (xor (self.isblacksturn (), self.flip), 0, self.outerheight - self.turndivsize);
+				}
+				self.outercontainer.a (self.turndiv);
 				return self;
 			});},
 			get setflip () {return __get__ (this, function (self, flip) {
@@ -4488,6 +4546,7 @@ function app () {
 				self.piecesize = self.squaresize - 2 * self.squarepadding;
 				self.outerwidth = self.width + 2 * self.margin;
 				self.outerheight = self.height + 2 * self.margin;
+				self.turndivsize = self.margin;
 			});},
 			get parseargs () {return __get__ (this, function (self, args) {
 				self.squaresize = args.py_get ('squaresize', 50);
@@ -4503,6 +4562,9 @@ function app () {
 			get setpieceati () {return __get__ (this, function (self, i, p) {
 				if (i >= 0 && i < self.area) {
 					self.rep [i] = p;
+				}
+				else {
+					print ('warning, rep index out of range', i);
 				}
 			});},
 			get getpieceati () {return __get__ (this, function (self, i) {
@@ -4528,8 +4590,8 @@ function app () {
 					return __accu0__;
 				}) ();
 				var fenparts = self.fen.py_split (' ');
-				var rawfen = fenparts [0];
-				var rawfenparts = rawfen.py_split ('/');
+				self.rawfen = fenparts [0];
+				var rawfenparts = self.rawfen.py_split ('/');
 				var i = 0;
 				var __iterable0__ = rawfenparts;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
@@ -4543,19 +4605,83 @@ function app () {
 							i++;
 						}
 						else {
+							var mul = 0;
 							try {
 								var mul = int (pieceletter);
-								for (var j = 0; j < mul; j++) {
-									self.setpieceati (i, Piece ());
-									i++;
-								}
 							}
 							catch (__except0__) {
-								// pass;
+								print ('warning, multiplicity could not be parsed from', pieceletter);
+							}
+							for (var j = 0; j < mul; j++) {
+								self.setpieceati (i, Piece ());
+								i++;
 							}
 						}
 					}
 				}
+				if (i < self.area) {
+					print ('warning, raw fen did not fill board');
+				}
+				else if (i > self.area) {
+					print ('warning, raw fen exceeded board');
+				}
+				self.turnfen = 'w';
+				if (len (fenparts) > 1) {
+					self.turnfen = fenparts [1];
+				}
+				else {
+					print ('warning, no turn fen');
+				}
+				self.castlefen = '-';
+				if (len (fenparts) > 2) {
+					self.castlefen = fenparts [2];
+				}
+				else {
+					print ('warning, no castle fen');
+				}
+				self.epfen = '-';
+				if (len (fenparts) > 3) {
+					self.epfen = fenparts [3];
+				}
+				else {
+					print ('warning, no ep fen');
+				}
+				self.halfmoveclock = 0;
+				if (len (fenparts) > 4) {
+					try {
+						self.halfmoveclock = int (fenparts [4]);
+					}
+					catch (__except0__) {
+						print ('warning, half move clock could not be parsed from', fenparts [4]);
+					}
+				}
+				else {
+					print ('warning, no half move fen');
+				}
+				self.fullmovenumber = 1;
+				if (len (fenparts) > 5) {
+					try {
+						self.fullmovenumber = int (fenparts [5]);
+					}
+					catch (__except0__) {
+						print ('warning, full move number could not be parsed from', fenparts [5]);
+					}
+				}
+				else {
+					print ('warning, no full move fen');
+				}
+			});},
+			get turn () {return __get__ (this, function (self) {
+				if (self.turnfen == 'w') {
+					return WHITE;
+				}
+				return BLACK;
+			});},
+			get iswhitesturn () {return __get__ (this, function (self) {
+				return self.turn () == WHITE;
+			});},
+			get isblacksturn () {return __get__ (this, function (self) {
+				return self.turn () == BLACK;
 			});},
 			get initrep () {return __get__ (this, function (self, args) {
 				self.variantkey = args.py_get ('variantkey', 'standard');
@@ -4907,6 +5033,7 @@ function app () {
 			__all__.choose = choose;
 			__all__.cmdinpcallback = cmdinpcallback;
 			__all__.configschema = configschema;
+			__all__.cpick = cpick;
 			__all__.deserializeconfig = deserializeconfig;
 			__all__.deserializeconfigcontent = deserializeconfigcontent;
 			__all__.e = e;
@@ -4966,6 +5093,7 @@ function app () {
 			__all__.uid = uid;
 			__all__.windowresizehandler = windowresizehandler;
 			__all__.ws_scheme = ws_scheme;
+			__all__.xor = xor;
 		__pragma__ ('</all>')
 	}) ();
     return __all__;
