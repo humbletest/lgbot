@@ -38,6 +38,9 @@ class Vect:
 
     def m(self, v):
         return self.p(v.s(-1))
+    
+    def copy(self):
+        return Vect(self.x, self.y)
 
 def getClientVect(ev):
     return Vect(ev.clientX, ev.clientY)

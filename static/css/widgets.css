@@ -482,3 +482,7 @@
 .boardcontrolpanel {
     display: flex; justify-content: space-around; align-items: center; padding: 3px;
 }
+
+.boardpromotionsquare {
+    background-color: #ff0;
+}

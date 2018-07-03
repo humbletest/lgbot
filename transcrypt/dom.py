@@ -20,6 +20,11 @@ class e:
         self.e.style.backgroundColor = color
         return self
 
+    # cursor pointer
+    def cp(self):
+        self.e.style.cursor = "pointer"
+        return self
+
     # conditional background color
     def cbc(self, cond, colortrue, colorfalse):
         self.e.style.backgroundColor = cpick(cond, colortrue, colorfalse)

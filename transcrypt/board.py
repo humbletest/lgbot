@@ -16,6 +16,33 @@ VARIANT_OPTIONS = {
     "racingKings": "Racing Kings",
     "threeCheck": "Three Check"
 }
+PIECE_NAMES = {
+    "p": "Pawn",
+    "n": "Knight",
+    "b": "Bishop",
+    "r": "Rook",
+    "q": "Queen",
+    "k": "King"
+}
+PROMPIECEKINDS_STANDARD = ["n", "b", "r", "q"]
+PROMPIECEKINDS_ANTICHESS = ["n", "b", "r", "q", "k"]
+
+def prompiecekindsforvariantkey(variantkey):
+    if variantkey == "antichess":
+        return PROMPIECEKINDS_ANTICHESS
+    return PROMPIECEKINDS_STANDARD
+
+def piececolortocolorname(color):
+    if color == WHITE:
+        return "White"
+    elif color == BLACK:
+        return "Black"
+    return "Invalidcolor"
+
+def piecekindtopiecename(kind):
+    if kind in PIECE_NAMES:
+        return PIECE_NAMES[kind]
+    return "Invalidpiece"
 
 def getstartfenforvariantkey(variantkey):
     if variantkey == "racingKings":
@@ -34,6 +61,11 @@ class Piece():
 
     def ispiece(self):
         return not self.isempty()
+
+    def __repr__(self):
+        if self.isempty():
+            return "Piece[None]"
+        return "Piece[{} {}]".format(piececolortocolorname(self.color), piecekindtopiecename(self.kind))
 
 def isvalidpieceletter(pieceletter):
     if pieceletter in PIECE_KINDS:
@@ -57,31 +89,46 @@ def getclassforpiece(p, style):
         kind = "w" + kind
     return style + "piece" + kind
 
-class Square(Vect):
+class Square:
     def __init__(self, file, rank):
-        self.x = file
-        self.y = rank
+        self.file = file
+        self.rank = rank
 
-    def file(self):
-        return self.x
-
-    def rank(self):
-        return self.y
+    def p(self, sq):
+        return Square(self.file + sq.file, self.rank + sq.rank)
 
     def __repr__(self):
-        return "Sq[f:{},r:{}]".format(self.file(), self.rank())
+        return "Square[file: {} , rank: {}]".format(self.file, self.rank)
+
+    def copy(self):
+        return Square(self.file, self.rank)
+
+class Move:
+    def __init__(self, fromsq, tosq, prompiece = Piece()):
+        self.fromsq = fromsq
+        self.tosq = tosq
+        self.prompiece = prompiece
+
+    def __repr__(self):
+        return "Move [from: {} , to: {} , prom: {}]".format(self.fromsq, self.tosq, self.prompiece)
 
 class BasicBoard(e):
     def squareuci(self, sq):
-        fileletter = String.fromCharCode(sq.file() + "a".charCodeAt(0))
-        rankletter = String.fromCharCode(self.lastrank - sq.rank() + "1".charCodeAt(0))
+        fileletter = String.fromCharCode(sq.file + "a".charCodeAt(0))
+        rankletter = String.fromCharCode(self.lastrank - sq.rank + "1".charCodeAt(0))
         return fileletter + rankletter
+
+    def moveuci(self, move):
+        fromuci = self.squareuci(move.fromsq)
+        touci = self.squareuci(move.tosq)
+        promuci = cpick(move.prompiece.isempty(), "", move.prompiece.kind)
+        return fromuci + touci + promuci
 
     def islightfilerank(self, file, rank):
         return ( ( ( file + rank ) % 2 ) == 0 )
 
     def islightsquare(self, sq):
-        return self.islightfilerank(sq.file(), sq.rank())
+        return self.islightfilerank(sq.file, sq.rank)
 
     def squarelist(self):
         squarelist = []
@@ -91,18 +138,21 @@ class BasicBoard(e):
         return squarelist
 
     def squarecoordsvect(self, sq):
-        return Vect(sq.file() * self.squaresize, sq.rank() * self.squaresize)
+        return Vect(sq.file * self.squaresize, sq.rank * self.squaresize)
 
     def piececoordsvect(self, sq):
         return self.squarecoordsvect(sq).p(Vect(self.squarepadding, self.squarepadding))
 
     def flipawaresquare(self, sq):
         if self.flip:
-            return Square(self.lastfile - sq.file(), self.lastrank - sq.rank())
+            return Square(self.lastfile - sq.file, self.lastrank - sq.rank)
         return sq
 
     def piecedragstartfactory(self, sq, pdiv):
         def piecedragstart(ev):
+            if self.promoting:
+                ev.preventDefault()
+                return
             self.draggedsq = sq            
             self.draggedpdiv = pdiv
             pdiv.op(0.1)
@@ -123,14 +173,28 @@ class BasicBoard(e):
             ev.preventDefault()            
         return piecedragover
 
+    def ismovepromotion(self, move):
+        fromp = self.getpieceatsquare(move.fromsq)
+        if ( fromp.kind == "p" ) and ( fromp.color == self.turn() ):
+            if self.iswhitesturn():
+                if move.tosq.rank == 0:
+                    return True
+            else:
+                if move.tosq.rank == self.lastrank:
+                    return True
+        return False
+
     def piecedropfactory(self, sq):
         def piecedrop(ev):
             ev.preventDefault()            
             self.draggedpdiv.pv(self.piececoordsvect(self.flipawaresquare(sq)))
             self.draggedpdiv.zi(100)
-            moveuci = self.squareuci(self.draggedsq) + self.squareuci(sq)
-            if not ( self.movecallback is None ):
-                self.movecallback(self.variantkey, self.fen, moveuci)
+            self.dragmove = Move(self.draggedsq, sq)
+            if self.ismovepromotion(self.dragmove):
+                self.promoting = True
+                self.build()
+            elif not ( self.movecallback is None ):
+                self.movecallback(self.variantkey, self.fen, self.moveuci(self.dragmove))
         return piecedrop
 
     def buildsquares(self):
@@ -154,6 +218,31 @@ class BasicBoard(e):
                 pdiv.ae("drop", self.piecedropfactory(sq))            
                 self.container.a(pdiv)
 
+    def prompiececlickedfactory(self, prompiecekind):
+        def prompiececlicked():
+            self.dragmove.prompiece = Piece(prompiecekind, self.turn())
+            self.movecallback(self.variantkey, self.fen, self.moveuci(self.dragmove))
+        return prompiececlicked
+
+    def buildprominput(self):
+        promkinds = prompiecekindsforvariantkey(self.variantkey)
+        promsq = self.dragmove.tosq.copy()        
+        dir = cpick(promsq.rank >= ( self.numranks / 2 ), -1, 1)
+        ppks = prompiecekindsforvariantkey(self.variantkey)
+        for ppk in ppks:            
+            fapromsq = self.flipawaresquare(promsq)
+            pp = Piece(ppk, self.turn())
+            psqdiv = Div().pa().cp().zi(150).w(self.squaresize).h(self.squaresize).ac("boardpromotionsquare")
+            psqdiv.pv(self.squarecoordsvect(fapromsq))
+            ppdiv = Div().pa().cp().zi(200).w(self.piecesize).h(self.piecesize).ac(getclassforpiece(pp, self.piecestyle))
+            ppdiv.pv(self.piececoordsvect(fapromsq)).ae("mousedown", self.prompiececlickedfactory(ppk))
+            self.container.aa([psqdiv, ppdiv])
+            promsq = promsq.p(Square(0, dir))
+
+    def promotecancelclick(self):
+        self.promoting = False
+        self.build()
+
     def build(self):
         self.outercontainer = Div().ac("boardoutercontainer").w(self.outerwidth).h(self.outerheight)
         self.container = Div().ac("boardcontainer").w(self.width).h(self.height).t(self.margin).l(self.margin)
@@ -166,6 +255,9 @@ class BasicBoard(e):
         else:
             self.turndiv.l(self.outerwidth - self.turndivsize).ct(xor(self.isblacksturn(), self.flip), 0, self.outerheight - self.turndivsize)
         self.outercontainer.a(self.turndiv)
+        if self.promoting:
+            self.buildprominput()
+            self.container.ae("mousedown", self.promotecancelclick)
         return self
 
     def setflip(self, flip):
@@ -213,7 +305,7 @@ class BasicBoard(e):
         return self.getpieceati(i)
 
     def getpieceatsquare(self, sq):
-        return self.getpieceatfilerank(sq.file(), sq.rank())
+        return self.getpieceatfilerank(sq.file, sq.rank)
 
     def setrepfromfen(self, fen):  
         self.fen = fen
@@ -272,6 +364,7 @@ class BasicBoard(e):
                 print("warning, full move number could not be parsed from", fenparts[5])
         else:
             print("warning, no full move fen")
+        self.promoting = False
 
     def turn(self):
         if self.turnfen == "w":
