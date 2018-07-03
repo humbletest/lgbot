@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-03 12:51:37
+// Transcrypt'ed from Python, 2018-07-03 16:43:26
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2256,6 +2256,9 @@ function app () {
 			});},
 			get m () {return __get__ (this, function (self, v) {
 				return self.p (v.s (-(1)));
+			});},
+			get copy () {return __get__ (this, function (self) {
+				return Vect (self.x, self.y);
 			});}
 		});
 		var getClientVect = function (ev) {
@@ -2426,6 +2429,10 @@ function app () {
 			});},
 			get bc () {return __get__ (this, function (self, color) {
 				self.e.style.backgroundColor = color;
+				return self;
+			});},
+			get cp () {return __get__ (this, function (self) {
+				self.e.style.cursor = 'pointer';
 				return self;
 			});},
 			get cbc () {return __get__ (this, function (self, cond, colortrue, colorfalse) {
@@ -3540,15 +3547,6 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -4346,6 +4344,30 @@ function app () {
 		var WHITE = 1;
 		var BLACK = 0;
 		var VARIANT_OPTIONS = dict ({'standard': 'Standard', 'fromPosition': 'From Position', 'antichess': 'Antichess', 'atomic': 'Atomic', 'chess960': 'Chess960', 'crazyhouse': 'Crazyhouse', 'horde': 'Horde', 'kingOfTheHill': 'King of the Hill', 'racingKings': 'Racing Kings', 'threeCheck': 'Three Check'});
+		var PIECE_NAMES = dict ({'p': 'Pawn', 'n': 'Knight', 'b': 'Bishop', 'r': 'Rook', 'q': 'Queen', 'k': 'King'});
+		var PROMPIECEKINDS_STANDARD = list (['n', 'b', 'r', 'q']);
+		var PROMPIECEKINDS_ANTICHESS = list (['n', 'b', 'r', 'q', 'k']);
+		var prompiecekindsforvariantkey = function (variantkey) {
+			if (variantkey == 'antichess') {
+				return PROMPIECEKINDS_ANTICHESS;
+			}
+			return PROMPIECEKINDS_STANDARD;
+		};
+		var piececolortocolorname = function (color) {
+			if (color == WHITE) {
+				return 'White';
+			}
+			else if (color == BLACK) {
+				return 'Black';
+			}
+			return 'Invalidcolor';
+		};
+		var piecekindtopiecename = function (kind) {
+			if (__in__ (kind, PIECE_NAMES)) {
+				return PIECE_NAMES [kind];
+			}
+			return 'Invalidpiece';
+		};
 		var getstartfenforvariantkey = function (variantkey) {
 			if (variantkey == 'racingKings') {
 				return RACING_KINGS_START_FEN;
@@ -4372,6 +4394,12 @@ function app () {
 			});},
 			get ispiece () {return __get__ (this, function (self) {
 				return !(self.isempty ());
+			});},
+			get __repr__ () {return __get__ (this, function (self) {
+				if (self.isempty ()) {
+					return 'Piece[None]';
+				}
+				return 'Piece[{} {}]'.format (piececolortocolorname (self.color), piecekindtopiecename (self.kind));
 			});}
 		});
 		var isvalidpieceletter = function (pieceletter) {
@@ -4401,34 +4429,54 @@ function app () {
 			}
 			return (style + 'piece') + kind;
 		};
-		var Square = __class__ ('Square', [Vect], {
+		var Square = __class__ ('Square', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, file, rank) {
-				self.x = file;
-				self.y = rank;
+				self.file = file;
+				self.rank = rank;
 			});},
-			get file () {return __get__ (this, function (self) {
-				return self.x;
-			});},
-			get rank () {return __get__ (this, function (self) {
-				return self.y;
+			get p () {return __get__ (this, function (self, sq) {
+				return Square (self.file + sq.file, self.rank + sq.rank);
 			});},
 			get __repr__ () {return __get__ (this, function (self) {
-				return 'Sq[f:{},r:{}]'.format (self.file (), self.rank ());
+				return 'Square[file: {} , rank: {}]'.format (self.file, self.rank);
+			});},
+			get copy () {return __get__ (this, function (self) {
+				return Square (self.file, self.rank);
+			});}
+		});
+		var Move = __class__ ('Move', [object], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, fromsq, tosq, prompiece) {
+				if (typeof prompiece == 'undefined' || (prompiece != null && prompiece .hasOwnProperty ("__kwargtrans__"))) {;
+					var prompiece = Piece ();
+				};
+				self.fromsq = fromsq;
+				self.tosq = tosq;
+				self.prompiece = prompiece;
+			});},
+			get __repr__ () {return __get__ (this, function (self) {
+				return 'Move [from: {} , to: {} , prom: {}]'.format (self.fromsq, self.tosq, self.prompiece);
 			});}
 		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
 			get squareuci () {return __get__ (this, function (self, sq) {
-				var fileletter = String.fromCharCode (sq.file () + 'a'.charCodeAt (0));
-				var rankletter = String.fromCharCode ((self.lastrank - sq.rank ()) + '1'.charCodeAt (0));
+				var fileletter = String.fromCharCode (sq.file + 'a'.charCodeAt (0));
+				var rankletter = String.fromCharCode ((self.lastrank - sq.rank) + '1'.charCodeAt (0));
 				return fileletter + rankletter;
+			});},
+			get moveuci () {return __get__ (this, function (self, move) {
+				var fromuci = self.squareuci (move.fromsq);
+				var touci = self.squareuci (move.tosq);
+				var promuci = cpick (move.prompiece.isempty (), '', move.prompiece.kind);
+				return (fromuci + touci) + promuci;
 			});},
 			get islightfilerank () {return __get__ (this, function (self, file, rank) {
 				return __mod__ (file + rank, 2) == 0;
 			});},
 			get islightsquare () {return __get__ (this, function (self, sq) {
-				return self.islightfilerank (sq.file (), sq.rank ());
+				return self.islightfilerank (sq.file, sq.rank);
 			});},
 			get squarelist () {return __get__ (this, function (self) {
 				var squarelist = list ([]);
@@ -4440,19 +4488,23 @@ function app () {
 				return squarelist;
 			});},
 			get squarecoordsvect () {return __get__ (this, function (self, sq) {
-				return Vect (sq.file () * self.squaresize, sq.rank () * self.squaresize);
+				return Vect (sq.file * self.squaresize, sq.rank * self.squaresize);
 			});},
 			get piececoordsvect () {return __get__ (this, function (self, sq) {
 				return self.squarecoordsvect (sq).p (Vect (self.squarepadding, self.squarepadding));
 			});},
 			get flipawaresquare () {return __get__ (this, function (self, sq) {
 				if (self.flip) {
-					return Square (self.lastfile - sq.file (), self.lastrank - sq.rank ());
+					return Square (self.lastfile - sq.file, self.lastrank - sq.rank);
 				}
 				return sq;
 			});},
 			get piecedragstartfactory () {return __get__ (this, function (self, sq, pdiv) {
 				var piecedragstart = function (ev) {
+					if (self.promoting) {
+						ev.preventDefault ();
+						return ;
+					}
 					self.draggedsq = sq;
 					self.draggedpdiv = pdiv;
 					pdiv.op (0.1);
@@ -4477,14 +4529,32 @@ function app () {
 				};
 				return piecedragover;
 			});},
+			get ismovepromotion () {return __get__ (this, function (self, move) {
+				var fromp = self.getpieceatsquare (move.fromsq);
+				if (fromp.kind == 'p' && fromp.color == self.turn ()) {
+					if (self.iswhitesturn ()) {
+						if (move.tosq.rank == 0) {
+							return true;
+						}
+					}
+					else if (move.tosq.rank == self.lastrank) {
+						return true;
+					}
+				}
+				return false;
+			});},
 			get piecedropfactory () {return __get__ (this, function (self, sq) {
 				var piecedrop = function (ev) {
 					ev.preventDefault ();
 					self.draggedpdiv.pv (self.piececoordsvect (self.flipawaresquare (sq)));
 					self.draggedpdiv.zi (100);
-					var moveuci = self.squareuci (self.draggedsq) + self.squareuci (sq);
-					if (!(self.movecallback === null)) {
-						self.movecallback (self.variantkey, self.fen, moveuci);
+					self.dragmove = Move (self.draggedsq, sq);
+					if (self.ismovepromotion (self.dragmove)) {
+						self.promoting = true;
+						self.build ();
+					}
+					else if (!(self.movecallback === null)) {
+						self.movecallback (self.variantkey, self.fen, self.moveuci (self.dragmove));
 					}
 				};
 				return piecedrop;
@@ -4514,6 +4584,35 @@ function app () {
 					}
 				}
 			});},
+			get prompiececlickedfactory () {return __get__ (this, function (self, prompiecekind) {
+				var prompiececlicked = function () {
+					self.dragmove.prompiece = Piece (prompiecekind, self.turn ());
+					self.movecallback (self.variantkey, self.fen, self.moveuci (self.dragmove));
+				};
+				return prompiececlicked;
+			});},
+			get buildprominput () {return __get__ (this, function (self) {
+				var promkinds = prompiecekindsforvariantkey (self.variantkey);
+				var promsq = self.dragmove.tosq.copy ();
+				var dir = cpick (promsq.rank >= self.numranks / 2, -(1), 1);
+				var ppks = prompiecekindsforvariantkey (self.variantkey);
+				var __iterable0__ = ppks;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var ppk = __iterable0__ [__index0__];
+					var fapromsq = self.flipawaresquare (promsq);
+					var pp = Piece (ppk, self.turn ());
+					var psqdiv = Div ().pa ().cp ().zi (150).w (self.squaresize).h (self.squaresize).ac ('boardpromotionsquare');
+					psqdiv.pv (self.squarecoordsvect (fapromsq));
+					var ppdiv = Div ().pa ().cp ().zi (200).w (self.piecesize).h (self.piecesize).ac (getclassforpiece (pp, self.piecestyle));
+					ppdiv.pv (self.piececoordsvect (fapromsq)).ae ('mousedown', self.prompiececlickedfactory (ppk));
+					self.container.aa (list ([psqdiv, ppdiv]));
+					var promsq = promsq.p (Square (0, dir));
+				}
+			});},
+			get promotecancelclick () {return __get__ (this, function (self) {
+				self.promoting = false;
+				self.build ();
+			});},
 			get build () {return __get__ (this, function (self) {
 				self.outercontainer = Div ().ac ('boardoutercontainer').w (self.outerwidth).h (self.outerheight);
 				self.container = Div ().ac ('boardcontainer').w (self.width).h (self.height).t (self.margin).l (self.margin);
@@ -4528,6 +4627,10 @@ function app () {
 					self.turndiv.l (self.outerwidth - self.turndivsize).ct (xor (self.isblacksturn (), self.flip), 0, self.outerheight - self.turndivsize);
 				}
 				self.outercontainer.a (self.turndiv);
+				if (self.promoting) {
+					self.buildprominput ();
+					self.container.ae ('mousedown', self.promotecancelclick);
+				}
 				return self;
 			});},
 			get setflip () {return __get__ (this, function (self, flip) {
@@ -4578,7 +4681,7 @@ function app () {
 				return self.getpieceati (i);
 			});},
 			get getpieceatsquare () {return __get__ (this, function (self, sq) {
-				return self.getpieceatfilerank (sq.file (), sq.rank ());
+				return self.getpieceatfilerank (sq.file, sq.rank);
 			});},
 			get setrepfromfen () {return __get__ (this, function (self, fen) {
 				self.fen = fen;
@@ -4670,6 +4773,7 @@ function app () {
 				else {
 					print ('warning, no full move fen');
 				}
+				self.promoting = false;
 			});},
 			get turn () {return __get__ (this, function (self) {
 				if (self.turnfen == 'w') {
@@ -4995,9 +5099,13 @@ function app () {
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
 			__all__.LogPane = LogPane;
+			__all__.Move = Move;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
 			__all__.PIECE_KINDS = PIECE_KINDS;
+			__all__.PIECE_NAMES = PIECE_NAMES;
+			__all__.PROMPIECEKINDS_ANTICHESS = PROMPIECEKINDS_ANTICHESS;
+			__all__.PROMPIECEKINDS_STANDARD = PROMPIECEKINDS_STANDARD;
 			__all__.Piece = Piece;
 			__all__.ProcessConsole = ProcessConsole;
 			__all__.RACING_KINGS_START_FEN = RACING_KINGS_START_FEN;
@@ -5067,8 +5175,11 @@ function app () {
 			__all__.parsejson = parsejson;
 			__all__.parts = parts;
 			__all__.patchclasses = patchclasses;
+			__all__.piececolortocolorname = piececolortocolorname;
+			__all__.piecekindtopiecename = piecekindtopiecename;
 			__all__.piecelettertopiece = piecelettertopiece;
 			__all__.processconsoles = processconsoles;
+			__all__.prompiecekindsforvariantkey = prompiecekindsforvariantkey;
 			__all__.putjsonbin = putjsonbin;
 			__all__.queryparams = queryparams;
 			__all__.queryparamsstring = queryparamsstring;
