@@ -123,10 +123,6 @@ def mainlog(logitem):
     global mainlogpane
     mainlogpane.log.log(logitem)
 
-def mainlog(logitem):
-    global mainlogpane
-    mainlogpane.log.log(logitem)
-
 def log(content, dest = "engine"):    
     li = LogItem("<pre>" + content + "</pre>")
     processconsoles[dest].log.log(li)

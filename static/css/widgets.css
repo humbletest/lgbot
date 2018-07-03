@@ -137,7 +137,7 @@
 }
 
 .schemasettingsdiv {
-    margin-left: calc( var(--schemawidth) - var(--schemasettingswidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
+    margin-left: calc( var(--schemawidth) - var(--schemasettingswidth) + 3.8 * ( var(--schemaitemheight) + var(--schemacontainermargin) ) - 2 * var(--schemasettingspadding) );
     width: var(--schemasettingswidth);
     background-color: #ace; padding: var(--schemasettingspadding);
 }
@@ -150,8 +150,7 @@
     background-color: #ded;
 }
 
-.schemahelpdiv {    
-    margin-left: calc( var(--schemawidth) - var(--schemahelpwidth) + 2 * ( var(--schemaitemheight) + var(--schemacontainermargin) - var(--schemasettingspadding) ) );
+.schemahelpdiv {        
     width: var(--schemahelpwidth);
     background-color: #cca; padding: var(--schemasettingspadding);
 }

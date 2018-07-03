@@ -270,11 +270,11 @@ class NamedSchemaItem(e):
         self.a(self.namedcontainer)
 
     def copy(self, item):
-        self.item = item
+        self.item = schemafromobj(item.toobj())
+        self.item.parent = None
         self.key = None
-        if not ( self.item.parent is None ):
-            self.key = self.item.parent.key
-        self.item.setparent(None)
+        if not ( item.parent is None ):
+            self.key = item.parent.key        
 
 class SchemaScalar(SchemaItem):
     def label(self):
