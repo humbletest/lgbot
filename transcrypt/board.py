@@ -48,6 +48,8 @@ def piecelettertopiece(pieceletter):
         if pieceletterlower == pieceletter:
             return Piece(pieceletterlower, BLACK)
         return Piece(pieceletterlower, WHITE)
+    print("warning, piece letter not valid", pieceletter)
+    return Piece()
 
 def getclassforpiece(p, style):
     kind = p.kind
@@ -103,7 +105,7 @@ class BasicBoard(e):
         def piecedragstart(ev):
             self.draggedsq = sq            
             self.draggedpdiv = pdiv
-            pdiv.e.style.opacity = 0.1
+            pdiv.op(0.1)
         return piecedragstart
 
     def piecedragfactory(self):
@@ -113,7 +115,7 @@ class BasicBoard(e):
 
     def piecedragendfactory(self, sq, pdiv):
         def piecedragend(ev):                        
-            pdiv.e.style.opacity = 0.5
+            pdiv.op(0.5)
         return piecedragend
 
     def piecedragoverfactory(self, sq):
@@ -125,7 +127,7 @@ class BasicBoard(e):
         def piecedrop(ev):
             ev.preventDefault()            
             self.draggedpdiv.pv(self.piececoordsvect(self.flipawaresquare(sq)))
-            self.draggedpdiv.e.style.zIndex = 100
+            self.draggedpdiv.zi(100)
             moveuci = self.squareuci(self.draggedsq) + self.squareuci(sq)
             if not ( self.movecallback is None ):
                 self.movecallback(self.variantkey, self.fen, moveuci)
@@ -158,6 +160,12 @@ class BasicBoard(e):
         self.outercontainer.a(self.container)
         self.x().a(self.outercontainer)
         self.buildsquares()
+        self.turndiv = Div().pa().w(self.turndivsize).h(self.turndivsize).cbc(self.iswhitesturn(), "#fff", "#000")
+        if self.variantkey == "racingKings":
+            self.turndiv.ct(self.flip, 0, self.outerheight - self.turndivsize).cl(xor(self.isblacksturn(), self.flip), 0, self.outerwidth - self.turndivsize)
+        else:
+            self.turndiv.l(self.outerwidth - self.turndivsize).ct(xor(self.isblacksturn(), self.flip), 0, self.outerheight - self.turndivsize)
+        self.outercontainer.a(self.turndiv)
         return self
 
     def setflip(self, flip):
@@ -176,6 +184,7 @@ class BasicBoard(e):
         self.piecesize = self.squaresize - 2 * self.squarepadding
         self.outerwidth = self.width + 2 * self.margin
         self.outerheight = self.height + 2 * self.margin
+        self.turndivsize = self.margin
 
     def parseargs(self, args):
         self.squaresize = args.get("squaresize", 50)
@@ -191,6 +200,8 @@ class BasicBoard(e):
     def setpieceati(self, i, p):
         if ( i >= 0 ) and ( i < self.area ):
             self.rep[i] = p
+        else:
+            print("warning, rep index out of range", i)
 
     def getpieceati(self, i):
         if ( i >= 0 ) and ( i < self.area ):            
@@ -208,8 +219,8 @@ class BasicBoard(e):
         self.fen = fen
         self.rep = [Piece() for i in range(self.area)]
         fenparts = self.fen.split(" ")
-        rawfen = fenparts[0]
-        rawfenparts = rawfen.split("/")
+        self.rawfen = fenparts[0]
+        rawfenparts = self.rawfen.split("/")
         i = 0
         for rawfenpart in rawfenparts:
             pieceletters = rawfenpart.split("")
@@ -218,13 +229,60 @@ class BasicBoard(e):
                     self.setpieceati(i, piecelettertopiece(pieceletter))
                     i+=1
                 else:
+                    mul = 0
                     try:
-                        mul = int(pieceletter)
-                        for j in range(mul):
-                            self.setpieceati(i, Piece())
-                            i += 1
+                        mul = int(pieceletter)                        
                     except:
-                        pass
+                        print("warning, multiplicity could not be parsed from", pieceletter)
+                    for j in range(mul):
+                        self.setpieceati(i, Piece())
+                        i += 1
+        if i < self.area:
+            print("warning, raw fen did not fill board")
+        elif i > self.area:
+            print("warning, raw fen exceeded board")
+        self.turnfen = "w"
+        if len(fenparts) > 1:
+            self.turnfen = fenparts[1]
+        else:
+            print("warning, no turn fen")
+        self.castlefen = "-"
+        if len(fenparts) > 2:
+            self.castlefen = fenparts[2]
+        else:
+            print("warning, no castle fen")
+        self.epfen = "-"
+        if len(fenparts) > 3:
+            self.epfen = fenparts[3]
+        else:
+            print("warning, no ep fen")
+        self.halfmoveclock = 0
+        if len(fenparts) > 4:
+            try:
+                self.halfmoveclock = int(fenparts[4])
+            except:
+                print("warning, half move clock could not be parsed from", fenparts[4])
+        else:
+            print("warning, no half move fen")
+        self.fullmovenumber = 1
+        if len(fenparts) > 5:
+            try:
+                self.fullmovenumber = int(fenparts[5])
+            except:
+                print("warning, full move number could not be parsed from", fenparts[5])
+        else:
+            print("warning, no full move fen")
+
+    def turn(self):
+        if self.turnfen == "w":
+            return WHITE
+        return BLACK
+
+    def iswhitesturn(self):
+        return self.turn() == WHITE
+
+    def isblacksturn(self):
+        return self.turn() == BLACK
 
     def initrep(self, args):
         self.variantkey = args.get("variantkey", "standard")

@@ -20,6 +20,21 @@ class e:
         self.e.style.backgroundColor = color
         return self
 
+    # conditional background color
+    def cbc(self, cond, colortrue, colorfalse):
+        self.e.style.backgroundColor = cpick(cond, colortrue, colorfalse)
+        return self
+
+    # z-index
+    def zi(self, zindex):
+        self.e.style.zIndex = zindex
+        return self
+
+    # opacity
+    def op(self, opacity):
+        self.e.style.opacity = opacity
+        return self
+
     # monospace
     def ms(self):
         self.e.style.fontFamily = "monospace"
@@ -95,9 +110,24 @@ class e:
         self.e.style.left = l + "px"
         return self
 
+    # conditional left
+    def cl(self, cond, ltrue, lfalse):
+        self.e.style.left = cpick(cond, ltrue, lfalse) + "px"
+        return self
+
+    # conditional top
+    def ct(self, cond, ttrue, tfalse):
+        self.e.style.top = cpick(cond, ttrue, tfalse) + "px"
+        return self
+
     # position vector
     def pv(self, v):
         return self.l(v.x).t(v.y)
+
+    # position absolute
+    def pa(self):
+        self.e.style.position = "absolute"
+        return self
 
     # margin left
     def ml(self, ml):

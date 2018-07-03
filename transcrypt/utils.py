@@ -1,3 +1,15 @@
+def xor(b1, b2):
+    if b1 and b2:
+        return False
+    if b1 or b2:
+        return True
+    return False
+
+def cpick(cond, vtrue, vfalse):
+    if cond:
+        return vtrue
+    return vfalse
+
 def simulateserverlag(range = 1000, min_lag = 10):    
     if "localhost" in window.location.host:
         return int(min_lag + Math.random() * range)
