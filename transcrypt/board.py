@@ -279,7 +279,29 @@ class BasicBoard(e):
                 pdiv.ae("dragend", self.piecedragendfactory(sq, pdiv))
                 pdiv.ae("dragover", self.piecedragoverfactory(sq))
                 pdiv.ae("drop", self.piecedropfactory(sq))            
+                if self.variantkey == "threeCheck":
+                    if ( p.kind == "k" ):
+                        mul = self.getthreelifesforcolor(p.color)
+                        lifesdiv = Div().pa().t(- self.squaresize / 10).l(self.squaresize / 2 + self.squaresize / 10).w(self.squaresize / 2).h(self.squaresize / 2)
+                        lifesdiv.ac("boardthreechecklifesdiv").fs(self.squaresize / 1.5).html("{}".format(mul))
+                        lifesdiv.cc(p.color == WHITE, "#ff0", "#ff0")
+                        pdiv.a(lifesdiv)
                 self.container.a(pdiv)
+
+    def getthreelifesforcolor(self, color):
+        parts = self.threefen.split("+")
+        mul = 3
+        if color == WHITE:
+            try:
+                mul = int(parts[2])
+            except:
+                print("warning, could not parse white lifes from", self.threefen)
+        if color == BLACK:
+            try:
+                mul = int(parts[0])
+            except:
+                print("warning, could not parse black lifes from", self.threefen)
+        return mul
 
     def prompiececlickedfactory(self, prompiecekind):
         def prompiececlicked():
