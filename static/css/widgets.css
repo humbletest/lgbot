@@ -469,14 +469,15 @@
 
 .variantselect {
     font-size: 14px; padding: 1px;
+    background-image: url(/static/img/backgrounds/wood.jpg)
 }
 
 .variantoptionfirst {
-    font-weight: normal;
+    font-weight: normal;    
 }
 
 .variantoption {
-    font-weight: normal;
+    font-weight: normal;    
 }
 
 .boardcontrolpanel {
@@ -485,4 +486,16 @@
 
 .boardpromotionsquare {
     background-color: #ff0;
+}
+
+.boardfendiv {
+    display: flex; justify-content: space-around; align-items: center; padding: 3px;
+}
+
+.boardsectioncontainer {
+    background-image: url(/static/img/backgrounds/wood.jpg)
+}
+
+.bigboardsectioncontainer {
+    background-image: url(/static/img/backgrounds/wood.jpg)
 }

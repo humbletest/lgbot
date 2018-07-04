@@ -1,6 +1,8 @@
 STANDARD_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 RACING_KINGS_START_FEN = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
 HORDE_START_FEN = "rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1"
+THREE_CHECK_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3+3 0 1"
+CRAZYHOUSE_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR[] w KQkq - 0 1"
 PIECE_KINDS = ["p", "n", "b", "r", "q", "k"]
 WHITE = 1
 BLACK = 0
@@ -48,7 +50,11 @@ def getstartfenforvariantkey(variantkey):
     if variantkey == "racingKings":
         return RACING_KINGS_START_FEN
     if variantkey == "horde":
-        return HORDE_START_FEN
+        return HORDE_START_FEN    
+    if variantkey == "threeCheck":
+        return THREE_CHECK_START_FEN
+    if variantkey == "crazyhouse":
+        return CRAZYHOUSE_START_FEN
     return STANDARD_START_FEN
 
 class Piece():
@@ -244,10 +250,10 @@ class BasicBoard(e):
         self.build()
 
     def build(self):
+        self.sectioncontainer = Div().ac("boardsectioncontainer").w(self.outerwidth)
         self.outercontainer = Div().ac("boardoutercontainer").w(self.outerwidth).h(self.outerheight)
         self.container = Div().ac("boardcontainer").w(self.width).h(self.height).t(self.margin).l(self.margin)
-        self.outercontainer.a(self.container)
-        self.x().a(self.outercontainer)
+        self.outercontainer.a(self.container)        
         self.buildsquares()
         self.turndiv = Div().pa().w(self.turndivsize).h(self.turndivsize).cbc(self.iswhitesturn(), "#fff", "#000")
         if self.variantkey == "racingKings":
@@ -258,6 +264,10 @@ class BasicBoard(e):
         if self.promoting:
             self.buildprominput()
             self.container.ae("mousedown", self.promotecancelclick)
+        self.fentext = RawTextInput({}).w(self.width).fs(10).setText(self.fen)
+        self.fendiv = Div().ac("boardfendiv").a(self.fentext)
+        self.sectioncontainer.aa([self.outercontainer, self.fendiv])
+        self.x().a(self.sectioncontainer)
         return self
 
     def setflip(self, flip):
@@ -309,10 +319,20 @@ class BasicBoard(e):
 
     def setrepfromfen(self, fen):  
         self.fen = fen
+        self.crazyfen = None
+        self.threefen = None
         self.rep = [Piece() for i in range(self.area)]
         fenparts = self.fen.split(" ")
         self.rawfen = fenparts[0]
-        rawfenparts = self.rawfen.split("/")
+        rawfenparts = self.rawfen.split("/")        
+        if self.variantkey == "crazyhouse":
+            self.crazyfen = ""
+            if "[" in self.rawfen:
+                cfenparts = self.rawfen.split("[")
+                self.rawfen = cfenparts[0]
+                rawfenparts = self.rawfen.split("/")
+                cfenparts = cfenparts[1].split("]")
+                self.crazyfen = cfenparts[0]
         i = 0
         for rawfenpart in rawfenparts:
             pieceletters = rawfenpart.split("")
@@ -348,22 +368,26 @@ class BasicBoard(e):
             self.epfen = fenparts[3]
         else:
             print("warning, no ep fen")
+        moveclocksi = cpick(self.variantkey == "threeCheck", 5, 4)
         self.halfmoveclock = 0
-        if len(fenparts) > 4:
+        if len(fenparts) > moveclocksi:
             try:
-                self.halfmoveclock = int(fenparts[4])
+                self.halfmoveclock = int(fenparts[moveclocksi])
             except:
                 print("warning, half move clock could not be parsed from", fenparts[4])
         else:
             print("warning, no half move fen")
         self.fullmovenumber = 1
-        if len(fenparts) > 5:
+        if len(fenparts) > ( moveclocksi + 1 ):
             try:
-                self.fullmovenumber = int(fenparts[5])
+                self.fullmovenumber = int(fenparts[moveclocksi + 1])
             except:
                 print("warning, full move number could not be parsed from", fenparts[5])
         else:
             print("warning, no full move fen")
+        if self.variantkey == "threeCheck":
+            if len(fenparts) > 4:
+                self.threefen = fenparts[4]        
         self.promoting = False
 
     def turn(self):
@@ -431,5 +455,6 @@ class Board(e):
         self.variantchangedcallback = args.get("variantchangedcallback", None)
         self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth)
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
-        self.a(self.controlpanel)
-        self.a(self.basicboard)
+        self.sectioncontainer = Div().ac("bigboardsectioncontainer").w(self.basicboard.outerwidth)
+        self.sectioncontainer.aa([self.controlpanel, self.basicboard])
+        self.a(self.sectioncontainer)
