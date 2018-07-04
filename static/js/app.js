@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-04 15:06:33
+// Transcrypt'ed from Python, 2018-07-04 19:30:39
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2439,6 +2439,10 @@ function app () {
 				self.e.style.backgroundColor = cpick (cond, colortrue, colorfalse);
 				return self;
 			});},
+			get cc () {return __get__ (this, function (self, cond, colortrue, colorfalse) {
+				self.e.style.color = cpick (cond, colortrue, colorfalse);
+				return self;
+			});},
 			get zi () {return __get__ (this, function (self, zindex) {
 				self.e.style.zIndex = zindex;
 				return self;
@@ -4021,6 +4025,18 @@ function app () {
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
+					if (item.enabled) {
+						return i;
+					}
+					i++;
+				}
+				return null;
+			});},
+			get toobj () {return __get__ (this, function (self) {
+				var listobj = list ([]);
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
 					listobj.append (item.toobj ());
 				}
 				return null;
@@ -4672,9 +4688,39 @@ function app () {
 						pdiv.ae ('dragend', self.piecedragendfactory (sq, pdiv));
 						pdiv.ae ('dragover', self.piecedragoverfactory (sq));
 						pdiv.ae ('drop', self.piecedropfactory (sq));
+						if (self.variantkey == 'threeCheck') {
+							if (p.kind == 'k') {
+								var mul = self.getthreelifesforcolor (p.color);
+								var lifesdiv = Div ().pa ().t (-(self.squaresize) / 10).l (self.squaresize / 2 + self.squaresize / 10).w (self.squaresize / 2).h (self.squaresize / 2);
+								lifesdiv.ac ('boardthreechecklifesdiv').fs (self.squaresize / 1.5).html ('{}'.format (mul));
+								lifesdiv.cc (p.color == WHITE, '#ff0', '#ff0');
+								pdiv.a (lifesdiv);
+							}
+						}
 						self.container.a (pdiv);
 					}
 				}
+			});},
+			get getthreelifesforcolor () {return __get__ (this, function (self, color) {
+				var parts = self.threefen.py_split ('+');
+				var mul = 3;
+				if (color == WHITE) {
+					try {
+						var mul = int (parts [2]);
+					}
+					catch (__except0__) {
+						print ('warning, could not parse white lifes from', self.threefen);
+					}
+				}
+				if (color == BLACK) {
+					try {
+						var mul = int (parts [0]);
+					}
+					catch (__except0__) {
+						print ('warning, could not parse black lifes from', self.threefen);
+					}
+				}
+				return mul;
 			});},
 			get prompiececlickedfactory () {return __get__ (this, function (self, prompiecekind) {
 				var prompiececlicked = function () {
