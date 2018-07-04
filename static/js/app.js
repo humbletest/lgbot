@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-03 16:43:26
+// Transcrypt'ed from Python, 2018-07-04 06:24:40
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4340,6 +4340,8 @@ function app () {
 		var STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 		var RACING_KINGS_START_FEN = '8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1';
 		var HORDE_START_FEN = 'rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1';
+		var THREE_CHECK_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3+3 0 1';
+		var CRAZYHOUSE_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR[] w KQkq - 0 1';
 		var PIECE_KINDS = list (['p', 'n', 'b', 'r', 'q', 'k']);
 		var WHITE = 1;
 		var BLACK = 0;
@@ -4374,6 +4376,12 @@ function app () {
 			}
 			if (variantkey == 'horde') {
 				return HORDE_START_FEN;
+			}
+			if (variantkey == 'threeCheck') {
+				return THREE_CHECK_START_FEN;
+			}
+			if (variantkey == 'crazyhouse') {
+				return CRAZYHOUSE_START_FEN;
 			}
 			return STANDARD_START_FEN;
 		};
@@ -4614,10 +4622,10 @@ function app () {
 				self.build ();
 			});},
 			get build () {return __get__ (this, function (self) {
+				self.sectioncontainer = Div ().ac ('boardsectioncontainer').w (self.outerwidth);
 				self.outercontainer = Div ().ac ('boardoutercontainer').w (self.outerwidth).h (self.outerheight);
 				self.container = Div ().ac ('boardcontainer').w (self.width).h (self.height).t (self.margin).l (self.margin);
 				self.outercontainer.a (self.container);
-				self.x ().a (self.outercontainer);
 				self.buildsquares ();
 				self.turndiv = Div ().pa ().w (self.turndivsize).h (self.turndivsize).cbc (self.iswhitesturn (), '#fff', '#000');
 				if (self.variantkey == 'racingKings') {
@@ -4631,6 +4639,10 @@ function app () {
 					self.buildprominput ();
 					self.container.ae ('mousedown', self.promotecancelclick);
 				}
+				self.fentext = RawTextInput (dict ({})).w (self.width).fs (10).setText (self.fen);
+				self.fendiv = Div ().ac ('boardfendiv').a (self.fentext);
+				self.sectioncontainer.aa (list ([self.outercontainer, self.fendiv]));
+				self.x ().a (self.sectioncontainer);
 				return self;
 			});},
 			get setflip () {return __get__ (this, function (self, flip) {
@@ -4685,6 +4697,8 @@ function app () {
 			});},
 			get setrepfromfen () {return __get__ (this, function (self, fen) {
 				self.fen = fen;
+				self.crazyfen = null;
+				self.threefen = null;
 				self.rep = (function () {
 					var __accu0__ = [];
 					for (var i = 0; i < self.area; i++) {
@@ -4695,6 +4709,16 @@ function app () {
 				var fenparts = self.fen.py_split (' ');
 				self.rawfen = fenparts [0];
 				var rawfenparts = self.rawfen.py_split ('/');
+				if (self.variantkey == 'crazyhouse') {
+					self.crazyfen = '';
+					if (__in__ ('[', self.rawfen)) {
+						var cfenparts = self.rawfen.py_split ('[');
+						self.rawfen = cfenparts [0];
+						var rawfenparts = self.rawfen.py_split ('/');
+						var cfenparts = cfenparts [1].py_split (']');
+						self.crazyfen = cfenparts [0];
+					}
+				}
 				var i = 0;
 				var __iterable0__ = rawfenparts;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
@@ -4749,10 +4773,11 @@ function app () {
 				else {
 					print ('warning, no ep fen');
 				}
+				var moveclocksi = cpick (self.variantkey == 'threeCheck', 5, 4);
 				self.halfmoveclock = 0;
-				if (len (fenparts) > 4) {
+				if (len (fenparts) > moveclocksi) {
 					try {
-						self.halfmoveclock = int (fenparts [4]);
+						self.halfmoveclock = int (fenparts [moveclocksi]);
 					}
 					catch (__except0__) {
 						print ('warning, half move clock could not be parsed from', fenparts [4]);
@@ -4762,9 +4787,9 @@ function app () {
 					print ('warning, no half move fen');
 				}
 				self.fullmovenumber = 1;
-				if (len (fenparts) > 5) {
+				if (len (fenparts) > moveclocksi + 1) {
 					try {
-						self.fullmovenumber = int (fenparts [5]);
+						self.fullmovenumber = int (fenparts [moveclocksi + 1]);
 					}
 					catch (__except0__) {
 						print ('warning, full move number could not be parsed from', fenparts [5]);
@@ -4772,6 +4797,11 @@ function app () {
 				}
 				else {
 					print ('warning, no full move fen');
+				}
+				if (self.variantkey == 'threeCheck') {
+					if (len (fenparts) > 4) {
+						self.threefen = fenparts [4];
+					}
 				}
 				self.promoting = false;
 			});},
@@ -4839,8 +4869,9 @@ function app () {
 				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
 				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth);
 				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
-				self.a (self.controlpanel);
-				self.a (self.basicboard);
+				self.sectioncontainer = Div ().ac ('bigboardsectioncontainer').w (self.basicboard.outerwidth);
+				self.sectioncontainer.aa (list ([self.controlpanel, self.basicboard]));
+				self.a (self.sectioncontainer);
 			});}
 		});
 		if (window.location.protocol == 'https:') {
@@ -5081,6 +5112,7 @@ function app () {
 			__all__.Board = Board;
 			__all__.Button = Button;
 			__all__.CBUILD_CMD_ALIASES = CBUILD_CMD_ALIASES;
+			__all__.CRAZYHOUSE_START_FEN = CRAZYHOUSE_START_FEN;
 			__all__.CheckBox = CheckBox;
 			__all__.ComboBox = ComboBox;
 			__all__.ComboOption = ComboOption;
@@ -5125,6 +5157,7 @@ function app () {
 			__all__.Span = Span;
 			__all__.SplitPane = SplitPane;
 			__all__.Square = Square;
+			__all__.THREE_CHECK_START_FEN = THREE_CHECK_START_FEN;
 			__all__.Tab = Tab;
 			__all__.TabPane = TabPane;
 			__all__.TextArea = TextArea;
