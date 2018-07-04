@@ -492,10 +492,25 @@
     display: flex; justify-content: space-around; align-items: center; padding: 3px;
 }
 
+.boardstorediv { 
+    display: flex; justify-content: space-around; align-items: center; padding: 3px;
+}
+
 .boardsectioncontainer {
     background-image: url(/static/img/backgrounds/wood.jpg)
 }
 
 .bigboardsectioncontainer {
     background-image: url(/static/img/backgrounds/wood.jpg)
+}
+
+.piecestorecontainer {    
+    padding: 2px;
+    display: flex;
+    background-image: url(/static/img/backgrounds/wood.jpg)
+}
+
+.storemuldiv {
+    display: flex; justify-content: space-around; align-items: center;
+    font-weight: bold; color: #007;
 }

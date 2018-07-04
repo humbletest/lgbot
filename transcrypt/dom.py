@@ -134,6 +134,11 @@ class e:
         self.e.style.position = "absolute"
         return self
 
+    # position relative
+    def pr(self):
+        self.e.style.position = "relative"
+        return self
+
     # margin left
     def ml(self, ml):
         self.e.style.marginLeft = ml + "px"
