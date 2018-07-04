@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-04 06:24:40
+// Transcrypt'ed from Python, 2018-07-04 15:06:33
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2527,6 +2527,10 @@ function app () {
 				self.e.style.position = 'absolute';
 				return self;
 			});},
+			get pr () {return __get__ (this, function (self) {
+				self.e.style.position = 'relative';
+				return self;
+			});},
 			get ml () {return __get__ (this, function (self, ml) {
 				self.e.style.marginLeft = ml + 'px';
 				return self;
@@ -4019,6 +4023,15 @@ function app () {
 					var item = __iterable0__ [__index0__];
 					listobj.append (item.toobj ());
 				}
+				return null;
+			});},
+			get toobj () {return __get__ (this, function (self) {
+				var listobj = list ([]);
+				var __iterable0__ = self.childs;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var item = __iterable0__ [__index0__];
+					listobj.append (item.toobj ());
+				}
 				var obj = self.baseobj ();
 				obj ['items'] = listobj;
 				return obj;
@@ -4338,6 +4351,7 @@ function app () {
 			});}
 		});
 		var STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+		var ANTICHESS_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1';
 		var RACING_KINGS_START_FEN = '8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1';
 		var HORDE_START_FEN = 'rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1';
 		var THREE_CHECK_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3+3 0 1';
@@ -4371,6 +4385,9 @@ function app () {
 			return 'Invalidpiece';
 		};
 		var getstartfenforvariantkey = function (variantkey) {
+			if (variantkey == 'antichess') {
+				return ANTICHESS_START_FEN;
+			}
 			if (variantkey == 'racingKings') {
 				return RACING_KINGS_START_FEN;
 			}
@@ -4467,6 +4484,63 @@ function app () {
 				return 'Move [from: {} , to: {} , prom: {}]'.format (self.fromsq, self.tosq, self.prompiece);
 			});}
 		});
+		var PieceStore = __class__ ('PieceStore', [e], {
+			__module__: __name__,
+			get dragstartfactory () {return __get__ (this, function (self, p, pdiv, pdivcopy) {
+				var dragstart = function () {
+					self.parent.dragkind = 'set';
+					self.parent.draggedsetpiece = p;
+					self.parent.draggedpdiv = pdivcopy;
+					pdiv.op (0.7);
+				};
+				return dragstart;
+			});},
+			get setstore () {return __get__ (this, function (self, store) {
+				self.store = store;
+				self.container.x ();
+				self.pieces = dict ({});
+				var __iterable0__ = self.store.py_split ('');
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var pieceletter = __iterable0__ [__index0__];
+					var p = piecelettertopiece (pieceletter);
+					if (p.color == self.color) {
+						if (__in__ (p.kind, self.pieces)) {
+							self.pieces [p.kind] ['mul']++;
+						}
+						else {
+							var pcdiv = Div ().pr ().w (self.piecesize).h (self.piecesize);
+							var pdiv = Div ().pa ().cp ().ac (getclassforpiece (p, self.parent.piecestyle)).w (self.piecesize).h (self.piecesize);
+							var pdivcopy = Div ().pa ().cp ().ac (getclassforpiece (p, self.parent.piecestyle)).w (self.piecesize).h (self.piecesize);
+							pdiv.t (0).l (0).sa ('draggable', true).ae ('dragstart', self.dragstartfactory (p, pdiv, pdivcopy));
+							pcdiv.a (pdiv);
+							self.pieces [p.kind] = dict ({'mul': 1, 'p': p, 'pcdiv': pcdiv});
+						}
+					}
+				}
+				var __iterable0__ = self.pieces.py_items ();
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var __left0__ = __iterable0__ [__index0__];
+					var pkind = __left0__ [0];
+					var pdesc = __left0__ [1];
+					var muldiv = Div ().pa ().w (self.muldivsize).h (self.muldivsize).fs (self.muldivsize).html ('{}'.format (pdesc ['mul']));
+					muldiv.l (self.piecesize - self.muldivsize).t (0).ac ('storemuldiv');
+					pdesc ['pcdiv'].a (muldiv);
+					self.container.a (pdesc ['pcdiv']);
+				}
+				return self;
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				__super__ (PieceStore, '__init__') (self, 'div');
+				self.parent = args.py_get ('parent', BasicBoard (dict ({})));
+				self.store = args.py_get ('store', '');
+				self.color = args.py_get ('color', WHITE);
+				self.piecesize = args.py_get ('piecesize', self.parent.piecesize);
+				self.muldivsize = int (self.piecesize / 2);
+				self.container = Div ().aac (list (['piecestorecontainer', 'noselect']));
+				self.a (self.container);
+				self.setstore (self.store);
+			});}
+		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
 			get squareuci () {return __get__ (this, function (self, sq) {
@@ -4513,6 +4587,7 @@ function app () {
 						ev.preventDefault ();
 						return ;
 					}
+					self.dragkind = 'move';
 					self.draggedsq = sq;
 					self.draggedpdiv = pdiv;
 					pdiv.op (0.1);
@@ -4556,13 +4631,22 @@ function app () {
 					ev.preventDefault ();
 					self.draggedpdiv.pv (self.piececoordsvect (self.flipawaresquare (sq)));
 					self.draggedpdiv.zi (100);
-					self.dragmove = Move (self.draggedsq, sq);
-					if (self.ismovepromotion (self.dragmove)) {
-						self.promoting = true;
-						self.build ();
+					if (self.dragkind == 'move') {
+						self.dragmove = Move (self.draggedsq, sq);
+						if (self.ismovepromotion (self.dragmove)) {
+							self.promoting = true;
+							self.build ();
+						}
+						else if (!(self.movecallback === null)) {
+							self.movecallback (self.variantkey, self.fen, self.moveuci (self.dragmove));
+						}
 					}
-					else if (!(self.movecallback === null)) {
-						self.movecallback (self.variantkey, self.fen, self.moveuci (self.dragmove));
+					else if (self.dragkind == 'set') {
+						self.container.a (self.draggedpdiv);
+						if (!(self.movecallback === null)) {
+							var setuci = '{}@{}'.format (self.draggedsetpiece.kind, self.squareuci (sq));
+							self.movecallback (self.variantkey, self.fen, setuci);
+						}
 					}
 				};
 				return piecedrop;
@@ -4641,7 +4725,21 @@ function app () {
 				}
 				self.fentext = RawTextInput (dict ({})).w (self.width).fs (10).setText (self.fen);
 				self.fendiv = Div ().ac ('boardfendiv').a (self.fentext);
-				self.sectioncontainer.aa (list ([self.outercontainer, self.fendiv]));
+				if (self.variantkey == 'crazyhouse') {
+					self.whitestore = PieceStore (dict ({'parent': self, 'color': WHITE, 'store': self.crazyfen}));
+					self.blackstore = PieceStore (dict ({'parent': self, 'color': BLACK, 'store': self.crazyfen}));
+					self.whitestorediv = Div ().ac ('boardstorediv').h (self.squaresize).a (self.whitestore);
+					self.blackstorediv = Div ().ac ('boardstorediv').h (self.squaresize).a (self.blackstore);
+					if (self.flip) {
+						self.sectioncontainer.aa (list ([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv]));
+					}
+					else {
+						self.sectioncontainer.aa (list ([self.blackstorediv, self.outercontainer, self.whitestorediv, self.fendiv]));
+					}
+				}
+				else {
+					self.sectioncontainer.aa (list ([self.outercontainer, self.fendiv]));
+				}
 				self.x ().a (self.sectioncontainer);
 				return self;
 			});},
@@ -4664,7 +4762,7 @@ function app () {
 				self.turndivsize = self.margin;
 			});},
 			get parseargs () {return __get__ (this, function (self, args) {
-				self.squaresize = args.py_get ('squaresize', 50);
+				self.squaresize = args.py_get ('squaresize', 45);
 				self.squarepaddingratio = args.py_get ('squarepaddingratio', 0.04);
 				self.marginratio = args.py_get ('marginratio', 0.02);
 				self.numfiles = args.py_get ('numfiles', 8);
@@ -5106,6 +5204,7 @@ function app () {
 		build ();
 		startup ();
 		__pragma__ ('<all>')
+			__all__.ANTICHESS_START_FEN = ANTICHESS_START_FEN;
 			__all__.BLACK = BLACK;
 			__all__.BOT_CMD_ALIASES = BOT_CMD_ALIASES;
 			__all__.BasicBoard = BasicBoard;
@@ -5139,6 +5238,7 @@ function app () {
 			__all__.PROMPIECEKINDS_ANTICHESS = PROMPIECEKINDS_ANTICHESS;
 			__all__.PROMPIECEKINDS_STANDARD = PROMPIECEKINDS_STANDARD;
 			__all__.Piece = Piece;
+			__all__.PieceStore = PieceStore;
 			__all__.ProcessConsole = ProcessConsole;
 			__all__.RACING_KINGS_START_FEN = RACING_KINGS_START_FEN;
 			__all__.RawTextInput = RawTextInput;

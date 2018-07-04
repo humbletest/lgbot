@@ -336,6 +336,11 @@ class e:
         self.e.style.position = "absolute"
         return self
 
+    # position relative
+    def pr(self):
+        self.e.style.position = "relative"
+        return self
+
     # margin left
     def ml(self, ml):
         self.e.style.marginLeft = ml + "px"
@@ -1876,6 +1881,7 @@ class DirBrowser(e):
             itemdiv.a(rwxdiv)
             self.a(itemdiv)            
 STANDARD_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+ANTICHESS_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1"
 RACING_KINGS_START_FEN = "8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1"
 HORDE_START_FEN = "rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1"
 THREE_CHECK_START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3+3 0 1"
@@ -1924,6 +1930,8 @@ def piecekindtopiecename(kind):
     return "Invalidpiece"
 
 def getstartfenforvariantkey(variantkey):
+    if variantkey == "antichess":
+        return ANTICHESS_START_FEN
     if variantkey == "racingKings":
         return RACING_KINGS_START_FEN
     if variantkey == "horde":
@@ -1995,6 +2003,53 @@ class Move:
     def __repr__(self):
         return "Move [from: {} , to: {} , prom: {}]".format(self.fromsq, self.tosq, self.prompiece)
 
+class PieceStore(e):
+    def dragstartfactory(self, p, pdiv, pdivcopy):
+        def dragstart():
+            self.parent.dragkind = "set"
+            self.parent.draggedsetpiece = p
+            self.parent.draggedpdiv = pdivcopy
+            pdiv.op(0.7)
+        return dragstart
+
+    def setstore(self, store):
+        self.store = store
+        self.container.x()
+        self.pieces = {}        
+        for pieceletter in self.store.split(""):
+            p = piecelettertopiece(pieceletter)
+            if p.color == self.color:
+                if p.kind in self.pieces:
+                    self.pieces[p.kind]["mul"] += 1
+                else:
+                    pcdiv = Div().pr().w(self.piecesize).h(self.piecesize)
+                    pdiv = Div().pa().cp().ac(getclassforpiece(p, self.parent.piecestyle)).w(self.piecesize).h(self.piecesize)
+                    pdivcopy = Div().pa().cp().ac(getclassforpiece(p, self.parent.piecestyle)).w(self.piecesize).h(self.piecesize)
+                    pdiv.t(0).l(0).sa("draggable", True).ae("dragstart", self.dragstartfactory(p, pdiv, pdivcopy))                
+                    pcdiv.a(pdiv)
+                    self.pieces[p.kind] = {
+                        "mul": 1,
+                        "p": p,
+                        "pcdiv": pcdiv
+                    }        
+        for pkind, pdesc in self.pieces.items():
+            muldiv = Div().pa().w(self.muldivsize).h(self.muldivsize).fs(self.muldivsize).html("{}".format(pdesc["mul"]))
+            muldiv.l(self.piecesize - self.muldivsize).t(0).ac("storemuldiv")
+            pdesc["pcdiv"].a(muldiv)
+            self.container.a(pdesc["pcdiv"])            
+        return self
+
+    def __init__(self, args):
+        super().__init__("div")
+        self.parent = args.get("parent", BasicBoard({}))
+        self.store = args.get("store", "")
+        self.color = args.get("color", WHITE)
+        self.piecesize = args.get("piecesize", self.parent.piecesize)
+        self.muldivsize = int(self.piecesize / 2)
+        self.container = Div().aac(["piecestorecontainer", "noselect"])
+        self.a(self.container)
+        self.setstore(self.store)
+
 class BasicBoard(e):
     def squareuci(self, sq):
         fileletter = String.fromCharCode(sq.file + "a".charCodeAt(0))
@@ -2036,6 +2091,7 @@ class BasicBoard(e):
             if self.promoting:
                 ev.preventDefault()
                 return
+            self.dragkind = "move"
             self.draggedsq = sq            
             self.draggedpdiv = pdiv
             pdiv.op(0.1)
@@ -2072,12 +2128,18 @@ class BasicBoard(e):
             ev.preventDefault()            
             self.draggedpdiv.pv(self.piececoordsvect(self.flipawaresquare(sq)))
             self.draggedpdiv.zi(100)
-            self.dragmove = Move(self.draggedsq, sq)
-            if self.ismovepromotion(self.dragmove):
-                self.promoting = True
-                self.build()
-            elif not ( self.movecallback is None ):
-                self.movecallback(self.variantkey, self.fen, self.moveuci(self.dragmove))
+            if self.dragkind == "move":                
+                self.dragmove = Move(self.draggedsq, sq)
+                if self.ismovepromotion(self.dragmove):
+                    self.promoting = True
+                    self.build()
+                elif not ( self.movecallback is None ):
+                    self.movecallback(self.variantkey, self.fen, self.moveuci(self.dragmove))
+            elif self.dragkind == "set":
+                self.container.a(self.draggedpdiv)
+                if not ( self.movecallback is None ):
+                    setuci = "{}@{}".format(self.draggedsetpiece.kind, self.squareuci(sq))
+                    self.movecallback(self.variantkey, self.fen, setuci)
         return piecedrop
 
     def buildsquares(self):
@@ -2143,7 +2205,25 @@ class BasicBoard(e):
             self.container.ae("mousedown", self.promotecancelclick)
         self.fentext = RawTextInput({}).w(self.width).fs(10).setText(self.fen)
         self.fendiv = Div().ac("boardfendiv").a(self.fentext)
-        self.sectioncontainer.aa([self.outercontainer, self.fendiv])
+        if self.variantkey == "crazyhouse":
+            self.whitestore = PieceStore({
+                "parent": self,
+                "color": WHITE,
+                "store": self.crazyfen
+            })
+            self.blackstore = PieceStore({
+                "parent": self,
+                "color": BLACK,
+                "store": self.crazyfen
+            })
+            self.whitestorediv = Div().ac("boardstorediv").h(self.squaresize).a(self.whitestore)
+            self.blackstorediv = Div().ac("boardstorediv").h(self.squaresize).a(self.blackstore)
+            if self.flip:
+                self.sectioncontainer.aa([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv])
+            else:
+                self.sectioncontainer.aa([self.blackstorediv, self.outercontainer, self.whitestorediv, self.fendiv])
+        else:
+            self.sectioncontainer.aa([self.outercontainer, self.fendiv])
         self.x().a(self.sectioncontainer)
         return self
 
@@ -2166,7 +2246,7 @@ class BasicBoard(e):
         self.turndivsize = self.margin
 
     def parseargs(self, args):
-        self.squaresize = args.get("squaresize", 50)
+        self.squaresize = args.get("squaresize", 45)
         self.squarepaddingratio = args.get("squarepaddingratio", 0.04)
         self.marginratio = args.get("marginratio", 0.02)
         self.numfiles = args.get("numfiles", 8)
