@@ -495,7 +495,8 @@
 }
 
 .boardstorediv { 
-    display: flex; justify-content: space-around; align-items: center; padding: 3px;
+    display: flex; justify-content: space-around; align-items: center;
+    background-image: url(/static/img/backgrounds/wood.jpg)
 }
 
 .boardsectioncontainer {
@@ -506,15 +507,9 @@
     background-image: url(/static/img/backgrounds/wood.jpg)
 }
 
-.piecestorecontainer {    
-    padding: 2px;
-    display: flex;
-    background-image: url(/static/img/backgrounds/wood.jpg)
-}
-
 .storemuldiv {
     display: flex; justify-content: space-around; align-items: center;
-    font-weight: bold; color: #007;
+    font-weight: bold; color: #ff0;
 }
 
 .boardthreechecklifesdiv {
