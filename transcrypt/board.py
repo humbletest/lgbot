@@ -531,7 +531,16 @@ class Board(e):
     def resetcallback(self):
         self.basicboard.reset()
 
-    def setfromfen(self, fen, positioninfo = {}):
+    def setfromfen(self, fen, positioninfo = {}, edithistory = True):
+        if edithistory and ( "genmove" in positioninfo ):
+            genmove = positioninfo["genmove"]
+            if genmove == "reset":
+                self.history = []
+            else:
+                self.history.append({
+                    "fen": self.basicboard.fen,
+                    "positioninfo": self.positioninfo
+                })
         self.positioninfo = positioninfo        
         self.movelist = cpick("movelist" in self.positioninfo, self.positioninfo["movelist"], [])        
         self.basicboard.setfromfen(fen, self.positioninfo)
@@ -563,8 +572,14 @@ class Board(e):
             movediv.ae("mousedown", self.moveclickedfactory(move))
             self.movelistdiv.a(movediv)
 
+    def delcallback(self):
+        if len(self.history) > 0:
+            item = self.history.pop()
+            self.setfromfen(item["fen"], item["positioninfo"], False)
+
     def __init__(self, args):
         super().__init__("div")
+        self.history = []
         self.basicboard = BasicBoard(args)        
         self.controlpanel = Div().ac("boardcontrolpanel")
         self.controlpanel.a(Button("Flip", self.flipcallback))        
@@ -578,6 +593,7 @@ class Board(e):
         self.variantchangedcallback = args.get("variantchangedcallback", None)
         self.moveclickedcallback = args.get("moveclickedcallback", None)
         self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth)
+        self.controlpanel.a(Button("Del", self.delcallback))
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
         self.sectioncontainer = Div().ac("bigboardsectioncontainer").w(self.basicboard.outerwidth)
         self.sectioncontainer.aa([self.controlpanel, self.basicboard])

@@ -96,7 +96,7 @@ def my_broadcast(obj):
             except:
                 print("emit failed for sid {}".format(sid))
 
-def addpositioninfo(board, obj):
+def addpositioninfo(board, obj, genmove = None, genboard = None):
     moves = board.generate_legal_moves()
     movelist = []
     for move in moves:
@@ -107,6 +107,13 @@ def addpositioninfo(board, obj):
     obj["positioninfo"] = {
         "movelist": movelist
     }
+    if genmove == "reset":
+        obj["positioninfo"]["genmove"] = "reset"
+    elif not ( genmove is None ):        
+        obj["positioninfo"]["genmove"] = {
+            "uci": genmove.uci(),
+            "san": genboard.san(genmove)
+        }
 
 def get_variant_board(variantkey):
     if variantkey == "standard":
@@ -174,11 +181,12 @@ class socket_handler:
                             board = get_variant_board(variantkey)
                             board.set_fen(fen)
                             if board.is_legal(move):
+                                genboard = board.copy()
                                 board.push(move)
                                 rjsonobj["kind"] = "setmainboardfen"
                                 rjsonobj["fen"] = board.fen()
                                 rjsonobj["status"] = "making main board move ok"
-                                addpositioninfo(board, rjsonobj)
+                                addpositioninfo(board, rjsonobj, move, genboard)
                             else:
                                 rjsonobj["kind"] = "setmainboardfen"
                                 rjsonobj["fen"] = fen
@@ -196,7 +204,7 @@ class socket_handler:
                             rjsonobj["kind"] = "setmainboardfen"
                             rjsonobj["fen"] = board.fen()
                             rjsonobj["status"] = "main board variant selected ok"
-                            addpositioninfo(board, rjsonobj)
+                            addpositioninfo(board, rjsonobj, "reset")
                         except:
                             rjsonobj["status"] = "! main board variant selection failed"
                             traceback.print_exc(file=sys.stderr)
