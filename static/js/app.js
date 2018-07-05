@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-05 14:46:27
+// Transcrypt'ed from Python, 2018-07-05 20:59:55
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4539,8 +4539,19 @@ function app () {
 		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.squaresize = 35;
+				self.calcsizes ();
+				while (self.totalheight () < height) {
+					self.squaresize++;
+					self.calcsizes ();
+				}
+				self.squaresize--;
+				self.calcsizes ();
+				self.build ();
+			});},
 			get totalheight () {return __get__ (this, function (self) {
-				var th = self.outerheight;
+				var th = self.outerheight + self.fendivheight;
 				if (self.variantkey == 'crazyhouse') {
 					th += 2 * self.squaresize;
 				}
@@ -4757,7 +4768,7 @@ function app () {
 					self.container.ae ('mousedown', self.promotecancelclick);
 				}
 				self.fentext = RawTextInput (dict ({})).w (self.width).fs (10).setText (self.fen);
-				self.fendiv = Div ().ac ('boardfendiv').a (self.fentext);
+				self.fendiv = Div ().ac ('boardfendiv').h (self.fendivheight).a (self.fentext);
 				if (self.variantkey == 'crazyhouse') {
 					self.whitestorediv = Div ().ac ('boardstorediv').h (self.squaresize).w (self.outerwidth);
 					self.blackstorediv = Div ().ac ('boardstorediv').h (self.squaresize).w (self.outerwidth);
@@ -4793,6 +4804,7 @@ function app () {
 				self.outerwidth = self.width + 2 * self.margin;
 				self.outerheight = self.height + 2 * self.margin;
 				self.turndivsize = self.margin;
+				self.fendivheight = 25;
 			});},
 			get parseargs () {return __get__ (this, function (self, args) {
 				self.squaresize = args.py_get ('squaresize', 45);
@@ -5004,10 +5016,17 @@ function app () {
 			get variantchanged () {return __get__ (this, function (self, variantkey) {
 				self.basicboard.variantkey = variantkey;
 				self.basicboard.reset ();
+				try {
+					self.basicboard.resize (self.resizewidth, self.resizeheight);
+				}
+				catch (__except0__) {
+					// pass;
+				}
 				if (!(self.variantchangedcallback === null)) {
 					self.variantchangedcallback (self.basicboard.variantkey);
 				}
-				self.buildpositioninfo (self.basicboard.fen);
+				self.basicresize ();
+				self.buildpositioninfo ();
 			});},
 			get setvariantcallback () {return __get__ (this, function (self) {
 				self.variantchanged (self.basicboard.variantkey);
@@ -5035,6 +5054,18 @@ function app () {
 					var item = self.history.py_pop ();
 					self.setfromfen (item ['fen'], item ['positioninfo'], false);
 				}
+			});},
+			get basicresize () {return __get__ (this, function (self) {
+				self.controlwidth = max (self.basicboard.outerwidth, 260);
+				self.controlpanel.w (self.controlwidth);
+				self.sectioncontainer.w (self.controlwidth);
+			});},
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.resizewidth = width;
+				self.resizeheight = height - getglobalcssvarpxint ('--boardcontrolpanelheight');
+				self.basicboard.resize (self.resizewidth, self.resizeheight);
+				self.basicresize ();
+				self.buildpositioninfo ();
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');

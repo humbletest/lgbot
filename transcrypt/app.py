@@ -2057,8 +2057,18 @@ class PieceStore(e):
         self.setstore(self.store)
 
 class BasicBoard(e):
+    def resize(self, width, height):
+        self.squaresize = 35
+        self.calcsizes()
+        while self.totalheight() < height:
+            self.squaresize += 1
+            self.calcsizes()
+        self.squaresize -= 1
+        self.calcsizes()
+        self.build()
+
     def totalheight(self):
-        th = self.outerheight
+        th = self.outerheight + self.fendivheight
         if self.variantkey == "crazyhouse":
             th += 2 * self.squaresize
         return th
@@ -2238,7 +2248,7 @@ class BasicBoard(e):
             self.buildprominput()
             self.container.ae("mousedown", self.promotecancelclick)
         self.fentext = RawTextInput({}).w(self.width).fs(10).setText(self.fen)
-        self.fendiv = Div().ac("boardfendiv").a(self.fentext)
+        self.fendiv = Div().ac("boardfendiv").h(self.fendivheight).a(self.fentext)
         if self.variantkey == "crazyhouse":
             self.whitestorediv = Div().ac("boardstorediv").h(self.squaresize).w(self.outerwidth)
             self.blackstorediv = Div().ac("boardstorediv").h(self.squaresize).w(self.outerwidth)
@@ -2280,6 +2290,7 @@ class BasicBoard(e):
         self.outerwidth = self.width + 2 * self.margin
         self.outerheight = self.height + 2 * self.margin
         self.turndivsize = self.margin
+        self.fendivheight = 25
 
     def parseargs(self, args):
         self.squaresize = args.get("squaresize", 45)
@@ -2439,9 +2450,14 @@ class Board(e):
     def variantchanged(self, variantkey):
         self.basicboard.variantkey = variantkey
         self.basicboard.reset()
+        try:
+            self.basicboard.resize(self.resizewidth, self.resizeheight)            
+        except:
+            pass
         if not ( self.variantchangedcallback is None ):
             self.variantchangedcallback(self.basicboard.variantkey)
-        self.buildpositioninfo(self.basicboard.fen)
+        self.basicresize()
+        self.buildpositioninfo()
 
     def setvariantcallback(self):
         self.variantchanged(self.basicboard.variantkey)
@@ -2463,6 +2479,18 @@ class Board(e):
         if len(self.history) > 0:
             item = self.history.pop()
             self.setfromfen(item["fen"], item["positioninfo"], False)
+
+    def basicresize(self):
+        self.controlwidth = max(self.basicboard.outerwidth, 260)
+        self.controlpanel.w(self.controlwidth)
+        self.sectioncontainer.w(self.controlwidth)
+
+    def resize(self, width, height):
+        self.resizewidth = width
+        self.resizeheight = height - getglobalcssvarpxint("--boardcontrolpanelheight")
+        self.basicboard.resize(self.resizewidth, self.resizeheight)
+        self.basicresize()
+        self.buildpositioninfo()
 
     def __init__(self, args):
         super().__init__("div")
