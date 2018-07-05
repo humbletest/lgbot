@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-05 10:31:38
+// Transcrypt'ed from Python, 2018-07-05 12:28:13
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4517,7 +4517,7 @@ function app () {
 					var __left0__ = __iterable0__ [__index0__];
 					var pkind = __left0__ [0];
 					var pdesc = __left0__ [1];
-					var muldiv = Div ().pa ().w (self.muldivsize).h (self.muldivsize).fs (self.muldivsize).html ('{}'.format (pdesc ['mul']));
+					var muldiv = Div ().pa ().w (self.muldivsize).h (self.muldivsize).fs (self.muldivsize * 1.3).html ('{}'.format (pdesc ['mul']));
 					muldiv.l (self.piecesize - self.muldivsize).t (0).ac ('storemuldiv');
 					pdesc ['pcdiv'].a (muldiv);
 					self.container.a (pdesc ['pcdiv']);
@@ -4529,15 +4529,23 @@ function app () {
 				self.parent = args.py_get ('parent', BasicBoard (dict ({})));
 				self.store = args.py_get ('store', '');
 				self.color = args.py_get ('color', WHITE);
+				self.container = args.py_get ('containerdiv', Div ());
+				self.container.ac ('noselect');
 				self.piecesize = args.py_get ('piecesize', self.parent.piecesize);
 				self.muldivsize = int (self.piecesize / 2);
-				self.container = Div ().aac (list (['piecestorecontainer', 'noselect']));
 				self.a (self.container);
 				self.setstore (self.store);
 			});}
 		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
+			get totalheight () {return __get__ (this, function (self) {
+				var th = self.outerheight;
+				if (self.variantkey == 'crazyhouse') {
+					th += 2 * self.squaresize;
+				}
+				return th;
+			});},
 			get squareuci () {return __get__ (this, function (self, sq) {
 				var fileletter = String.fromCharCode (sq.file + 'a'.charCodeAt (0));
 				var rankletter = String.fromCharCode ((self.lastrank - sq.rank) + '1'.charCodeAt (0));
@@ -4751,10 +4759,10 @@ function app () {
 				self.fentext = RawTextInput (dict ({})).w (self.width).fs (10).setText (self.fen);
 				self.fendiv = Div ().ac ('boardfendiv').a (self.fentext);
 				if (self.variantkey == 'crazyhouse') {
-					self.whitestore = PieceStore (dict ({'parent': self, 'color': WHITE, 'store': self.crazyfen}));
-					self.blackstore = PieceStore (dict ({'parent': self, 'color': BLACK, 'store': self.crazyfen}));
-					self.whitestorediv = Div ().ac ('boardstorediv').h (self.squaresize).a (self.whitestore);
-					self.blackstorediv = Div ().ac ('boardstorediv').h (self.squaresize).a (self.blackstore);
+					self.whitestorediv = Div ().ac ('boardstorediv').h (self.squaresize).w (self.outerwidth);
+					self.blackstorediv = Div ().ac ('boardstorediv').h (self.squaresize).w (self.outerwidth);
+					self.whitestore = PieceStore (dict ({'parent': self, 'color': WHITE, 'store': self.crazyfen, 'containerdiv': self.whitestorediv}));
+					self.blackstore = PieceStore (dict ({'parent': self, 'color': BLACK, 'store': self.crazyfen, 'containerdiv': self.blackstorediv}));
 					if (self.flip) {
 						self.sectioncontainer.aa (list ([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv]));
 					}
@@ -4987,6 +4995,7 @@ function app () {
 				if (!(self.variantchangedcallback === null)) {
 					self.variantchangedcallback (self.basicboard.variantkey);
 				}
+				self.buildpositioninfo (self.basicboard.fen);
 			});},
 			get setvariantcallback () {return __get__ (this, function (self) {
 				self.variantchanged (self.basicboard.variantkey);
@@ -5000,7 +5009,7 @@ function app () {
 				return moveclicked;
 			});},
 			get buildpositioninfo () {return __get__ (this, function (self) {
-				self.movelistdiv.x ();
+				self.movelistdiv.x ().h (self.basicboard.totalheight ());
 				var __iterable0__ = self.movelist;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var move = __iterable0__ [__index0__];
@@ -5023,7 +5032,7 @@ function app () {
 				self.sectioncontainer = Div ().ac ('bigboardsectioncontainer').w (self.basicboard.outerwidth);
 				self.sectioncontainer.aa (list ([self.controlpanel, self.basicboard]));
 				self.verticalcontainer = Div ().ac ('bigboardverticalcontainer');
-				self.movelistdiv = Div ().ac ('bigboardmovelist').w (100).h (self.basicboard.outerheight);
+				self.movelistdiv = Div ().ac ('bigboardmovelist').w (100);
 				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv]));
 				self.a (self.verticalcontainer);
 				self.buildpositioninfo ();

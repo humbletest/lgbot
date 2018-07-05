@@ -2038,7 +2038,7 @@ class PieceStore(e):
                         "pcdiv": pcdiv
                     }        
         for pkind, pdesc in self.pieces.items():
-            muldiv = Div().pa().w(self.muldivsize).h(self.muldivsize).fs(self.muldivsize).html("{}".format(pdesc["mul"]))
+            muldiv = Div().pa().w(self.muldivsize).h(self.muldivsize).fs(self.muldivsize * 1.3).html("{}".format(pdesc["mul"]))
             muldiv.l(self.piecesize - self.muldivsize).t(0).ac("storemuldiv")
             pdesc["pcdiv"].a(muldiv)
             self.container.a(pdesc["pcdiv"])            
@@ -2049,13 +2049,20 @@ class PieceStore(e):
         self.parent = args.get("parent", BasicBoard({}))
         self.store = args.get("store", "")
         self.color = args.get("color", WHITE)
+        self.container = args.get("containerdiv", Div())
+        self.container.ac("noselect")
         self.piecesize = args.get("piecesize", self.parent.piecesize)
-        self.muldivsize = int(self.piecesize / 2)
-        self.container = Div().aac(["piecestorecontainer", "noselect"])
+        self.muldivsize = int(self.piecesize / 2)        
         self.a(self.container)
         self.setstore(self.store)
 
 class BasicBoard(e):
+    def totalheight(self):
+        th = self.outerheight
+        if self.variantkey == "crazyhouse":
+            th += 2 * self.squaresize
+        return th
+
     def squareuci(self, sq):
         fileletter = String.fromCharCode(sq.file + "a".charCodeAt(0))
         rankletter = String.fromCharCode(self.lastrank - sq.rank + "1".charCodeAt(0))
@@ -2233,18 +2240,20 @@ class BasicBoard(e):
         self.fentext = RawTextInput({}).w(self.width).fs(10).setText(self.fen)
         self.fendiv = Div().ac("boardfendiv").a(self.fentext)
         if self.variantkey == "crazyhouse":
+            self.whitestorediv = Div().ac("boardstorediv").h(self.squaresize).w(self.outerwidth)
+            self.blackstorediv = Div().ac("boardstorediv").h(self.squaresize).w(self.outerwidth)
             self.whitestore = PieceStore({
                 "parent": self,
                 "color": WHITE,
-                "store": self.crazyfen
+                "store": self.crazyfen,
+                "containerdiv": self.whitestorediv
             })
             self.blackstore = PieceStore({
                 "parent": self,
                 "color": BLACK,
-                "store": self.crazyfen
-            })
-            self.whitestorediv = Div().ac("boardstorediv").h(self.squaresize).a(self.whitestore)
-            self.blackstorediv = Div().ac("boardstorediv").h(self.squaresize).a(self.blackstore)
+                "store": self.crazyfen,
+                "containerdiv": self.blackstorediv
+            })            
             if self.flip:
                 self.sectioncontainer.aa([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv])
             else:
@@ -2423,6 +2432,7 @@ class Board(e):
         self.basicboard.reset()
         if not ( self.variantchangedcallback is None ):
             self.variantchangedcallback(self.basicboard.variantkey)
+        self.buildpositioninfo(self.basicboard.fen)
 
     def setvariantcallback(self):
         self.variantchanged(self.basicboard.variantkey)
@@ -2434,7 +2444,7 @@ class Board(e):
         return moveclicked
 
     def buildpositioninfo(self):
-        self.movelistdiv.x()
+        self.movelistdiv.x().h(self.basicboard.totalheight())
         for move in self.movelist:
             movediv = Div().ac("bigboardshowmove").html(move["san"])
             movediv.ae("mousedown", self.moveclickedfactory(move))
@@ -2459,7 +2469,7 @@ class Board(e):
         self.sectioncontainer = Div().ac("bigboardsectioncontainer").w(self.basicboard.outerwidth)
         self.sectioncontainer.aa([self.controlpanel, self.basicboard])
         self.verticalcontainer = Div().ac("bigboardverticalcontainer")
-        self.movelistdiv = Div().ac("bigboardmovelist").w(100).h(self.basicboard.outerheight)
+        self.movelistdiv = Div().ac("bigboardmovelist").w(100)
         self.verticalcontainer.aa([self.sectioncontainer, self.movelistdiv])
         self.a(self.verticalcontainer)
         self.buildpositioninfo()
