@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-04 19:30:39
+// Transcrypt'ed from Python, 2018-07-05 10:31:38
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4025,27 +4025,6 @@ function app () {
 				var __iterable0__ = self.childs;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var item = __iterable0__ [__index0__];
-					if (item.enabled) {
-						return i;
-					}
-					i++;
-				}
-				return null;
-			});},
-			get toobj () {return __get__ (this, function (self) {
-				var listobj = list ([]);
-				var __iterable0__ = self.childs;
-				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
-					var item = __iterable0__ [__index0__];
-					listobj.append (item.toobj ());
-				}
-				return null;
-			});},
-			get toobj () {return __get__ (this, function (self) {
-				var listobj = list ([]);
-				var __iterable0__ = self.childs;
-				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
-					var item = __iterable0__ [__index0__];
 					listobj.append (item.toobj ());
 				}
 				var obj = self.baseobj ();
@@ -4965,7 +4944,10 @@ function app () {
 				self.variantkey = args.py_get ('variantkey', 'standard');
 				self.setrepfromfen (args.py_get ('fen', getstartfenforvariantkey (self.variantkey)));
 			});},
-			get setfromfen () {return __get__ (this, function (self, fen) {
+			get setfromfen () {return __get__ (this, function (self, fen, positioninfo) {
+				if (typeof positioninfo == 'undefined' || (positioninfo != null && positioninfo .hasOwnProperty ("__kwargtrans__"))) {;
+					var positioninfo = dict ({});
+				};
 				self.setrepfromfen (fen);
 				self.build ();
 			});},
@@ -4987,8 +4969,14 @@ function app () {
 			get resetcallback () {return __get__ (this, function (self) {
 				self.basicboard.reset ();
 			});},
-			get setfromfen () {return __get__ (this, function (self, fen) {
-				self.basicboard.setfromfen (fen);
+			get setfromfen () {return __get__ (this, function (self, fen, positioninfo) {
+				if (typeof positioninfo == 'undefined' || (positioninfo != null && positioninfo .hasOwnProperty ("__kwargtrans__"))) {;
+					var positioninfo = dict ({});
+				};
+				self.positioninfo = positioninfo;
+				self.movelist = cpick (__in__ ('movelist', self.positioninfo), self.positioninfo ['movelist'], list ([]));
+				self.basicboard.setfromfen (fen, self.positioninfo);
+				self.buildpositioninfo ();
 			});},
 			get setvariantcombo () {return __get__ (this, function (self) {
 				self.variantcombo.setoptions (VARIANT_OPTIONS, self.basicboard.variantkey);
@@ -5003,6 +4991,24 @@ function app () {
 			get setvariantcallback () {return __get__ (this, function (self) {
 				self.variantchanged (self.basicboard.variantkey);
 			});},
+			get moveclickedfactory () {return __get__ (this, function (self, move) {
+				var moveclicked = function () {
+					if (!(self.moveclickedcallback === null)) {
+						self.moveclickedcallback (self.basicboard.variantkey, self.basicboard.fen, move ['uci']);
+					}
+				};
+				return moveclicked;
+			});},
+			get buildpositioninfo () {return __get__ (this, function (self) {
+				self.movelistdiv.x ();
+				var __iterable0__ = self.movelist;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var move = __iterable0__ [__index0__];
+					var movediv = Div ().ac ('bigboardshowmove').html (move ['san']);
+					movediv.ae ('mousedown', self.moveclickedfactory (move));
+					self.movelistdiv.a (movediv);
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
 				self.basicboard = BasicBoard (args);
@@ -5011,11 +5017,16 @@ function app () {
 				self.variantcombo = ComboBox (dict ({'changecallback': self.variantchanged, 'selectclass': 'variantselect', 'optionfirstclass': 'variantoptionfirst', 'optionclass': 'variantoption'}));
 				self.setvariantcombo ();
 				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
+				self.moveclickedcallback = args.py_get ('moveclickedcallback', null);
 				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth);
 				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
 				self.sectioncontainer = Div ().ac ('bigboardsectioncontainer').w (self.basicboard.outerwidth);
 				self.sectioncontainer.aa (list ([self.controlpanel, self.basicboard]));
-				self.a (self.sectioncontainer);
+				self.verticalcontainer = Div ().ac ('bigboardverticalcontainer');
+				self.movelistdiv = Div ().ac ('bigboardmovelist').w (100).h (self.basicboard.outerheight);
+				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv]));
+				self.a (self.verticalcontainer);
+				self.buildpositioninfo ();
 			});}
 		});
 		if (window.location.protocol == 'https:') {
@@ -5149,12 +5160,17 @@ function app () {
 				return socket.emit ('sioreq', dict ({'kind': 'mainboardsetvariant', 'variantkey': variantkey}));
 			}), simulateserverlag ());
 		};
+		var mainboardmoveclickedcallback = function (variantkey, fen, moveuci) {
+			setTimeout ((function __lambda__ (ev) {
+				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
+			}), simulateserverlag ());
+		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
-			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback}));
+			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback, 'moveclickedcallback': mainboardmoveclickedcallback}));
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'})).setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
@@ -5163,6 +5179,7 @@ function app () {
 			mainlog (LogItem ('socket connected ok', 'cmdstatusok'));
 			socket.emit ('sioreq', dict ({'data': 'socket connected'}));
 			getlocalconfig ();
+			socket.emit ('sioreq', dict ({'kind': 'mainboardsetvariant', 'variantkey': 'standard'}));
 		};
 		var onevent = function (json) {
 			var dest = null;
@@ -5222,7 +5239,8 @@ function app () {
 					}
 					else if (kind == 'setmainboardfen') {
 						var fen = response ['fen'];
-						mainboard.setfromfen (fen);
+						var positioninfo = response ['positioninfo'];
+						mainboard.setfromfen (fen, positioninfo);
 					}
 				}
 			}
@@ -5343,6 +5361,7 @@ function app () {
 			__all__.log = log;
 			__all__.mainboard = mainboard;
 			__all__.mainboardmovecallback = mainboardmovecallback;
+			__all__.mainboardmoveclickedcallback = mainboardmoveclickedcallback;
 			__all__.mainboardvariantchangedcallback = mainboardvariantchangedcallback;
 			__all__.mainlog = mainlog;
 			__all__.mainlogpane = mainlogpane;
