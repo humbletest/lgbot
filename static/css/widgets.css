@@ -12,7 +12,8 @@
     --logtimewidth: 50px;
     --copybackgroundcolor: #9f9;
     --maxschemaopenbuttonwidth: calc( var(--schemawidth) - 8 * var(--schemacontainermargin) );
-    --schemacollindent: calc( var(--schemabase) + 2 * var(--schemacontainermargin) )
+    --schemacollindent: calc( var(--schemabase) + 2 * var(--schemacontainermargin) );
+    --boardcontrolpanelheight: 40px;
 }
 
 .noselect {
@@ -481,7 +482,8 @@
 }
 
 .boardcontrolpanel {
-    display: flex; justify-content: space-around; align-items: center; padding: 3px;
+    display: flex; justify-content: space-around; align-items: center;
+    height: var(--boardcontrolpanelheight);
 }
 
 .boardpromotionsquare {
@@ -519,3 +521,21 @@
     font-weight: bold;
 }
 
+.bigboardverticalcontainer {
+    display: flex;
+}
+
+.bigboardmovelist {
+    background-color: #def;
+    overflow: scroll;
+    text-align: center;
+    margin-top: var(--boardcontrolpanelheight);
+}
+
+.bigboardshowmove {
+    padding: 2px;
+    cursor: pointer;
+    color: #007;
+    font-family: monospace;
+    font-size: 16px;
+}

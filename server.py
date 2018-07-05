@@ -96,6 +96,18 @@ def my_broadcast(obj):
             except:
                 print("emit failed for sid {}".format(sid))
 
+def addpositioninfo(board, obj):
+    moves = board.generate_legal_moves()
+    movelist = []
+    for move in moves:
+        movelist.append({
+            "uci": move.uci(),
+            "san": board.san(move)
+        })
+    obj["positioninfo"] = {
+        "movelist": movelist
+    }
+
 def get_variant_board(variantkey):
     if variantkey == "standard":
         return chess.Board()
@@ -166,10 +178,12 @@ class socket_handler:
                                 rjsonobj["kind"] = "setmainboardfen"
                                 rjsonobj["fen"] = board.fen()
                                 rjsonobj["status"] = "making main board move ok"
+                                addpositioninfo(board, rjsonobj)
                             else:
                                 rjsonobj["kind"] = "setmainboardfen"
                                 rjsonobj["fen"] = fen
                                 rjsonobj["status"] = "! making main board move failed, illegal move"                                
+                                addpositioninfo(board, rjsonobj)
                         except:
                             rjsonobj["status"] = "! making main board move failed, fatal"
                             traceback.print_exc(file=sys.stderr)
@@ -182,6 +196,7 @@ class socket_handler:
                             rjsonobj["kind"] = "setmainboardfen"
                             rjsonobj["fen"] = board.fen()
                             rjsonobj["status"] = "main board variant selected ok"
+                            addpositioninfo(board, rjsonobj)
                         except:
                             rjsonobj["status"] = "! main board variant selection failed"
                             traceback.print_exc(file=sys.stderr)

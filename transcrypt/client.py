@@ -166,6 +166,10 @@ def mainboardmovecallback(variantkey, fen, moveuci):
 def mainboardvariantchangedcallback(variantkey):
     global socket
     setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":variantkey}), simulateserverlag())
+
+def mainboardmoveclickedcallback(variantkey, fen, moveuci):
+    global socket
+    setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci}), simulateserverlag())
 ######################################################
 
 ######################################################
@@ -195,7 +199,8 @@ def build():
 
     mainboard = Board({
         "movecallback": mainboardmovecallback,
-        "variantchangedcallback": mainboardvariantchangedcallback
+        "variantchangedcallback": mainboardvariantchangedcallback,
+        "moveclickedcallback": mainboardmoveclickedcallback
     })
 
     maintabpane = TabPane({"kind":"main", "id":"main"}).setTabs(
@@ -223,6 +228,7 @@ def onconnect():
     mainlog(LogItem("socket connected ok", "cmdstatusok"))
     socket.emit('sioreq', {"data": "socket connected"})    
     getlocalconfig()
+    socket.emit('sioreq', {"kind":"mainboardsetvariant", "variantkey":"standard"})
 
 def onevent(json):    
     global configschema, mainboard
@@ -269,7 +275,8 @@ def onevent(json):
                 window.alert("Config storing status: " + status + ".")            
             elif kind == "setmainboardfen":                
                 fen = response["fen"]
-                mainboard.setfromfen(fen)
+                positioninfo = response["positioninfo"]
+                mainboard.setfromfen(fen, positioninfo)
     if ( logitem is None ) or ( dest is None ):
         jsonstr = JSON.stringify(json, null, 2)
         mainlog(LogItem(jsonstr))

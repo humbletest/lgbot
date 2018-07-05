@@ -502,7 +502,7 @@ class BasicBoard(e):
         self.variantkey = args.get("variantkey", "standard")
         self.setrepfromfen(args.get("fen", getstartfenforvariantkey(self.variantkey)))
 
-    def setfromfen(self, fen):
+    def setfromfen(self, fen, positioninfo = {}):
         self.setrepfromfen(fen)
         self.build()
 
@@ -522,8 +522,11 @@ class Board(e):
     def resetcallback(self):
         self.basicboard.reset()
 
-    def setfromfen(self, fen):
-        self.basicboard.setfromfen(fen)
+    def setfromfen(self, fen, positioninfo = {}):
+        self.positioninfo = positioninfo        
+        self.movelist = cpick("movelist" in self.positioninfo, self.positioninfo["movelist"], [])        
+        self.basicboard.setfromfen(fen, self.positioninfo)
+        self.buildpositioninfo()
 
     def setvariantcombo(self):        
         self.variantcombo.setoptions(VARIANT_OPTIONS, self.basicboard.variantkey)
@@ -537,21 +540,39 @@ class Board(e):
     def setvariantcallback(self):
         self.variantchanged(self.basicboard.variantkey)
 
+    def moveclickedfactory(self, move):
+        def moveclicked():
+            if not ( self.moveclickedcallback is None ):
+                self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, move["uci"])
+        return moveclicked
+
+    def buildpositioninfo(self):
+        self.movelistdiv.x()
+        for move in self.movelist:
+            movediv = Div().ac("bigboardshowmove").html(move["san"])
+            movediv.ae("mousedown", self.moveclickedfactory(move))
+            self.movelistdiv.a(movediv)
+
     def __init__(self, args):
         super().__init__("div")
         self.basicboard = BasicBoard(args)        
         self.controlpanel = Div().ac("boardcontrolpanel")
         self.controlpanel.a(Button("Flip", self.flipcallback))        
         self.variantcombo = ComboBox({
-            "changecallback": self.variantchanged,
+            "changecallback": self.variantchanged,            
             "selectclass": "variantselect",
             "optionfirstclass": "variantoptionfirst",
             "optionclass": "variantoption"
         })
         self.setvariantcombo()
         self.variantchangedcallback = args.get("variantchangedcallback", None)
+        self.moveclickedcallback = args.get("moveclickedcallback", None)
         self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth)
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
         self.sectioncontainer = Div().ac("bigboardsectioncontainer").w(self.basicboard.outerwidth)
         self.sectioncontainer.aa([self.controlpanel, self.basicboard])
-        self.a(self.sectioncontainer)
+        self.verticalcontainer = Div().ac("bigboardverticalcontainer")
+        self.movelistdiv = Div().ac("bigboardmovelist").w(100).h(self.basicboard.outerheight)
+        self.verticalcontainer.aa([self.sectioncontainer, self.movelistdiv])
+        self.a(self.verticalcontainer)
+        self.buildpositioninfo()
