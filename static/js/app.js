@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-05 12:28:13
+// Transcrypt'ed from Python, 2018-07-05 14:46:27
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4977,10 +4977,22 @@ function app () {
 			get resetcallback () {return __get__ (this, function (self) {
 				self.basicboard.reset ();
 			});},
-			get setfromfen () {return __get__ (this, function (self, fen, positioninfo) {
+			get setfromfen () {return __get__ (this, function (self, fen, positioninfo, edithistory) {
 				if (typeof positioninfo == 'undefined' || (positioninfo != null && positioninfo .hasOwnProperty ("__kwargtrans__"))) {;
 					var positioninfo = dict ({});
 				};
+				if (typeof edithistory == 'undefined' || (edithistory != null && edithistory .hasOwnProperty ("__kwargtrans__"))) {;
+					var edithistory = true;
+				};
+				if (edithistory && __in__ ('genmove', positioninfo)) {
+					var genmove = positioninfo ['genmove'];
+					if (genmove == 'reset') {
+						self.history = list ([]);
+					}
+					else {
+						self.history.append (dict ({'fen': self.basicboard.fen, 'positioninfo': self.positioninfo}));
+					}
+				}
 				self.positioninfo = positioninfo;
 				self.movelist = cpick (__in__ ('movelist', self.positioninfo), self.positioninfo ['movelist'], list ([]));
 				self.basicboard.setfromfen (fen, self.positioninfo);
@@ -5018,8 +5030,15 @@ function app () {
 					self.movelistdiv.a (movediv);
 				}
 			});},
+			get delcallback () {return __get__ (this, function (self) {
+				if (len (self.history) > 0) {
+					var item = self.history.py_pop ();
+					self.setfromfen (item ['fen'], item ['positioninfo'], false);
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.history = list ([]);
 				self.basicboard = BasicBoard (args);
 				self.controlpanel = Div ().ac ('boardcontrolpanel');
 				self.controlpanel.a (Button ('Flip', self.flipcallback));
@@ -5028,6 +5047,7 @@ function app () {
 				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
 				self.moveclickedcallback = args.py_get ('moveclickedcallback', null);
 				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth);
+				self.controlpanel.a (Button ('Del', self.delcallback));
 				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
 				self.sectioncontainer = Div ().ac ('bigboardsectioncontainer').w (self.basicboard.outerwidth);
 				self.sectioncontainer.aa (list ([self.controlpanel, self.basicboard]));
