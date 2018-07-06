@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-05 20:59:55
+// Transcrypt'ed from Python, 2018-07-06 09:41:44
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2914,12 +2914,24 @@ function app () {
 				self.seltab = null;
 				self.resize ();
 			});},
-			get resize () {return __get__ (this, function (self) {
+			get resize () {return __get__ (this, function (self, width, height) {
+				if (typeof width == 'undefined' || (width != null && width .hasOwnProperty ("__kwargtrans__"))) {;
+					var width = null;
+				};
+				if (typeof height == 'undefined' || (height != null && height .hasOwnProperty ("__kwargtrans__"))) {;
+					var height = null;
+				};
 				if (self.kind == 'main') {
 					self.width = window.innerWidth - 2 * WINDOW_SAFETY_MARGIN;
 					self.height = window.innerHeight - 2 * WINDOW_SAFETY_MARGIN;
 					self.marginleft = WINDOW_SAFETY_MARGIN;
 					self.margintop = WINDOW_SAFETY_MARGIN;
+				}
+				if (!(width === null)) {
+					self.width = width;
+				}
+				if (!(height === null)) {
+					self.height = height;
 				}
 				self.contentheight = self.height - self.tabsheight;
 				self.tabsdiv.w (self.width).h (self.tabsheight);
@@ -2947,7 +2959,7 @@ function app () {
 					tab.tabelement.ae ('mousedown', self.tabSelectedCallback.bind (self, tab));
 				}
 				if (!(self.key === null)) {
-					var storedkey = localStorage.getItem (self.key);
+					var storedkey = localStorage.getItem (self.id);
 					if (!(storedkey === null)) {
 						var key = storedkey;
 					}
@@ -3013,8 +3025,8 @@ function app () {
 				return self;
 			});},
 			get selectByKey () {return __get__ (this, function (self, key) {
-				if (!(self.key === null)) {
-					localStorage.setItem (self.key, key);
+				if (!(self.id === null)) {
+					localStorage.setItem (self.id, key);
 				}
 				return self.setTabElementByKey (key);
 			});}
@@ -5040,7 +5052,7 @@ function app () {
 				return moveclicked;
 			});},
 			get buildpositioninfo () {return __get__ (this, function (self) {
-				self.movelistdiv.x ().h (self.basicboard.totalheight ());
+				self.movelistdiv.x ().h (self.totalheight ());
 				var __iterable0__ = self.movelist;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var move = __iterable0__ [__index0__];
@@ -5055,37 +5067,52 @@ function app () {
 					self.setfromfen (item ['fen'], item ['positioninfo'], false);
 				}
 			});},
+			get totalheight () {return __get__ (this, function (self) {
+				return self.basicboard.totalheight () + self.controlpanelheight;
+			});},
+			get controlwidth () {return __get__ (this, function (self) {
+				return max (self.basicboard.outerwidth, self.controlpanelwidth);
+			});},
+			get totalwidth () {return __get__ (this, function (self) {
+				return self.controlwidth () + self.movelistdivwidth;
+			});},
 			get basicresize () {return __get__ (this, function (self) {
-				self.controlwidth = max (self.basicboard.outerwidth, 260);
-				self.controlpanel.w (self.controlwidth);
-				self.sectioncontainer.w (self.controlwidth);
+				self.controlpanel.w (self.controlwidth ()).mw (self.controlwidth ());
+				self.sectioncontainer.w (self.controlwidth ());
+				self.tabpane.resize (null, self.totalheight ());
 			});},
 			get resize () {return __get__ (this, function (self, width, height) {
 				self.resizewidth = width;
-				self.resizeheight = height - getglobalcssvarpxint ('--boardcontrolpanelheight');
+				self.resizeheight = height - self.controlpanelheight;
 				self.basicboard.resize (self.resizewidth, self.resizeheight);
 				self.basicresize ();
 				self.buildpositioninfo ();
+				self.tabpane.resize (max (width - self.totalwidth (), 600), null);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
 				self.history = list ([]);
 				self.basicboard = BasicBoard (args);
 				self.controlpanel = Div ().ac ('boardcontrolpanel');
+				self.controlpanelheight = getglobalcssvarpxint ('--boardcontrolpanelheight');
+				self.controlpanelwidth = 260;
 				self.controlpanel.a (Button ('Flip', self.flipcallback));
 				self.variantcombo = ComboBox (dict ({'changecallback': self.variantchanged, 'selectclass': 'variantselect', 'optionfirstclass': 'variantoptionfirst', 'optionclass': 'variantoption'}));
 				self.setvariantcombo ();
 				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
 				self.moveclickedcallback = args.py_get ('moveclickedcallback', null);
-				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth);
+				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth).mw (self.basicboard.outerwidth);
 				self.controlpanel.a (Button ('Del', self.delcallback));
 				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
 				self.sectioncontainer = Div ().ac ('bigboardsectioncontainer').w (self.basicboard.outerwidth);
 				self.sectioncontainer.aa (list ([self.controlpanel, self.basicboard]));
 				self.verticalcontainer = Div ().ac ('bigboardverticalcontainer');
-				self.movelistdiv = Div ().ac ('bigboardmovelist').w (100);
-				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv]));
+				self.movelistdivwidth = 100;
+				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
+				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', Div ()), Tab ('book', 'Book', Div ())]), 'analysis');
+				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv, self.tabpane]));
 				self.a (self.verticalcontainer);
+				self.basicresize ();
 				self.buildpositioninfo ();
 			});}
 		});
