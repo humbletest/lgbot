@@ -488,6 +488,18 @@ class TextArea(e):
 
     def getText(self):
         return self.v()
+
+class Canvas(e):
+    def __init__(self, width, height):
+        super().__init__("canvas")
+        self.sa("width", width)
+        self.sa("height", height)
+        self.ctx = self.e.getContext("2d")        
+
+    def drawline(self, fromv, tov):
+        self.ctx.moveTo(fromv.x, fromv.y)
+        self.ctx.lineTo(tov.x, tov.y)
+        self.ctx.stroke()
 ######################################################
 
 ######################################################
@@ -2018,6 +2030,7 @@ class PieceStore(e):
             self.parent.dragkind = "set"
             self.parent.draggedsetpiece = p
             self.parent.draggedpdiv = pdivcopy
+            self.parent.movecanvashook.x()            
             pdiv.op(0.7)
         return dragstart
 
@@ -2061,6 +2074,31 @@ class PieceStore(e):
         self.setstore(self.store)
 
 class BasicBoard(e):
+    def ucitosquare(self, squci):
+        try:
+            file = squci.charCodeAt(0) - "a".charCodeAt(0)
+            rank = self.lastrank - ( squci.charCodeAt(1) - "1".charCodeAt(0) )
+            return Square(file, rank)
+        except:
+            return None
+
+    def ucitomove(self, moveuci):
+        if "@" in moveuci:
+            try:
+                parts = moveuci.split("@")
+                move = Move(None, self.ucitosquare(parts[1]), Piece(parts[0].toLowerCase(), self.turn()))
+                return move
+            except:
+                return None
+        else:
+            try:
+                move = Move(self.ucitosquare(moveuci[0:2]), self.ucitosquare(moveuci[2:4]))
+                if len(moveuci) > 4:
+                    move.prompiece = Piece(mouveuci[4].toLowerCase(), self.turn())
+                return move
+            except:
+                return None
+
     def resize(self, width, height):
         self.squaresize = 35
         self.calcsizes()
@@ -2104,6 +2142,9 @@ class BasicBoard(e):
     def squarecoordsvect(self, sq):
         return Vect(sq.file * self.squaresize, sq.rank * self.squaresize)
 
+    def squarecoordsmiddlevect(self, sq):
+        return self.squarecoordsvect(sq).p(Vect(self.squaresize / 2, self.squaresize / 2))
+
     def piececoordsvect(self, sq):
         return self.squarecoordsvect(sq).p(Vect(self.squarepadding, self.squarepadding))
 
@@ -2120,6 +2161,7 @@ class BasicBoard(e):
             self.dragkind = "move"
             self.draggedsq = sq            
             self.draggedpdiv = pdiv
+            self.movecanvashook.x()
             pdiv.op(0.1)
         return piecedragstart
 
@@ -2172,7 +2214,7 @@ class BasicBoard(e):
         self.container.x()
         for sq in self.squarelist():
             sqclass = choose(self.islightsquare(sq), "boardsquarelight", "boardsquaredark")
-            sqdiv = Div().aac(["boardsquare", sqclass]).w(self.squaresize).h(self.squaresize)            
+            sqdiv = Div().aac(["boardsquare", sqclass]).w(self.squaresize).h(self.squaresize)
             fasq = self.flipawaresquare(sq)
             sqdiv.pv(self.squarecoordsvect(fasq))
             sqdiv.ae("dragover", self.piecedragoverfactory(sq))
@@ -2187,6 +2229,7 @@ class BasicBoard(e):
                 pdiv.ae("dragend", self.piecedragendfactory(sq, pdiv))
                 pdiv.ae("dragover", self.piecedragoverfactory(sq))
                 pdiv.ae("drop", self.piecedropfactory(sq))            
+                pdiv.zi(10)
                 if self.variantkey == "threeCheck":
                     if ( p.kind == "k" ):
                         mul = self.getthreelifesforcolor(p.color)
@@ -2236,10 +2279,26 @@ class BasicBoard(e):
         self.promoting = False
         self.build()
 
+    def drawmovearrow(self, move):
+        if move.fromsq is None:
+            pass
+        else:
+            self.movecanvas.ctx.lineWidth = self.squaresize / 5
+            self.movecanvas.ctx.strokeStyle = "#FFFF00"
+            self.movecanvas.drawline(self.squarecoordsmiddlevect(self.flipawaresquare(move.fromsq)), self.squarecoordsmiddlevect(self.flipawaresquare(move.tosq)))
+
+    def buildgenmove(self):
+        if "genmove" in self.positioninfo:
+            if not ( genmove == "reset" ):
+                genmoveuci = self.positioninfo["genmove"]["uci"]
+                genmove = self.ucitomove(genmoveuci)
+                if not ( genmove is None ):
+                    self.drawmovearrow(genmove)
+
     def build(self):
         self.sectioncontainer = Div().ac("boardsectioncontainer").w(self.outerwidth)
         self.outercontainer = Div().ac("boardoutercontainer").w(self.outerwidth).h(self.outerheight)
-        self.container = Div().ac("boardcontainer").w(self.width).h(self.height).t(self.margin).l(self.margin)
+        self.container = Div().ac("boardcontainer").w(self.width).h(self.height).t(self.margin).l(self.margin)        
         self.outercontainer.a(self.container)        
         self.buildsquares()
         self.turndiv = Div().pa().w(self.turndivsize).h(self.turndivsize).cbc(self.iswhitesturn(), "#fff", "#000")
@@ -2275,6 +2334,11 @@ class BasicBoard(e):
         else:
             self.sectioncontainer.aa([self.outercontainer, self.fendiv])
         self.x().a(self.sectioncontainer)
+        self.movecanvas = Canvas(self.width, self.height).pa().t(0).l(0)
+        self.movecanvashook = Div().pa().t(0).l(0).zi(5).op(0.5)
+        self.container.a(self.movecanvashook)
+        self.movecanvashook.a(self.movecanvas)
+        self.buildgenmove()
         return self
 
     def setflip(self, flip):
@@ -2414,6 +2478,7 @@ class BasicBoard(e):
         self.setrepfromfen(args.get("fen", getstartfenforvariantkey(self.variantkey)))
 
     def setfromfen(self, fen, positioninfo = {}):
+        self.positioninfo = positioninfo
         self.setrepfromfen(fen)
         self.build()
 
@@ -2422,6 +2487,7 @@ class BasicBoard(e):
 
     def __init__(self, args):
         super().__init__("div")        
+        self.positioninfo = {}
         self.parseargs(args)
         self.initrep(args)
         self.build()
@@ -2443,7 +2509,7 @@ class Board(e):
                     "fen": self.basicboard.fen,
                     "positioninfo": self.positioninfo
                 })
-        self.positioninfo = positioninfo        
+        self.positioninfo = positioninfo                
         self.movelist = cpick("movelist" in self.positioninfo, self.positioninfo["movelist"], [])        
         self.basicboard.setfromfen(fen, self.positioninfo)
         self.buildpositioninfo()

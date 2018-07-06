@@ -1,6 +1,8 @@
 {
   "config": {
-    "global": {},
+    "global": {
+      "autostartengine": "5"
+    },
     "profile": [
       "HumbleTestBot",
       {
@@ -99,7 +101,31 @@
             "check": false,
             "showhelpashtml": true
           },
-          "items": []
+          "items": [
+            {
+              "key": "autostartengine",
+              "item": {
+                "kind": "scalar",
+                "enabled": true,
+                "help": "No help available for this item.",
+                "writepreference": {
+                  "addchild": true,
+                  "remove": true,
+                  "childsopened": false,
+                  "editenabled": true,
+                  "editkey": true,
+                  "editvalue": true,
+                  "radio": false,
+                  "slider": false,
+                  "check": false,
+                  "showhelpashtml": true
+                },
+                "value": "5",
+                "minvalue": 1,
+                "maxvalue": 100
+              }
+            }
+          ]
         }
       },
       {

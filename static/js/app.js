@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-06 13:09:01
+// Transcrypt'ed from Python, 2018-07-06 22:36:55
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2693,6 +2693,20 @@ function app () {
 				return self.v ();
 			});}
 		});
+		var Canvas = __class__ ('Canvas', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, width, height) {
+				__super__ (Canvas, '__init__') (self, 'canvas');
+				self.sa ('width', width);
+				self.sa ('height', height);
+				self.ctx = self.e.getContext ('2d');
+			});},
+			get drawline () {return __get__ (this, function (self, fromv, tov) {
+				self.ctx.moveTo (fromv.x, fromv.y);
+				self.ctx.lineTo (tov.x, tov.y);
+				self.ctx.stroke ();
+			});}
+		});
 		var WINDOW_SAFETY_MARGIN = 10;
 		var Button = __class__ ('Button', [Input], {
 			__module__: __name__,
@@ -4498,6 +4512,7 @@ function app () {
 					self.parent.dragkind = 'set';
 					self.parent.draggedsetpiece = p;
 					self.parent.draggedpdiv = pdivcopy;
+					self.parent.movecanvashook.x ();
 					pdiv.op (0.7);
 				};
 				return dragstart;
@@ -4551,6 +4566,40 @@ function app () {
 		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
+			get ucitosquare () {return __get__ (this, function (self, squci) {
+				try {
+					var file = squci.charCodeAt (0) - 'a'.charCodeAt (0);
+					var rank = self.lastrank - (squci.charCodeAt (1) - '1'.charCodeAt (0));
+					return Square (file, rank);
+				}
+				catch (__except0__) {
+					return null;
+				}
+			});},
+			get ucitomove () {return __get__ (this, function (self, moveuci) {
+				if (__in__ ('@', moveuci)) {
+					try {
+						var parts = moveuci.py_split ('@');
+						var move = Move (null, self.ucitosquare (parts [1]), Piece (parts [0].toLowerCase (), self.turn ()));
+						return move;
+					}
+					catch (__except0__) {
+						return null;
+					}
+				}
+				else {
+					try {
+						var move = Move (self.ucitosquare (moveuci.__getslice__ (0, 2, 1)), self.ucitosquare (moveuci.__getslice__ (2, 4, 1)));
+						if (len (moveuci) > 4) {
+							move.prompiece = Piece (mouveuci [4].toLowerCase (), self.turn ());
+						}
+						return move;
+					}
+					catch (__except0__) {
+						return null;
+					}
+				}
+			});},
 			get resize () {return __get__ (this, function (self, width, height) {
 				self.squaresize = 35;
 				self.calcsizes ();
@@ -4598,6 +4647,9 @@ function app () {
 			get squarecoordsvect () {return __get__ (this, function (self, sq) {
 				return Vect (sq.file * self.squaresize, sq.rank * self.squaresize);
 			});},
+			get squarecoordsmiddlevect () {return __get__ (this, function (self, sq) {
+				return self.squarecoordsvect (sq).p (Vect (self.squaresize / 2, self.squaresize / 2));
+			});},
 			get piececoordsvect () {return __get__ (this, function (self, sq) {
 				return self.squarecoordsvect (sq).p (Vect (self.squarepadding, self.squarepadding));
 			});},
@@ -4616,6 +4668,7 @@ function app () {
 					self.dragkind = 'move';
 					self.draggedsq = sq;
 					self.draggedpdiv = pdiv;
+					self.movecanvashook.x ();
 					pdiv.op (0.1);
 				};
 				return piecedragstart;
@@ -4698,6 +4751,7 @@ function app () {
 						pdiv.ae ('dragend', self.piecedragendfactory (sq, pdiv));
 						pdiv.ae ('dragover', self.piecedragoverfactory (sq));
 						pdiv.ae ('drop', self.piecedropfactory (sq));
+						pdiv.zi (10);
 						if (self.variantkey == 'threeCheck') {
 							if (p.kind == 'k') {
 								var mul = self.getthreelifesforcolor (p.color);
@@ -4761,6 +4815,27 @@ function app () {
 				self.promoting = false;
 				self.build ();
 			});},
+			get drawmovearrow () {return __get__ (this, function (self, move) {
+				if (move.fromsq === null) {
+					// pass;
+				}
+				else {
+					self.movecanvas.ctx.lineWidth = self.squaresize / 5;
+					self.movecanvas.ctx.strokeStyle = '#FFFF00';
+					self.movecanvas.drawline (self.squarecoordsmiddlevect (self.flipawaresquare (move.fromsq)), self.squarecoordsmiddlevect (self.flipawaresquare (move.tosq)));
+				}
+			});},
+			get buildgenmove () {return __get__ (this, function (self) {
+				if (__in__ ('genmove', self.positioninfo)) {
+					if (!(genmove == 'reset')) {
+						var genmoveuci = self.positioninfo ['genmove'] ['uci'];
+						var genmove = self.ucitomove (genmoveuci);
+						if (!(genmove === null)) {
+							self.drawmovearrow (genmove);
+						}
+					}
+				}
+			});},
 			get build () {return __get__ (this, function (self) {
 				self.sectioncontainer = Div ().ac ('boardsectioncontainer').w (self.outerwidth);
 				self.outercontainer = Div ().ac ('boardoutercontainer').w (self.outerwidth).h (self.outerheight);
@@ -4797,6 +4872,11 @@ function app () {
 					self.sectioncontainer.aa (list ([self.outercontainer, self.fendiv]));
 				}
 				self.x ().a (self.sectioncontainer);
+				self.movecanvas = Canvas (self.width, self.height).pa ().t (0).l (0);
+				self.movecanvashook = Div ().pa ().t (0).l (0).zi (5).op (0.5);
+				self.container.a (self.movecanvashook);
+				self.movecanvashook.a (self.movecanvas);
+				self.buildgenmove ();
 				return self;
 			});},
 			get setflip () {return __get__ (this, function (self, flip) {
@@ -4980,6 +5060,7 @@ function app () {
 				if (typeof positioninfo == 'undefined' || (positioninfo != null && positioninfo .hasOwnProperty ("__kwargtrans__"))) {;
 					var positioninfo = dict ({});
 				};
+				self.positioninfo = positioninfo;
 				self.setrepfromfen (fen);
 				self.build ();
 			});},
@@ -4988,6 +5069,7 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (BasicBoard, '__init__') (self, 'div');
+				self.positioninfo = dict ({});
 				self.parseargs (args);
 				self.initrep (args);
 				self.build ();
@@ -5399,6 +5481,7 @@ function app () {
 			__all__.Button = Button;
 			__all__.CBUILD_CMD_ALIASES = CBUILD_CMD_ALIASES;
 			__all__.CRAZYHOUSE_START_FEN = CRAZYHOUSE_START_FEN;
+			__all__.Canvas = Canvas;
 			__all__.CheckBox = CheckBox;
 			__all__.ComboBox = ComboBox;
 			__all__.ComboOption = ComboOption;
