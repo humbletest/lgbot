@@ -170,6 +170,10 @@ def mainboardvariantchangedcallback(variantkey):
 def mainboardmoveclickedcallback(variantkey, fen, moveuci):
     global socket
     setTimeout(lambda ev: socket.emit('sioreq', {"kind":"mainboardmove", "variantkey":variantkey, "fen":fen, "moveuci":moveuci}), simulateserverlag())
+
+def mainboardenginecommandcallback(sline):
+    global socket
+    socket.emit('sioreq', {"kind":"cmd", "key": "engine", "data": sline})
 ######################################################
 
 ######################################################
@@ -200,7 +204,8 @@ def build():
     mainboard = Board({
         "movecallback": mainboardmovecallback,
         "variantchangedcallback": mainboardvariantchangedcallback,
-        "moveclickedcallback": mainboardmoveclickedcallback
+        "moveclickedcallback": mainboardmoveclickedcallback,
+        "enginecommandcallback": mainboardenginecommandcallback
     })
 
     maintabpane = TabPane({"kind":"main", "id":"main"}).setTabs(
@@ -255,6 +260,8 @@ def onevent(json):
                 maintabpane.setTabElementByKey("config", buildconfigdiv())
                 maintabpane.selectByKey("config")
                 window.alert("UCI options stored in current profile.")
+        elif kind == "analyzeinfo":
+            mainboard.processanalysisinfo(json["analyzeinfo"])
     if "response" in json:        
         status = "?"
         response = json["response"]        

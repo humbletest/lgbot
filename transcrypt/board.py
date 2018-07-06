@@ -622,8 +622,21 @@ class Board(e):
         self.buildpositioninfo()
         self.resizetabpanewidth(width)
 
+    def analyzecallback(self):
+        if not ( self.enginecommandcallback is None ):            
+            self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, self.multipv, self.basicboard.fen))
+
+    def stopanalyzecallback(self):
+        if not ( self.enginecommandcallback is None ):
+            self.enginecommandcallback("stopanalyze")
+
+    def processanalysisinfo(self, obj):
+        content = JSON.stringify(obj, None, 2)
+        self.analysisinfodiv.html("<pre>" + content + "</pre>")
+
     def __init__(self, args):
         super().__init__("div")
+        self.multipv = 3
         self.history = []
         self.basicboard = BasicBoard(args)        
         self.controlpanel = Div().ac("boardcontrolpanel")
@@ -639,6 +652,7 @@ class Board(e):
         self.setvariantcombo()
         self.variantchangedcallback = args.get("variantchangedcallback", None)
         self.moveclickedcallback = args.get("moveclickedcallback", None)
+        self.enginecommandcallback = args.get("enginecommandcallback", None)
         self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth).mw(self.basicboard.outerwidth)
         self.controlpanel.a(Button("Del", self.delcallback))
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
@@ -647,9 +661,14 @@ class Board(e):
         self.verticalcontainer = Div().ac("bigboardverticalcontainer")
         self.movelistdivwidth = 100
         self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
+        self.analysisdiv = Div()
+        self.analysisdiv.a(Button("Analyze", self.analyzecallback))
+        self.analysisdiv.a(Button("Stop analysis", self.stopanalyzecallback))
+        self.analysisinfodiv = Div()
+        self.analysisdiv.a(self.analysisinfodiv)
         self.tabpane = TabPane({"kind":"normal", "id":"board"}).setTabs(
             [
-                Tab("analysis", "Analysis", Div()),
+                Tab("analysis", "Analysis", self.analysisdiv),
                 Tab("book", "Book", Div())
             ], "analysis"
         )    

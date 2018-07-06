@@ -7,6 +7,11 @@ import os, stat
 
 #############################################
 
+import chess
+from chess.variant import find_variant
+
+#############################################
+
 http = urllib3.PoolManager(
     cert_reqs='CERT_REQUIRED',
     ca_certs=certifi.where()
@@ -112,6 +117,19 @@ def os_stats_as_dict(stats, name, isdir):
 
 def dir_listing_as_obj(path):
     return [os_stats_as_dict(os.stat(os.path.join(path, name)), name, os.path.isdir(os.path.join(path, name))) for name in os.listdir(path)]
+
+#############################################
+
+def get_variant_board(variantkey):
+    if variantkey == "standard":
+        return chess.Board()
+    elif variantkey == "chess960":
+        return chess.Board(chess960=True)
+    elif variantkey == "fromPosition":
+        return chess.Board()
+    else:
+        VariantBoard = find_variant(variantkey)
+        return VariantBoard()
 
 #############################################
 

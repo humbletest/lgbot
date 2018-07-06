@@ -18,8 +18,8 @@ from serverutils.utils import geturl
 from serverutils.utils import write_string_to_file
 from serverutils.utils import read_string_from_file
 from serverutils.utils import dir_listing_as_obj
+from serverutils.utils import get_variant_board
 import chess
-from chess.variant import find_variant
 #########################################################
 
 #########################################################
@@ -114,17 +114,6 @@ def addpositioninfo(board, obj, genmove = None, genboard = None):
             "uci": genmove.uci(),
             "san": genboard.san(genmove)
         }
-
-def get_variant_board(variantkey):
-    if variantkey == "standard":
-        return chess.Board()
-    elif variantkey == "chess960":
-        return chess.Board(chess960=True)
-    elif variantkey == "fromPosition":
-        return chess.Board()
-    else:
-        VariantBoard = find_variant(variantkey)
-        return VariantBoard()
 
 class socket_handler:
     def __init__(self, ev):

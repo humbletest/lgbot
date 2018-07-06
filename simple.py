@@ -9,6 +9,7 @@ import os
 import json
 import threading
 import time
+import traceback
 #############################################
 
 #############################################
@@ -16,7 +17,8 @@ import time
 from serverutils import process
 process.VERBOSE = False
 from serverutils.utils import postjson, ProcessManager
-from chess.uci import Engine
+from serverutils.utils import get_variant_board
+from chess.uci import InfoHandler, Engine
 #############################################
 
 def SIMPLE_ENGINE_PATH():
@@ -51,18 +53,89 @@ class EngineProcessManager(SimpleProcessManager):
         super().__init__(key)    
         self.parseuci = False        
         self.sendparseuci = False
+        self.analyze = False
 
     def send_line_task(self, sline):     
         if sline == "parseuci":
             sline = "uci"
             self.sendparseuci = True
-        if sline == "uci":
+        elif sline == "uci":
             print("parsing uci command output")
             self.eng = Engine()
             self.parseuci = True   
+        elif sline == "stopanalyze":
+            self.process.send_line("stop")            
+            self.analyze = False
+            self.sendlog = True
+            return
+        else:
+            parts = sline.split(" ")
+            if parts[0] == "analyze":
+                try:
+                    variantkey = parts[1]
+                    multipv = parts[2]
+                    fen = " ".join(parts[3:])
+                    print("analyzing", variantkey, fen)
+                    self.board = get_variant_board(variantkey)
+                    self.board.set_fen(fen)
+                    self.eng = Engine()
+                    self.eng.board = self.board
+                    self.infh = InfoHandler()    
+                    self.eng.info_handlers.append(self.infh)
+                    self.process.send_line("stop")            
+                    self.process.send_line("setoption name MultiPV value {}".format(multipv))
+                    self.process.send_line("setoption name UCI_Variant value {}".format(type(self.board).uci_variant))
+                    self.process.send_line("position fen {}".format(fen))
+                    self.process.send_line("go infinite")            
+                    self.analyze = True
+                    self.sendlog = False
+                    self.analyzestarted = time.time()
+                    return
+                except:
+                    print("there was a problem with analyze command", sline)
+                    traceback.print_exc(file=sys.stderr)                        
         self.process.send_line(sline)            
 
     def read_line_callback(self, sline):
+        if self.analyze:
+            parts = sline.split(" ")
+            kind = parts[0]        
+            if kind == "info":
+                try:                    
+                    self.eng._info(sline)                    
+                except:
+                    print("info handler error", sline)
+                    #traceback.print_exc(file = sys.stderr)
+            now = time.time()
+            if ( now - self.analyzestarted ) > 0.5:
+                analyzeinfo = {}
+                info = self.infh.info
+                for i , score in info["score"].items():
+                    score = info["score"][i]
+                    pv = None
+                    try:
+                        pvi = info["pv"][i]
+                        sans = []
+                        sanboard = self.board.copy()
+                        for move in pvi:
+                            sans.append(sanboard.san(move))
+                            sanboard.push(move)
+                        if len(sans) > 10:
+                            sans = sans[:10]
+                        pv = " ".join(sans)
+                    except:
+                        pass
+                    analyzeinfo[i] = {
+                        "score": score,
+                        "pv": pv
+                    }
+                postjson(PROCESS_READ_CALLBACK_URL, {
+                    "kind": "analyzeinfo",
+                    "prockey": self.key,
+                    "analyzeinfo": analyzeinfo
+                })
+                self.analyzestarted = now                
+            return
         if self.parseuci:
             command_and_args = sline.split(None, 1)
             if len(command_and_args)>=1:
@@ -219,7 +292,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
 #############################################
 
-def scheduler_thread_func(processmanagers):
+def bot_scheduler_thread_func(processmanagers):
     delay = config.autostartbot * 3
     if delay > 0:
         print("waiting {} seconds to start bot".format(delay))
@@ -229,8 +302,19 @@ def scheduler_thread_func(processmanagers):
     else:
         print("auto start bot disabled")
 
+def engine_scheduler_thread_func(processmanagers):
+    delay = config.autostartengine * 3
+    if delay > 0:
+        print("waiting {} seconds to start engine".format(delay))
+        time.sleep(delay)
+        print("auto starting engine")
+        processmanagers["engine"].start()
+    else:
+        print("auto start engine disabled")
+
 print("starting scheduler...")
-threading.Thread(target = scheduler_thread_func, args = (processmanagers,)).start()
+threading.Thread(target = bot_scheduler_thread_func, args = (processmanagers,)).start()
+threading.Thread(target = engine_scheduler_thread_func, args = (processmanagers,)).start()
 
 def start_server():
   print('starting server...')
