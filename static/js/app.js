@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-06 09:57:30
+// Transcrypt'ed from Python, 2018-07-06 13:09:01
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5098,8 +5098,23 @@ function app () {
 				self.buildpositioninfo ();
 				self.resizetabpanewidth (width);
 			});},
+			get analyzecallback () {return __get__ (this, function (self) {
+				if (!(self.enginecommandcallback === null)) {
+					self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, self.multipv, self.basicboard.fen));
+				}
+			});},
+			get stopanalyzecallback () {return __get__ (this, function (self) {
+				if (!(self.enginecommandcallback === null)) {
+					self.enginecommandcallback ('stopanalyze');
+				}
+			});},
+			get processanalysisinfo () {return __get__ (this, function (self, obj) {
+				var content = JSON.stringify (obj, null, 2);
+				self.analysisinfodiv.html (('<pre>' + content) + '</pre>');
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.multipv = 3;
 				self.history = list ([]);
 				self.basicboard = BasicBoard (args);
 				self.controlpanel = Div ().ac ('boardcontrolpanel');
@@ -5110,6 +5125,7 @@ function app () {
 				self.setvariantcombo ();
 				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
 				self.moveclickedcallback = args.py_get ('moveclickedcallback', null);
+				self.enginecommandcallback = args.py_get ('enginecommandcallback', null);
 				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth).mw (self.basicboard.outerwidth);
 				self.controlpanel.a (Button ('Del', self.delcallback));
 				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
@@ -5118,7 +5134,12 @@ function app () {
 				self.verticalcontainer = Div ().ac ('bigboardverticalcontainer');
 				self.movelistdivwidth = 100;
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
-				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', Div ()), Tab ('book', 'Book', Div ())]), 'analysis');
+				self.analysisdiv = Div ();
+				self.analysisdiv.a (Button ('Analyze', self.analyzecallback));
+				self.analysisdiv.a (Button ('Stop analysis', self.stopanalyzecallback));
+				self.analysisinfodiv = Div ();
+				self.analysisdiv.a (self.analysisinfodiv);
+				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('book', 'Book', Div ())]), 'analysis');
 				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv, self.tabpane]));
 				self.a (self.verticalcontainer);
 				self.basicresize ();
@@ -5261,12 +5282,15 @@ function app () {
 				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
 			}), simulateserverlag ());
 		};
+		var mainboardenginecommandcallback = function (sline) {
+			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': 'engine', 'data': sline}));
+		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
-			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback, 'moveclickedcallback': mainboardmoveclickedcallback}));
+			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback, 'moveclickedcallback': mainboardmoveclickedcallback, 'enginecommandcallback': mainboardenginecommandcallback}));
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'})).setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
@@ -5307,6 +5331,9 @@ function app () {
 						maintabpane.selectByKey ('config');
 						window.alert ('UCI options stored in current profile.');
 					}
+				}
+				else if (kind == 'analyzeinfo') {
+					mainboard.processanalysisinfo (json ['analyzeinfo']);
 				}
 			}
 			if (__in__ ('response', json)) {
@@ -5456,6 +5483,7 @@ function app () {
 			__all__.isvalidpieceletter = isvalidpieceletter;
 			__all__.log = log;
 			__all__.mainboard = mainboard;
+			__all__.mainboardenginecommandcallback = mainboardenginecommandcallback;
 			__all__.mainboardmovecallback = mainboardmovecallback;
 			__all__.mainboardmoveclickedcallback = mainboardmoveclickedcallback;
 			__all__.mainboardvariantchangedcallback = mainboardvariantchangedcallback;
