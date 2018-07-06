@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-06 09:41:44
+// Transcrypt'ed from Python, 2018-07-06 09:57:30
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5034,6 +5034,12 @@ function app () {
 				catch (__except0__) {
 					// pass;
 				}
+				try {
+					self.resizetabpanewidth (self.resizewidth);
+				}
+				catch (__except0__) {
+					// pass;
+				}
 				if (!(self.variantchangedcallback === null)) {
 					self.variantchangedcallback (self.basicboard.variantkey);
 				}
@@ -5081,13 +5087,16 @@ function app () {
 				self.sectioncontainer.w (self.controlwidth ());
 				self.tabpane.resize (null, self.totalheight ());
 			});},
+			get resizetabpanewidth () {return __get__ (this, function (self, width) {
+				self.tabpane.resize (max (width - self.totalwidth (), 600), null);
+			});},
 			get resize () {return __get__ (this, function (self, width, height) {
 				self.resizewidth = width;
 				self.resizeheight = height - self.controlpanelheight;
 				self.basicboard.resize (self.resizewidth, self.resizeheight);
 				self.basicresize ();
 				self.buildpositioninfo ();
-				self.tabpane.resize (max (width - self.totalwidth (), 600), null);
+				self.resizetabpanewidth (width);
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');

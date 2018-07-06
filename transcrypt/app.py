@@ -2458,6 +2458,10 @@ class Board(e):
             self.basicboard.resize(self.resizewidth, self.resizeheight)            
         except:
             pass
+        try:
+            self.resizetabpanewidth(self.resizewidth)
+        except:
+            pass
         if not ( self.variantchangedcallback is None ):
             self.variantchangedcallback(self.basicboard.variantkey)
         self.basicresize()
@@ -2498,13 +2502,16 @@ class Board(e):
         self.sectioncontainer.w(self.controlwidth())
         self.tabpane.resize(None, self.totalheight())
 
+    def resizetabpanewidth(self, width):
+        self.tabpane.resize(max(width - self.totalwidth(), 600), None)
+
     def resize(self, width, height):
         self.resizewidth = width
         self.resizeheight = height - self.controlpanelheight
         self.basicboard.resize(self.resizewidth, self.resizeheight)
         self.basicresize()
         self.buildpositioninfo()
-        self.tabpane.resize(max(width - self.totalwidth(), 600), None)
+        self.resizetabpanewidth(width)
 
     def __init__(self, args):
         super().__init__("div")
