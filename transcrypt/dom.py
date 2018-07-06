@@ -286,5 +286,17 @@ class TextArea(e):
 
     def getText(self):
         return self.v()
+
+class Canvas(e):
+    def __init__(self, width, height):
+        super().__init__("canvas")
+        self.sa("width", width)
+        self.sa("height", height)
+        self.ctx = self.e.getContext("2d")        
+
+    def drawline(self, fromv, tov):
+        self.ctx.moveTo(fromv.x, fromv.y)
+        self.ctx.lineTo(tov.x, tov.y)
+        self.ctx.stroke()
 ######################################################
 
