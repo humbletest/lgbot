@@ -582,7 +582,7 @@ class Board(e):
         return moveclicked
 
     def buildpositioninfo(self):
-        self.movelistdiv.x().h(self.basicboard.totalheight())
+        self.movelistdiv.x().h(self.totalheight())
         for move in self.movelist:
             movediv = Div().ac("bigboardshowmove").html(move["san"])
             movediv.ae("mousedown", self.moveclickedfactory(move))
@@ -593,23 +593,35 @@ class Board(e):
             item = self.history.pop()
             self.setfromfen(item["fen"], item["positioninfo"], False)
 
-    def basicresize(self):
-        self.controlwidth = max(self.basicboard.outerwidth, 260)
-        self.controlpanel.w(self.controlwidth)
-        self.sectioncontainer.w(self.controlwidth)
+    def totalheight(self):
+        return self.basicboard.totalheight() + self.controlpanelheight
+
+    def controlwidth(self):
+        return max(self.basicboard.outerwidth, self.controlpanelwidth)
+
+    def totalwidth(self):
+        return self.controlwidth() + self.movelistdivwidth
+
+    def basicresize(self):        
+        self.controlpanel.w(self.controlwidth()).mw(self.controlwidth())
+        self.sectioncontainer.w(self.controlwidth())
+        self.tabpane.resize(None, self.totalheight())
 
     def resize(self, width, height):
         self.resizewidth = width
-        self.resizeheight = height - getglobalcssvarpxint("--boardcontrolpanelheight")
+        self.resizeheight = height - self.controlpanelheight
         self.basicboard.resize(self.resizewidth, self.resizeheight)
         self.basicresize()
         self.buildpositioninfo()
+        self.tabpane.resize(max(width - self.totalwidth(), 600), None)
 
     def __init__(self, args):
         super().__init__("div")
         self.history = []
         self.basicboard = BasicBoard(args)        
         self.controlpanel = Div().ac("boardcontrolpanel")
+        self.controlpanelheight = getglobalcssvarpxint("--boardcontrolpanelheight")
+        self.controlpanelwidth = 260
         self.controlpanel.a(Button("Flip", self.flipcallback))        
         self.variantcombo = ComboBox({
             "changecallback": self.variantchanged,            
@@ -620,13 +632,21 @@ class Board(e):
         self.setvariantcombo()
         self.variantchangedcallback = args.get("variantchangedcallback", None)
         self.moveclickedcallback = args.get("moveclickedcallback", None)
-        self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth)
+        self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth).mw(self.basicboard.outerwidth)
         self.controlpanel.a(Button("Del", self.delcallback))
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
         self.sectioncontainer = Div().ac("bigboardsectioncontainer").w(self.basicboard.outerwidth)
         self.sectioncontainer.aa([self.controlpanel, self.basicboard])
         self.verticalcontainer = Div().ac("bigboardverticalcontainer")
-        self.movelistdiv = Div().ac("bigboardmovelist").w(100)
-        self.verticalcontainer.aa([self.sectioncontainer, self.movelistdiv])
+        self.movelistdivwidth = 100
+        self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
+        self.tabpane = TabPane({"kind":"normal", "id":"board"}).setTabs(
+            [
+                Tab("analysis", "Analysis", Div()),
+                Tab("book", "Book", Div())
+            ], "analysis"
+        )    
+        self.verticalcontainer.aa([self.sectioncontainer, self.movelistdiv, self.tabpane])
         self.a(self.verticalcontainer)
+        self.basicresize()
         self.buildpositioninfo()

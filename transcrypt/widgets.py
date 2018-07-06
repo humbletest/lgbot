@@ -176,12 +176,16 @@ class TabPane(e):
         self.seltab = None
         self.resize()
 
-    def resize(self):
+    def resize(self, width = None, height = None):
         if self.kind == "main":
             self.width = window.innerWidth - 2 * WINDOW_SAFETY_MARGIN
             self.height = window.innerHeight - 2 * WINDOW_SAFETY_MARGIN
             self.marginleft = WINDOW_SAFETY_MARGIN
             self.margintop = WINDOW_SAFETY_MARGIN
+        if not ( width is None ):
+            self.width = width
+        if not ( height is None ):
+            self.height = height
         self.contentheight = self.height - self.tabsheight
         self.tabsdiv.w(self.width).h(self.tabsheight)
         self.contentdiv.w(self.width).h(self.contentheight)
@@ -203,7 +207,7 @@ class TabPane(e):
             tab.tabelement = tabelement
             tab.tabelement.ae("mousedown", self.tabSelectedCallback.bind(self, tab))
         if not ( self.key is None ):
-            storedkey = localStorage.getItem(self.key)
+            storedkey = localStorage.getItem(self.id)
             if not ( storedkey is None ):
                 key = storedkey
         return self.selectByKey(key)
@@ -248,8 +252,8 @@ class TabPane(e):
         return self
 
     def selectByKey(self, key):
-        if not ( self.key is None ):
-            localStorage.setItem(self.key, key)
+        if not ( self.id is None ):
+            localStorage.setItem(self.id, key)
         return self.setTabElementByKey(key)
 
 class ComboOption:

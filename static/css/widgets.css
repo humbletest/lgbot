@@ -523,8 +523,7 @@
 .bigboardmovelist {
     background-color: #def;
     overflow: scroll;
-    text-align: center;
-    margin-top: var(--boardcontrolpanelheight);
+    text-align: center;    
 }
 
 .bigboardshowmove {
