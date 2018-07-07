@@ -33,6 +33,7 @@ from chess.engine import _spur_spawn_engine
 import collections
 import concurrent.futures
 import threading
+import sys
 
 
 class Score(collections.namedtuple("Score", "cp mate")):
@@ -527,7 +528,8 @@ class Engine(object):
                 try:
                     pv.append(board.push_uci(token))
                 except ValueError:
-                    LOGGER.exception("exception parsing pv from info: %r, position at root: %s", arg, self.board.fen())
+                    print("illegal uci", token, file = sys.stderr)
+                    #LOGGER.exception("exception parsing pv from info: %r, position at root: %s", arg, self.board.fen())
             elif current_parameter == "multipv":
                 # Ignore multipv. It was already parsed before anything else.
                 pass

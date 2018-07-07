@@ -290,11 +290,29 @@ class TextArea(e):
 class Canvas(e):
     def __init__(self, width, height):
         super().__init__("canvas")
-        self.sa("width", width)
-        self.sa("height", height)
-        self.ctx = self.e.getContext("2d")        
+        self.width = width
+        self.height = height
+        self.sa("width", self.width)
+        self.sa("height", self.height)        
+        self.ctx = self.e.getContext("2d")
 
-    def drawline(self, fromv, tov):
+    def lineWidth(self, linewidth):        
+        self.ctx.lineWidth = linewidth
+
+    def strokeStyle(self, strokestyle):        
+        self.ctx.strokeStyle = strokestyle
+
+    def fillStyle(self, fillstyle):        
+        self.ctx.fillStyle = fillstyle
+
+    def fillRect(self, tlv, brv):          
+        self.ctx.fillRect(tlv.x, tlv.y, brv.m(tlv).x, brv.m(tlv).y)
+
+    def clear(self):        
+        self.ctx.clearRect(0, 0, self.width, self.height)
+
+    def drawline(self, fromv, tov):        
+        self.ctx.beginPath()
         self.ctx.moveTo(fromv.x, fromv.y)
         self.ctx.lineTo(tov.x, tov.y)
         self.ctx.stroke()

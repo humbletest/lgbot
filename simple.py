@@ -18,6 +18,7 @@ from serverutils import process
 process.VERBOSE = False
 from serverutils.utils import postjson, ProcessManager
 from serverutils.utils import get_variant_board
+from serverutils.utils import get_score_numerical
 from chess.uci import InfoHandler, Engine
 #############################################
 
@@ -105,30 +106,47 @@ class EngineProcessManager(SimpleProcessManager):
                     self.eng._info(sline)                    
                 except:
                     print("info handler error", sline)
-                    #traceback.print_exc(file = sys.stderr)
+                    traceback.print_exc(file = sys.stderr)
+                    return
             now = time.time()
             if ( now - self.analyzestarted ) > 0.5:
-                analyzeinfo = {}
+                analyzeinfo = []
                 info = self.infh.info
-                for i , score in info["score"].items():
-                    score = info["score"][i]
-                    pv = None
+                for i , score in info["score"].items():                    
+                    pvsan = None
+                    bestmovesan = None                    
+                    pvuci = None                    
+                    bestmoveuci = None                    
                     try:
                         pvi = info["pv"][i]
                         sans = []
+                        ucis = []
                         sanboard = self.board.copy()
                         for move in pvi:
                             sans.append(sanboard.san(move))
+                            ucis.append(move.uci())
                             sanboard.push(move)
                         if len(sans) > 10:
                             sans = sans[:10]
-                        pv = " ".join(sans)
+                            ucis = ucis[:10]
+                        pvsan = " ".join(sans)
+                        bestmovesan = sans[0]
+                        pvuci = " ".join(ucis)                        
+                        bestmoveuci = ucis[0]
                     except:
                         pass
-                    analyzeinfo[i] = {
+                    analyzeinfo.append({
+                        "i": i,
                         "score": score,
-                        "pv": pv
-                    }
+                        "pvsan": pvsan,
+                        "bestmovesan": bestmovesan,
+                        "pvuci": pvuci,
+                        "bestmoveuci": bestmoveuci,
+                        "scorenumerical": get_score_numerical(score),
+                        "depth": info["depth"],
+                        "nodes": info["nodes"],
+                        "nps": info["nps"]
+                    })
                 postjson(PROCESS_READ_CALLBACK_URL, {
                     "kind": "analyzeinfo",
                     "prockey": self.key,

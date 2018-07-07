@@ -120,6 +120,18 @@ def dir_listing_as_obj(path):
 
 #############################################
 
+MATE_SCORE = 10000
+
+def get_score_numerical(score):
+    cp = score[0]
+    mate = score[1]
+    if cp == None:
+        if mate > 0:
+            return MATE_SCORE - mate
+        else:
+            return -MATE_SCORE - mate
+    return cp
+
 def get_variant_board(variantkey):
     if variantkey == "standard":
         return chess.Board()

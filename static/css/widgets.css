@@ -14,6 +14,7 @@
     --maxschemaopenbuttonwidth: calc( var(--schemawidth) - 8 * var(--schemacontainermargin) );
     --schemacollindent: calc( var(--schemabase) + 2 * var(--schemacontainermargin) );
     --boardcontrolpanelheight: 40px;
+    --multipvinfoheight: 30px;
 }
 
 .noselect {
@@ -532,4 +533,67 @@
     color: #007;
     font-family: monospace;
     font-size: 16px;
+}
+
+.multipvinfocontainer {
+    display: flex;
+    margin: 2px;
+}
+
+.multipvinfoi {
+    display: flex; justify-content: space-around; align-items: center;    
+    font-size: 14px;
+    width: 40px;
+    height: var(--multipvinfoheight);
+    background-color: #ddd;
+    margin: 1px;
+}
+
+.multipvinfobestmovesan {
+    display: flex; justify-content: space-around; align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    width: 80px;
+    height: var(--multipvinfoheight);
+    background-color: #eee;
+    margin: 1px;
+}
+
+.multipvinfoscorenumerical {    
+    display: flex; justify-content: space-around; align-items: center;
+    font-weight: bold;
+    width: 80px;
+    font-size: 18px;
+    height: var(--multipvinfoheight);
+    background-color: #eee;
+    margin: 1px;
+}
+
+.multipvinfomisc {
+    display: flex; justify-content: left; align-items: center;
+    width: 120px;
+    font-size: 12px;
+    height: var(--multipvinfoheight);
+    background-color: #ddd;
+    margin: 1px;
+    padding-left: 10px;
+    color: #007;
+}
+
+.multipvinfopv {
+    display: flex; justify-content: left; align-items: center;
+    width: 300px;
+    font-size: 14px;
+    height: var(--multipvinfoheight);
+    background-color: #ddd;
+    margin: 1px;
+    padding-left: 10px;
+}
+
+.bigboardanalysiscontrolpanel {
+    width: 300px;
+    display: flex; justify-content: space-around; align-items: center;
+    height: 30px;
+    margin: 3px;
+    background-color: #eee;
 }

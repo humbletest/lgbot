@@ -42,6 +42,9 @@ class Vect:
     def copy(self):
         return Vect(self.x, self.y)
 
+    def __repr__(self):
+        return "Vect[x: {}, y: {}]".format(self.x, self.y)
+
 def getClientVect(ev):
     return Vect(ev.clientX, ev.clientY)
 
