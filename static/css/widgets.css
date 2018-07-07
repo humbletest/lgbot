@@ -591,9 +591,22 @@
 }
 
 .bigboardanalysiscontrolpanel {
-    width: 300px;
+    width: 400px;
     display: flex; justify-content: space-around; align-items: center;
     height: 30px;
     margin: 3px;
     background-color: #eee;
+}
+
+.boardmultipvcomboselect {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.boardmultipvcombooptionfirst {
+    font-weight: normal;
+}
+
+.boardmultipvcombooption {
+    font-weight: normal;
 }
