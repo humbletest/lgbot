@@ -557,6 +557,7 @@
     height: var(--multipvinfoheight);
     background-color: #eee;
     margin: 1px;
+    cursor: pointer;
 }
 
 .multipvinfoscorenumerical {    
