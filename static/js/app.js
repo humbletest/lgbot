@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-07 12:18:59
+// Transcrypt'ed from Python, 2018-07-07 15:04:25
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4587,6 +4587,10 @@ function app () {
 		});
 		var BasicBoard = __class__ ('BasicBoard', [e], {
 			__module__: __name__,
+			get clearcanvases () {return __get__ (this, function (self) {
+				self.movecanvas.py_clear ();
+				self.piececanvashook.x ();
+			});},
 			get ucitosquare () {return __get__ (this, function (self, squci) {
 				try {
 					var file = squci.charCodeAt (0) - 'a'.charCodeAt (0);
@@ -4601,7 +4605,8 @@ function app () {
 				if (__in__ ('@', moveuci)) {
 					try {
 						var parts = moveuci.py_split ('@');
-						var move = Move (null, self.ucitosquare (parts [1]), Piece (parts [0].toLowerCase (), self.turn ()));
+						var sq = self.ucitosquare (parts [1]);
+						var move = Move (sq, sq, Piece (parts [0].toLowerCase (), self.turn ()));
 						return move;
 					}
 					catch (__except0__) {
@@ -4611,8 +4616,13 @@ function app () {
 				else {
 					try {
 						var move = Move (self.ucitosquare (moveuci.__getslice__ (0, 2, 1)), self.ucitosquare (moveuci.__getslice__ (2, 4, 1)));
-						if (len (moveuci) > 4) {
-							move.prompiece = Piece (mouveuci [4].toLowerCase (), self.turn ());
+						try {
+							if (len (moveuci) > 4) {
+								move.prompiece = Piece (moveuci [4].toLowerCase (), self.turn ());
+							}
+						}
+						catch (__except0__) {
+							print ('could not parse prompiece');
 						}
 						return move;
 					}
@@ -4847,17 +4857,20 @@ function app () {
 				var linewidth = args.py_get ('linewidth', 0.2) * self.squaresize;
 				var headwidth = args.py_get ('headwidth', 0.2) * self.squaresize;
 				var headheight = args.py_get ('headheight', 0.2) * self.squaresize;
-				if (move.fromsq === null) {
-					// pass;
-				}
-				else {
-					self.movecanvas.lineWidth (linewidth);
-					self.movecanvas.strokeStyle (strokecolor);
-					self.movecanvas.fillStyle (strokecolor);
-					var tomv = self.squarecoordsmiddlevect (self.flipawaresquare (move.tosq));
-					self.movecanvas.drawline (self.squarecoordsmiddlevect (self.flipawaresquare (move.fromsq)), tomv);
-					var dv = Vect (headwidth, headheight);
-					self.movecanvas.fillRect (tomv.m (dv), tomv.p (dv));
+				self.movecanvas.lineWidth (linewidth);
+				self.movecanvas.strokeStyle (strokecolor);
+				self.movecanvas.fillStyle (strokecolor);
+				var tomv = self.squarecoordsmiddlevect (self.flipawaresquare (move.tosq));
+				self.movecanvas.drawline (self.squarecoordsmiddlevect (self.flipawaresquare (move.fromsq)), tomv);
+				var dv = Vect (headwidth, headheight);
+				self.movecanvas.fillRect (tomv.m (dv), tomv.p (dv));
+				if (!(move.prompiece.isempty ())) {
+					var pf = 4;
+					var dvp = Vect (linewidth * pf, linewidth * pf);
+					move.prompiece.color = self.turn ();
+					var ppdiv = Div ().pa ().cp ().ac (getclassforpiece (move.prompiece, self.piecestyle)).w ((linewidth * 2) * pf).h ((linewidth * 2) * pf);
+					ppdiv.pv (tomv.m (dvp));
+					self.piececanvashook.a (ppdiv);
 				}
 			});},
 			get drawuciarrow () {return __get__ (this, function (self, uci, args) {
@@ -4872,6 +4885,7 @@ function app () {
 						var genmoveuci = self.positioninfo ['genmove'] ['uci'];
 						var genmove = self.ucitomove (genmoveuci);
 						if (!(genmove === null)) {
+							genmove.prompiece = Piece ();
 							self.drawmovearrow (genmove);
 						}
 					}
@@ -4915,7 +4929,8 @@ function app () {
 				self.x ().a (self.sectioncontainer);
 				self.movecanvas = Canvas (self.width, self.height).pa ().t (0).l (0);
 				self.movecanvashook = Div ().pa ().t (0).l (0).zi (5).op (0.5);
-				self.container.a (self.movecanvashook);
+				self.piececanvashook = Div ().pa ().t (0).l (0).zi (11).op (0.5);
+				self.container.aa (list ([self.movecanvashook, self.piececanvashook]));
 				self.movecanvashook.a (self.movecanvas);
 				self.buildgenmove ();
 				return self;
@@ -5263,7 +5278,7 @@ function app () {
 			});},
 			get stopanalyzecallback () {return __get__ (this, function (self) {
 				self.analyzing = false;
-				self.basicboard.movecanvas.py_clear ();
+				self.basicboard.clearcanvases ();
 				if (!(self.enginecommandcallback === null)) {
 					self.enginecommandcallback ('stopanalyze');
 				}
@@ -5274,7 +5289,7 @@ function app () {
 				}
 				var content = JSON.stringify (obj, null, 2);
 				self.analysisinfodiv.x ();
-				self.basicboard.movecanvas.py_clear ();
+				self.basicboard.clearcanvases ();
 				var __iterable0__ = sorted (obj, __kwargtrans__ ({key: (function __lambda__ (item) {
 					return item ['i'];
 				})}));
