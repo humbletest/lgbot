@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-07 10:01:30
+// Transcrypt'ed from Python, 2018-07-07 12:18:59
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4013,29 +4013,6 @@ function app () {
 					self.childshook.x ();
 					self.openbutton.rc ('schemacollectionopenbuttondone');
 				}
-				catch (__except0__) {
-					window.alert ('No item on clipboard to paste!');
-					return self;
-				}
-				sch.setchildparent (self);
-				var appendelement = sch;
-				if (self.kind == 'dict') {
-					var appendelement = NamedSchemaItem (dict ({'item': sch})).setkeychangedcallback (self.updatecreatecombo);
-					if (!(schemaclipboard.key === null)) {
-						appendelement.setkey (schemaclipboard.key);
-					}
-				}
-				self.childs.append (appendelement);
-				self.buildchilds ();
-				self.updatecreatecombo ();
-			});},
-			get openchilds () {return __get__ (this, function (self) {
-				if (self.opened) {
-					self.opened = false;
-					self.createhook.x ();
-					self.childshook.x ();
-					self.openbutton.rc ('schemacollectionopenbuttondone');
-				}
 				else {
 					self.opened = true;
 					self.creatediv = Div ().ac ('schemaitem').ac ('schemacreate');
@@ -5281,7 +5258,7 @@ function app () {
 				self.bestmoveuci = null;
 				self.analyzing = true;
 				if (!(self.enginecommandcallback === null)) {
-					self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, self.multipv, self.basicboard.fen));
+					self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, self.getmultipv (), self.basicboard.fen));
 				}
 			});},
 			get stopanalyzecallback () {return __get__ (this, function (self) {
@@ -5324,11 +5301,20 @@ function app () {
 					}
 				}
 			});},
+			get getmultipv () {return __get__ (this, function (self) {
+				try {
+					var multipv = int (self.multipvcombo.select.v ());
+					return multipv;
+				}
+				catch (__except0__) {
+					return self.defaultmultipv;
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.defaultmultipv = 3;
 				self.bestmoveuci = null;
 				self.analyzing = false;
-				self.multipv = 3;
 				self.history = list ([]);
 				self.basicboard = BasicBoard (args);
 				self.controlpanel = Div ().ac ('boardcontrolpanel');
@@ -5353,6 +5339,12 @@ function app () {
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallback));
 				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
 				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
+				var mopts = dict ({});
+				for (var i = 1; i < 21; i++) {
+					mopts [str (i)] = 'MultiPV {}'.format (i);
+				}
+				self.multipvcombo = ComboBox (dict ({'selectclass': 'boardmultipvcomboselect', 'optionfirstclass': 'boardmultipvcombooptionfirst', 'optionclass': 'boardmultipvcombooption'})).setoptions (mopts, str (self.defaultmultipv));
+				self.analysiscontrolpanel.a (self.multipvcombo);
 				self.analysisdiv.a (self.analysiscontrolpanel);
 				self.analysisinfodiv = Div ();
 				self.analysisdiv.a (self.analysisinfodiv);

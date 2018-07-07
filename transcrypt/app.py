@@ -2646,7 +2646,7 @@ class Board(e):
         self.bestmoveuci = None
         self.analyzing = True
         if not ( self.enginecommandcallback is None ):            
-            self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, self.multipv, self.basicboard.fen))
+            self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, self.getmultipv(), self.basicboard.fen))
 
     def stopanalyzecallback(self):
         self.analyzing = False
@@ -2680,11 +2680,18 @@ class Board(e):
             if not ( self.moveclickedcallback is None ):
                 self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, self.bestmoveuci)
 
+    def getmultipv(self):
+        try:
+            multipv = int(self.multipvcombo.select.v())
+            return multipv
+        except:
+            return self.defaultmultipv
+
     def __init__(self, args):
         super().__init__("div")
+        self.defaultmultipv = 3
         self.bestmoveuci = None
-        self.analyzing = False
-        self.multipv = 3
+        self.analyzing = False        
         self.history = []
         self.basicboard = BasicBoard(args)        
         self.controlpanel = Div().ac("boardcontrolpanel")
@@ -2714,6 +2721,15 @@ class Board(e):
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallback))
         self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
         self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
+        mopts = {}
+        for i in range(1,21):
+            mopts[str(i)] = "MultiPV {}".format(i)
+        self.multipvcombo = ComboBox({
+            "selectclass": "boardmultipvcomboselect",
+            "optionfirstclass": "boardmultipvcombooptionfirst",
+            "optionclass": "boardmultipvcombooption"
+        }).setoptions(mopts, str(self.defaultmultipv))
+        self.analysiscontrolpanel.a(self.multipvcombo)
         self.analysisdiv.a(self.analysiscontrolpanel)
         self.analysisinfodiv = Div()
         self.analysisdiv.a(self.analysisinfodiv)
