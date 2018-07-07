@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-06 22:36:55
+// Transcrypt'ed from Python, 2018-07-07 10:01:30
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2259,6 +2259,9 @@ function app () {
 			});},
 			get copy () {return __get__ (this, function (self) {
 				return Vect (self.x, self.y);
+			});},
+			get __repr__ () {return __get__ (this, function (self) {
+				return 'Vect[x: {}, y: {}]'.format (self.x, self.y);
 			});}
 		});
 		var getClientVect = function (ev) {
@@ -2697,11 +2700,29 @@ function app () {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, width, height) {
 				__super__ (Canvas, '__init__') (self, 'canvas');
-				self.sa ('width', width);
-				self.sa ('height', height);
+				self.width = width;
+				self.height = height;
+				self.sa ('width', self.width);
+				self.sa ('height', self.height);
 				self.ctx = self.e.getContext ('2d');
 			});},
+			get lineWidth () {return __get__ (this, function (self, linewidth) {
+				self.ctx.lineWidth = linewidth;
+			});},
+			get strokeStyle () {return __get__ (this, function (self, strokestyle) {
+				self.ctx.strokeStyle = strokestyle;
+			});},
+			get fillStyle () {return __get__ (this, function (self, fillstyle) {
+				self.ctx.fillStyle = fillstyle;
+			});},
+			get fillRect () {return __get__ (this, function (self, tlv, brv) {
+				self.ctx.fillRect (tlv.x, tlv.y, brv.m (tlv).x, brv.m (tlv).y);
+			});},
+			get py_clear () {return __get__ (this, function (self) {
+				self.ctx.clearRect (0, 0, self.width, self.height);
+			});},
 			get drawline () {return __get__ (this, function (self, fromv, tov) {
+				self.ctx.beginPath ();
 				self.ctx.moveTo (fromv.x, fromv.y);
 				self.ctx.lineTo (tov.x, tov.y);
 				self.ctx.stroke ();
@@ -3992,6 +4013,29 @@ function app () {
 					self.childshook.x ();
 					self.openbutton.rc ('schemacollectionopenbuttondone');
 				}
+				catch (__except0__) {
+					window.alert ('No item on clipboard to paste!');
+					return self;
+				}
+				sch.setchildparent (self);
+				var appendelement = sch;
+				if (self.kind == 'dict') {
+					var appendelement = NamedSchemaItem (dict ({'item': sch})).setkeychangedcallback (self.updatecreatecombo);
+					if (!(schemaclipboard.key === null)) {
+						appendelement.setkey (schemaclipboard.key);
+					}
+				}
+				self.childs.append (appendelement);
+				self.buildchilds ();
+				self.updatecreatecombo ();
+			});},
+			get openchilds () {return __get__ (this, function (self) {
+				if (self.opened) {
+					self.opened = false;
+					self.createhook.x ();
+					self.childshook.x ();
+					self.openbutton.rc ('schemacollectionopenbuttondone');
+				}
 				else {
 					self.opened = true;
 					self.creatediv = Div ().ac ('schemaitem').ac ('schemacreate');
@@ -4815,15 +4859,35 @@ function app () {
 				self.promoting = false;
 				self.build ();
 			});},
-			get drawmovearrow () {return __get__ (this, function (self, move) {
+			get drawmovearrow () {return __get__ (this, function (self, move, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				if (move === null) {
+					return ;
+				}
+				var strokecolor = args.py_get ('strokecolor', '#FFFF00');
+				var linewidth = args.py_get ('linewidth', 0.2) * self.squaresize;
+				var headwidth = args.py_get ('headwidth', 0.2) * self.squaresize;
+				var headheight = args.py_get ('headheight', 0.2) * self.squaresize;
 				if (move.fromsq === null) {
 					// pass;
 				}
 				else {
-					self.movecanvas.ctx.lineWidth = self.squaresize / 5;
-					self.movecanvas.ctx.strokeStyle = '#FFFF00';
-					self.movecanvas.drawline (self.squarecoordsmiddlevect (self.flipawaresquare (move.fromsq)), self.squarecoordsmiddlevect (self.flipawaresquare (move.tosq)));
+					self.movecanvas.lineWidth (linewidth);
+					self.movecanvas.strokeStyle (strokecolor);
+					self.movecanvas.fillStyle (strokecolor);
+					var tomv = self.squarecoordsmiddlevect (self.flipawaresquare (move.tosq));
+					self.movecanvas.drawline (self.squarecoordsmiddlevect (self.flipawaresquare (move.fromsq)), tomv);
+					var dv = Vect (headwidth, headheight);
+					self.movecanvas.fillRect (tomv.m (dv), tomv.p (dv));
 				}
+			});},
+			get drawuciarrow () {return __get__ (this, function (self, uci, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				self.drawmovearrow (self.ucitomove (uci), args);
 			});},
 			get buildgenmove () {return __get__ (this, function (self) {
 				if (__in__ ('genmove', self.positioninfo)) {
@@ -5075,6 +5139,31 @@ function app () {
 				self.build ();
 			});}
 		});
+		var MultipvInfo = __class__ ('MultipvInfo', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, infoi) {
+				__super__ (MultipvInfo, '__init__') (self, 'div');
+				self.infoi = infoi;
+				self.i = infoi ['i'];
+				self.bestmoveuci = infoi ['bestmoveuci'];
+				self.bestmovesan = infoi ['bestmovesan'];
+				self.scorenumerical = infoi ['scorenumerical'];
+				self.pvsan = infoi ['pvsan'];
+				self.depth = infoi ['depth'];
+				self.nps = infoi ['nps'];
+				self.container = Div ().ac ('multipvinfocontainer');
+				self.idiv = Div ().ac ('multipvinfoi').html ('{}.'.format (self.i));
+				self.bestmovesandiv = Div ().ac ('multipvinfobestmovesan').html (self.bestmovesan);
+				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (self.scorenumerical));
+				self.miscdiv = Div ().ac ('multipvinfomisc').html ('d: {} , nps: {}'.format (self.depth, self.nps));
+				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvsan);
+				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv]));
+				self.a (self.container);
+				var ps = self.scorenumerical > 0;
+				self.bestmovesandiv.cc (ps, '#070', '#700');
+				self.scorenumericaldiv.cc (ps, '#070', '#700');
+			});}
+		});
 		var Board = __class__ ('Board', [e], {
 			__module__: __name__,
 			get flipcallback () {return __get__ (this, function (self) {
@@ -5090,6 +5179,11 @@ function app () {
 				if (typeof edithistory == 'undefined' || (edithistory != null && edithistory .hasOwnProperty ("__kwargtrans__"))) {;
 					var edithistory = true;
 				};
+				var restartanalysis = false;
+				if (self.analyzing) {
+					self.stopanalyzecallback ();
+					var restartanalysis = true;
+				}
 				if (edithistory && __in__ ('genmove', positioninfo)) {
 					var genmove = positioninfo ['genmove'];
 					if (genmove == 'reset') {
@@ -5103,6 +5197,9 @@ function app () {
 				self.movelist = cpick (__in__ ('movelist', self.positioninfo), self.positioninfo ['movelist'], list ([]));
 				self.basicboard.setfromfen (fen, self.positioninfo);
 				self.buildpositioninfo ();
+				if (restartanalysis) {
+					self.analyzecallback ();
+				}
 			});},
 			get setvariantcombo () {return __get__ (this, function (self) {
 				self.variantcombo.setoptions (VARIANT_OPTIONS, self.basicboard.variantkey);
@@ -5181,21 +5278,56 @@ function app () {
 				self.resizetabpanewidth (width);
 			});},
 			get analyzecallback () {return __get__ (this, function (self) {
+				self.bestmoveuci = null;
+				self.analyzing = true;
 				if (!(self.enginecommandcallback === null)) {
 					self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, self.multipv, self.basicboard.fen));
 				}
 			});},
 			get stopanalyzecallback () {return __get__ (this, function (self) {
+				self.analyzing = false;
+				self.basicboard.movecanvas.py_clear ();
 				if (!(self.enginecommandcallback === null)) {
 					self.enginecommandcallback ('stopanalyze');
 				}
 			});},
 			get processanalysisinfo () {return __get__ (this, function (self, obj) {
+				if (!(self.analyzing)) {
+					return ;
+				}
 				var content = JSON.stringify (obj, null, 2);
-				self.analysisinfodiv.html (('<pre>' + content) + '</pre>');
+				self.analysisinfodiv.x ();
+				self.basicboard.movecanvas.py_clear ();
+				var __iterable0__ = sorted (obj, __kwargtrans__ ({key: (function __lambda__ (item) {
+					return item ['i'];
+				})}));
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var infoi = __iterable0__ [__index0__];
+					try {
+						var minfo = MultipvInfo (infoi);
+						if (minfo.i == 1) {
+							self.bestmoveuci = minfo.bestmoveuci;
+						}
+						var iw = 1 / (5 * minfo.i);
+						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': cpick (minfo.scorenumerical > 0, '#00FF00', '#FF0000'), 'linewidth': iw, 'headheight': iw}));
+						self.analysisinfodiv.a (minfo);
+					}
+					catch (__except0__) {
+						// pass;
+					}
+				}
+			});},
+			get makeanalyzedmovecallback () {return __get__ (this, function (self) {
+				if (!(self.bestmoveuci === null)) {
+					if (!(self.moveclickedcallback === null)) {
+						self.moveclickedcallback (self.basicboard.variantkey, self.basicboard.fen, self.bestmoveuci);
+					}
+				}
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.bestmoveuci = null;
+				self.analyzing = false;
 				self.multipv = 3;
 				self.history = list ([]);
 				self.basicboard = BasicBoard (args);
@@ -5217,8 +5349,11 @@ function app () {
 				self.movelistdivwidth = 100;
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
 				self.analysisdiv = Div ();
-				self.analysisdiv.a (Button ('Analyze', self.analyzecallback));
-				self.analysisdiv.a (Button ('Stop analysis', self.stopanalyzecallback));
+				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
+				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallback));
+				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
+				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
+				self.analysisdiv.a (self.analysiscontrolpanel);
 				self.analysisinfodiv = Div ();
 				self.analysisdiv.a (self.analysisinfodiv);
 				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('book', 'Book', Div ())]), 'analysis');
@@ -5501,6 +5636,7 @@ function app () {
 			__all__.LogItem = LogItem;
 			__all__.LogPane = LogPane;
 			__all__.Move = Move;
+			__all__.MultipvInfo = MultipvInfo;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
 			__all__.PIECE_KINDS = PIECE_KINDS;

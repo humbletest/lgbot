@@ -42,6 +42,9 @@ class Vect:
     def copy(self):
         return Vect(self.x, self.y)
 
+    def __repr__(self):
+        return "Vect[x: {}, y: {}]".format(self.x, self.y)
+
 def getClientVect(ev):
     return Vect(ev.clientX, ev.clientY)
 
@@ -492,11 +495,29 @@ class TextArea(e):
 class Canvas(e):
     def __init__(self, width, height):
         super().__init__("canvas")
-        self.sa("width", width)
-        self.sa("height", height)
-        self.ctx = self.e.getContext("2d")        
+        self.width = width
+        self.height = height
+        self.sa("width", self.width)
+        self.sa("height", self.height)        
+        self.ctx = self.e.getContext("2d")
 
-    def drawline(self, fromv, tov):
+    def lineWidth(self, linewidth):        
+        self.ctx.lineWidth = linewidth
+
+    def strokeStyle(self, strokestyle):        
+        self.ctx.strokeStyle = strokestyle
+
+    def fillStyle(self, fillstyle):        
+        self.ctx.fillStyle = fillstyle
+
+    def fillRect(self, tlv, brv):          
+        self.ctx.fillRect(tlv.x, tlv.y, brv.m(tlv).x, brv.m(tlv).y)
+
+    def clear(self):        
+        self.ctx.clearRect(0, 0, self.width, self.height)
+
+    def drawline(self, fromv, tov):        
+        self.ctx.beginPath()
         self.ctx.moveTo(fromv.x, fromv.y)
         self.ctx.lineTo(tov.x, tov.y)
         self.ctx.stroke()
@@ -2279,13 +2300,26 @@ class BasicBoard(e):
         self.promoting = False
         self.build()
 
-    def drawmovearrow(self, move):
+    def drawmovearrow(self, move, args = {}):        
+        if move is None:
+            return
+        strokecolor = args.get("strokecolor", "#FFFF00")
+        linewidth = args.get("linewidth", 0.2) * self.squaresize
+        headwidth = args.get("headwidth", 0.2) * self.squaresize
+        headheight = args.get("headheight", 0.2) * self.squaresize
         if move.fromsq is None:
             pass
         else:
-            self.movecanvas.ctx.lineWidth = self.squaresize / 5
-            self.movecanvas.ctx.strokeStyle = "#FFFF00"
-            self.movecanvas.drawline(self.squarecoordsmiddlevect(self.flipawaresquare(move.fromsq)), self.squarecoordsmiddlevect(self.flipawaresquare(move.tosq)))
+            self.movecanvas.lineWidth(linewidth)
+            self.movecanvas.strokeStyle(strokecolor)
+            self.movecanvas.fillStyle(strokecolor)
+            tomv = self.squarecoordsmiddlevect(self.flipawaresquare(move.tosq))
+            self.movecanvas.drawline(self.squarecoordsmiddlevect(self.flipawaresquare(move.fromsq)), tomv)
+            dv = Vect(headwidth, headheight)            
+            self.movecanvas.fillRect(tomv.m(dv), tomv.p(dv))
+
+    def drawuciarrow(self, uci, args = {}):
+        self.drawmovearrow(self.ucitomove(uci), args)
 
     def buildgenmove(self):
         if "genmove" in self.positioninfo:
@@ -2492,6 +2526,29 @@ class BasicBoard(e):
         self.initrep(args)
         self.build()
 
+class MultipvInfo(e):
+    def __init__(self, infoi):
+        super().__init__("div")
+        self.infoi = infoi
+        self.i = infoi["i"]
+        self.bestmoveuci = infoi["bestmoveuci"]
+        self.bestmovesan = infoi["bestmovesan"]
+        self.scorenumerical = infoi["scorenumerical"]
+        self.pvsan = infoi["pvsan"]
+        self.depth = infoi["depth"]
+        self.nps = infoi["nps"]
+        self.container = Div().ac("multipvinfocontainer")
+        self.idiv = Div().ac("multipvinfoi").html("{}.".format(self.i))
+        self.bestmovesandiv = Div().ac("multipvinfobestmovesan").html(self.bestmovesan)
+        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.scorenumerical))
+        self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
+        self.pvdiv = Div().ac("multipvinfopv").html(self.pvsan)
+        self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv])
+        self.a(self.container)
+        ps = self.scorenumerical > 0
+        self.bestmovesandiv.cc(ps, "#070", "#700")
+        self.scorenumericaldiv.cc(ps, "#070", "#700")
+
 class Board(e):
     def flipcallback(self):
         self.basicboard.setflip(not self.basicboard.flip)
@@ -2500,6 +2557,10 @@ class Board(e):
         self.basicboard.reset()
 
     def setfromfen(self, fen, positioninfo = {}, edithistory = True):
+        restartanalysis = False
+        if self.analyzing:
+            self.stopanalyzecallback()
+            restartanalysis = True
         if edithistory and ( "genmove" in positioninfo ):
             genmove = positioninfo["genmove"]
             if genmove == "reset":
@@ -2513,6 +2574,8 @@ class Board(e):
         self.movelist = cpick("movelist" in self.positioninfo, self.positioninfo["movelist"], [])        
         self.basicboard.setfromfen(fen, self.positioninfo)
         self.buildpositioninfo()
+        if restartanalysis:
+            self.analyzecallback()
 
     def setvariantcombo(self):        
         self.variantcombo.setoptions(VARIANT_OPTIONS, self.basicboard.variantkey)
@@ -2580,19 +2643,47 @@ class Board(e):
         self.resizetabpanewidth(width)
 
     def analyzecallback(self):
+        self.bestmoveuci = None
+        self.analyzing = True
         if not ( self.enginecommandcallback is None ):            
             self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, self.multipv, self.basicboard.fen))
 
     def stopanalyzecallback(self):
+        self.analyzing = False
+        self.basicboard.movecanvas.clear()
         if not ( self.enginecommandcallback is None ):
             self.enginecommandcallback("stopanalyze")
 
     def processanalysisinfo(self, obj):
+        if not self.analyzing:
+            return
         content = JSON.stringify(obj, None, 2)
-        self.analysisinfodiv.html("<pre>" + content + "</pre>")
+        self.analysisinfodiv.x()
+        self.basicboard.movecanvas.clear()        
+        for infoi in sorted(obj, key = lambda item: item["i"]):
+            try:                   
+                minfo = MultipvInfo(infoi)
+                if minfo.i == 1:
+                    self.bestmoveuci = minfo.bestmoveuci
+                iw = 1 / ( 5 * minfo.i )
+                self.basicboard.drawuciarrow(minfo.bestmoveuci, {
+                    "strokecolor": cpick(minfo.scorenumerical > 0, "#00FF00", "#FF0000"),
+                    "linewidth": iw,
+                    "headheight": iw
+                })
+                self.analysisinfodiv.a(minfo)
+            except:                
+                pass
+
+    def makeanalyzedmovecallback(self):
+        if not ( self.bestmoveuci is None ):
+            if not ( self.moveclickedcallback is None ):
+                self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, self.bestmoveuci)
 
     def __init__(self, args):
         super().__init__("div")
+        self.bestmoveuci = None
+        self.analyzing = False
         self.multipv = 3
         self.history = []
         self.basicboard = BasicBoard(args)        
@@ -2619,8 +2710,11 @@ class Board(e):
         self.movelistdivwidth = 100
         self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
         self.analysisdiv = Div()
-        self.analysisdiv.a(Button("Analyze", self.analyzecallback))
-        self.analysisdiv.a(Button("Stop analysis", self.stopanalyzecallback))
+        self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
+        self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallback))
+        self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
+        self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
+        self.analysisdiv.a(self.analysiscontrolpanel)
         self.analysisinfodiv = Div()
         self.analysisdiv.a(self.analysisinfodiv)
         self.tabpane = TabPane({"kind":"normal", "id":"board"}).setTabs(
