@@ -171,6 +171,10 @@ class PieceStore(e):
         self.setstore(self.store)
 
 class BasicBoard(e):
+    def clearcanvases(self):
+        self.movecanvas.clear()
+        self.piececanvashook.x()
+
     def ucitosquare(self, squci):
         try:
             file = squci.charCodeAt(0) - "a".charCodeAt(0)
@@ -179,19 +183,23 @@ class BasicBoard(e):
         except:
             return None
 
-    def ucitomove(self, moveuci):
+    def ucitomove(self, moveuci):        
         if "@" in moveuci:
             try:
                 parts = moveuci.split("@")
-                move = Move(None, self.ucitosquare(parts[1]), Piece(parts[0].toLowerCase(), self.turn()))
+                sq = self.ucitosquare(parts[1])
+                move = Move(sq, sq, Piece(parts[0].toLowerCase(), self.turn()))
                 return move
             except:
                 return None
         else:
             try:
                 move = Move(self.ucitosquare(moveuci[0:2]), self.ucitosquare(moveuci[2:4]))
-                if len(moveuci) > 4:
-                    move.prompiece = Piece(mouveuci[4].toLowerCase(), self.turn())
+                try:
+                    if len(moveuci) > 4:
+                        move.prompiece = Piece(moveuci[4].toLowerCase(), self.turn())                    
+                except:
+                    print("could not parse prompiece")
                 return move
             except:
                 return None
@@ -376,23 +384,27 @@ class BasicBoard(e):
         self.promoting = False
         self.build()
 
-    def drawmovearrow(self, move, args = {}):        
+    def drawmovearrow(self, move, args = {}):                        
         if move is None:
             return
         strokecolor = args.get("strokecolor", "#FFFF00")
         linewidth = args.get("linewidth", 0.2) * self.squaresize
         headwidth = args.get("headwidth", 0.2) * self.squaresize
-        headheight = args.get("headheight", 0.2) * self.squaresize
-        if move.fromsq is None:
-            pass
-        else:
-            self.movecanvas.lineWidth(linewidth)
-            self.movecanvas.strokeStyle(strokecolor)
-            self.movecanvas.fillStyle(strokecolor)
-            tomv = self.squarecoordsmiddlevect(self.flipawaresquare(move.tosq))
-            self.movecanvas.drawline(self.squarecoordsmiddlevect(self.flipawaresquare(move.fromsq)), tomv)
-            dv = Vect(headwidth, headheight)            
-            self.movecanvas.fillRect(tomv.m(dv), tomv.p(dv))
+        headheight = args.get("headheight", 0.2) * self.squaresize        
+        self.movecanvas.lineWidth(linewidth)
+        self.movecanvas.strokeStyle(strokecolor)
+        self.movecanvas.fillStyle(strokecolor)
+        tomv = self.squarecoordsmiddlevect(self.flipawaresquare(move.tosq))
+        self.movecanvas.drawline(self.squarecoordsmiddlevect(self.flipawaresquare(move.fromsq)), tomv)
+        dv = Vect(headwidth, headheight)            
+        self.movecanvas.fillRect(tomv.m(dv), tomv.p(dv))
+        if not ( move.prompiece.isempty() ):
+            pf = 4
+            dvp = Vect(linewidth * pf, linewidth * pf)
+            move.prompiece.color = self.turn()
+            ppdiv = Div().pa().cp().ac(getclassforpiece(move.prompiece, self.piecestyle)).w(linewidth * 2 * pf).h(linewidth * 2 * pf)
+            ppdiv.pv(tomv.m(dvp))            
+            self.piececanvashook.a(ppdiv)
 
     def drawuciarrow(self, uci, args = {}):
         self.drawmovearrow(self.ucitomove(uci), args)
@@ -403,6 +415,7 @@ class BasicBoard(e):
                 genmoveuci = self.positioninfo["genmove"]["uci"]
                 genmove = self.ucitomove(genmoveuci)
                 if not ( genmove is None ):
+                    genmove.prompiece = Piece()
                     self.drawmovearrow(genmove)
 
     def build(self):
@@ -446,7 +459,8 @@ class BasicBoard(e):
         self.x().a(self.sectioncontainer)
         self.movecanvas = Canvas(self.width, self.height).pa().t(0).l(0)
         self.movecanvashook = Div().pa().t(0).l(0).zi(5).op(0.5)
-        self.container.a(self.movecanvashook)
+        self.piececanvashook = Div().pa().t(0).l(0).zi(11).op(0.5)
+        self.container.aa([self.movecanvashook, self.piececanvashook])
         self.movecanvashook.a(self.movecanvas)
         self.buildgenmove()
         return self
@@ -726,7 +740,7 @@ class Board(e):
 
     def stopanalyzecallback(self):
         self.analyzing = False
-        self.basicboard.movecanvas.clear()
+        self.basicboard.clearcanvases()
         if not ( self.enginecommandcallback is None ):
             self.enginecommandcallback("stopanalyze")
 
@@ -735,7 +749,7 @@ class Board(e):
             return
         content = JSON.stringify(obj, None, 2)
         self.analysisinfodiv.x()
-        self.basicboard.movecanvas.clear()        
+        self.basicboard.clearcanvases()        
         for infoi in sorted(obj, key = lambda item: item["i"]):
             try:                   
                 minfo = MultipvInfo(infoi)
