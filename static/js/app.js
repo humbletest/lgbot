@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-07 15:41:32
+// Transcrypt'ed from Python, 2018-07-07 16:50:45
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5141,6 +5141,7 @@ function app () {
 				self.bestmovesan = infoi ['bestmovesan'];
 				self.scorenumerical = infoi ['scorenumerical'];
 				self.pvsan = infoi ['pvsan'];
+				self.pvpgn = infoi ['pvpgn'];
 				self.depth = infoi ['depth'];
 				self.nps = infoi ['nps'];
 				self.container = Div ().ac ('multipvinfocontainer');
@@ -5148,7 +5149,7 @@ function app () {
 				self.bestmovesandiv = Div ().ac ('multipvinfobestmovesan').html (self.bestmovesan);
 				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (self.scorenumerical));
 				self.miscdiv = Div ().ac ('multipvinfomisc').html ('d: {} , nps: {}'.format (self.depth, self.nps));
-				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvsan);
+				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvpgn);
 				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv]));
 				self.a (self.container);
 				var ps = self.scorenumerical > 0;

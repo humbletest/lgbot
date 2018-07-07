@@ -2549,6 +2549,7 @@ class MultipvInfo(e):
         self.bestmovesan = infoi["bestmovesan"]
         self.scorenumerical = infoi["scorenumerical"]
         self.pvsan = infoi["pvsan"]
+        self.pvpgn = infoi["pvpgn"]
         self.depth = infoi["depth"]
         self.nps = infoi["nps"]
         self.container = Div().ac("multipvinfocontainer")
@@ -2556,7 +2557,7 @@ class MultipvInfo(e):
         self.bestmovesandiv = Div().ac("multipvinfobestmovesan").html(self.bestmovesan)
         self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.scorenumerical))
         self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
-        self.pvdiv = Div().ac("multipvinfopv").html(self.pvsan)
+        self.pvdiv = Div().ac("multipvinfopv").html(self.pvpgn)
         self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv])
         self.a(self.container)
         ps = self.scorenumerical > 0
