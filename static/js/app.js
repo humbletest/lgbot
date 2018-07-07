@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-07 20:12:58
+// Transcrypt'ed from Python, 2018-07-07 21:25:45
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5133,6 +5133,14 @@ function app () {
 		});
 		var MultipvInfo = __class__ ('MultipvInfo', [e], {
 			__module__: __name__,
+			get bestmovesanclickedfactory () {return __get__ (this, function (self, moveuci) {
+				var bestmovesanclicked = function () {
+					if (!(self.bestmovesanclickedcallback === null)) {
+						self.bestmovesanclickedcallback (moveuci);
+					}
+				};
+				return bestmovesanclicked;
+			});},
 			get __init__ () {return __get__ (this, function (self, infoi) {
 				__super__ (MultipvInfo, '__init__') (self, 'div');
 				self.infoi = infoi;
@@ -5147,6 +5155,7 @@ function app () {
 				self.container = Div ().ac ('multipvinfocontainer');
 				self.idiv = Div ().ac ('multipvinfoi').html ('{}.'.format (self.i));
 				self.bestmovesandiv = Div ().ac ('multipvinfobestmovesan').html (self.bestmovesan);
+				self.bestmovesandiv.ae ('mousedown', self.bestmovesanclickedfactory (self.bestmoveuci));
 				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (self.scorenumerical));
 				self.miscdiv = Div ().ac ('multipvinfomisc').html ('d: {} , nps: {}'.format (self.depth, self.nps));
 				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvpgn);
@@ -5284,6 +5293,11 @@ function app () {
 					self.enginecommandcallback ('stopanalyze');
 				}
 			});},
+			get analysismoveclicked () {return __get__ (this, function (self, moveuci) {
+				if (!(self.moveclickedcallback === null)) {
+					self.moveclickedcallback (self.basicboard.variantkey, self.basicboard.fen, moveuci);
+				}
+			});},
 			get processanalysisinfo () {return __get__ (this, function (self, obj) {
 				if (!(self.analyzing)) {
 					return ;
@@ -5298,6 +5312,7 @@ function app () {
 					var infoi = __iterable0__ [__index0__];
 					try {
 						var minfo = MultipvInfo (infoi);
+						minfo.bestmovesanclickedcallback = self.analysismoveclicked;
 						if (minfo.i == 1) {
 							self.bestmoveuci = minfo.bestmoveuci;
 						}

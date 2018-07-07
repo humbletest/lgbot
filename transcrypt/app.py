@@ -2541,6 +2541,12 @@ class BasicBoard(e):
         self.build()
 
 class MultipvInfo(e):
+    def bestmovesanclickedfactory(self, moveuci):
+        def bestmovesanclicked():
+            if not ( self.bestmovesanclickedcallback is None ):
+                self.bestmovesanclickedcallback(moveuci)
+        return bestmovesanclicked
+
     def __init__(self, infoi):
         super().__init__("div")
         self.infoi = infoi
@@ -2555,6 +2561,7 @@ class MultipvInfo(e):
         self.container = Div().ac("multipvinfocontainer")
         self.idiv = Div().ac("multipvinfoi").html("{}.".format(self.i))
         self.bestmovesandiv = Div().ac("multipvinfobestmovesan").html(self.bestmovesan)
+        self.bestmovesandiv.ae("mousedown", self.bestmovesanclickedfactory(self.bestmoveuci))
         self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.scorenumerical))
         self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
         self.pvdiv = Div().ac("multipvinfopv").html(self.pvpgn)
@@ -2669,6 +2676,10 @@ class Board(e):
         if not ( self.enginecommandcallback is None ):
             self.enginecommandcallback("stopanalyze")
 
+    def analysismoveclicked(self, moveuci):
+        if not ( self.moveclickedcallback is None ):
+            self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, moveuci)
+
     def processanalysisinfo(self, obj):
         if not self.analyzing:
             return
@@ -2678,6 +2689,7 @@ class Board(e):
         for infoi in sorted(obj, key = lambda item: item["i"]):
             try:                   
                 minfo = MultipvInfo(infoi)
+                minfo.bestmovesanclickedcallback = self.analysismoveclicked
                 if minfo.i == 1:
                     self.bestmoveuci = minfo.bestmoveuci
                 iw = 1 / ( 5 * minfo.i )
