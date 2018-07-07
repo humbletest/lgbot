@@ -73,6 +73,7 @@ class EngineProcessManager(SimpleProcessManager):
             parts = sline.split(" ")
             if parts[0] == "analyze":
                 try:
+                    config.fromfile()
                     variantkey = parts[1]
                     multipv = parts[2]
                     fen = " ".join(parts[3:])
@@ -112,6 +113,8 @@ class EngineProcessManager(SimpleProcessManager):
             if ( now - self.analyzestarted ) > 0.5:
                 analyzeinfo = []
                 info = self.infh.info
+                firstdepth = None
+                depthsequal = True
                 for i , score in info["score"].items():                    
                     pvsan = None
                     bestmovesan = None                    
@@ -135,6 +138,13 @@ class EngineProcessManager(SimpleProcessManager):
                         bestmoveuci = ucis[0]
                     except:
                         pass
+                    depthi = info["depths"][i]
+                    if firstdepth is None:
+                        firstdepth = depthi
+                    else:
+                        if not ( depthi == firstdepth ):
+                            depthsequal = False
+                    npsi = info["npss"][i]
                     analyzeinfo.append({
                         "i": i,
                         "score": score,
@@ -143,16 +153,17 @@ class EngineProcessManager(SimpleProcessManager):
                         "pvuci": pvuci,
                         "bestmoveuci": bestmoveuci,
                         "scorenumerical": get_score_numerical(score),
-                        "depth": info["depth"],
+                        "depth": depthi,
                         "nodes": info["nodes"],
-                        "nps": info["nps"]
+                        "nps": npsi
                     })
-                postjson(PROCESS_READ_CALLBACK_URL, {
-                    "kind": "analyzeinfo",
-                    "prockey": self.key,
-                    "analyzeinfo": analyzeinfo
-                })
-                self.analyzestarted = now                
+                if depthsequal or config.analysisdepth == "partial":
+                    postjson(PROCESS_READ_CALLBACK_URL, {
+                        "kind": "analyzeinfo",
+                        "prockey": self.key,
+                        "analyzeinfo": analyzeinfo
+                    })
+                    self.analyzestarted = now                
             return
         if self.parseuci:
             command_and_args = sline.split(None, 1)

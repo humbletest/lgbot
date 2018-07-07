@@ -85,11 +85,22 @@ class InfoHandler(object):
     def __init__(self):
         self.lock = threading.Lock()
 
-        self.info = {"refutation": {}, "currline": {}, "pv": {}, "score": {}}
+        self.info = {
+            "refutation": {},
+            "currline": {},
+            "pv": {},
+            "score": {},
+            "depths": {},
+            "npss": {}
+        }
+
+        self.currentmultipv = None
 
     def depth(self, x):
         """Receives the search depth in plies."""
         self.info["depth"] = x
+        if not ( self.currentmultipv is None ):
+            self.info["depths"][self.currentmultipv] = x
 
     def seldepth(self, x):
         """Receives the selective search depth in plies."""
@@ -119,6 +130,7 @@ class InfoHandler(object):
         If *multipv* occurs in an info line, this is guaranteed to be called
         before *score* or *pv*.
         """
+        self.currentmultipv = num
         self.info["multipv"] = num
 
     def score(self, cp, mate, lowerbound, upperbound):
@@ -163,6 +175,8 @@ class InfoHandler(object):
     def nps(self, x):
         """Receives a new nodes per second (nps) statistic."""
         self.info["nps"] = x
+        if not ( self.currentmultipv is None ):
+            self.info["npss"][self.currentmultipv] = x
 
     def tbhits(self, x):
         """Receives a new information about the number of tablebase hits."""
