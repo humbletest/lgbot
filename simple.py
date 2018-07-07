@@ -19,6 +19,7 @@ process.VERBOSE = False
 from serverutils.utils import postjson, ProcessManager
 from serverutils.utils import get_variant_board
 from serverutils.utils import get_score_numerical
+import chess
 from chess.uci import InfoHandler, Engine
 #############################################
 
@@ -28,6 +29,8 @@ def SIMPLE_ENGINE_PATH():
 
 FLASK_SERVER_URL = config.flaskserverurl
 PROCESS_READ_CALLBACK_URL = FLASK_SERVER_URL + "/read"
+
+MAX_PV_LENGTH = 6
 
 #############################################
 
@@ -120,23 +123,42 @@ class EngineProcessManager(SimpleProcessManager):
                     bestmovesan = None                    
                     pvuci = None                    
                     bestmoveuci = None                    
+                    pvpgn = None
                     try:
                         pvi = info["pv"][i]
                         sans = []
+                        pgnsans = []
                         ucis = []
                         sanboard = self.board.copy()
+                        mcnt = 0
                         for move in pvi:
-                            sans.append(sanboard.san(move))
+                            san = sanboard.san(move)
+                            sans.append(san)
                             ucis.append(move.uci())
-                            sanboard.push(move)
-                        if len(sans) > 10:
-                            sans = sans[:10]
-                            ucis = ucis[:10]
+                            if mcnt < MAX_PV_LENGTH:
+                                pref = ""                                
+                                if mcnt == 0:
+                                    dot = ""                                    
+                                    if sanboard.turn == chess.BLACK:
+                                        dot = "."
+                                    pref = "{}.{}".format(sanboard.fullmove_number, dot)
+                                elif sanboard.turn == chess.WHITE:
+                                    pref = "{}.".format(sanboard.fullmove_number)
+                                if not ( pref == "" ):
+                                    pgnsans.append(pref)
+                                pgnsans.append(san)
+                            sanboard.push(move)                            
+                            mcnt += 1                            
+                        if len(sans) > MAX_PV_LENGTH:
+                            sans = sans[:MAX_PV_LENGTH]
+                            ucis = ucis[:MAX_PV_LENGTH]
                         pvsan = " ".join(sans)
                         bestmovesan = sans[0]
                         pvuci = " ".join(ucis)                        
                         bestmoveuci = ucis[0]
+                        pvpgn = " ".join(pgnsans)
                     except:
+                        traceback.print_exc(file=sys.stderr)                        
                         pass
                     depthi = info["depths"][i]
                     if firstdepth is None:
@@ -149,6 +171,7 @@ class EngineProcessManager(SimpleProcessManager):
                         "i": i,
                         "score": score,
                         "pvsan": pvsan,
+                        "pvpgn": pvpgn,
                         "bestmovesan": bestmovesan,
                         "pvuci": pvuci,
                         "bestmoveuci": bestmoveuci,
