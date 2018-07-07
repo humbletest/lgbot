@@ -13,7 +13,7 @@
           "Debug Log File": "",
           "Contempt": 12,
           "Analysis Contempt": "Both",
-          "Threads": 1,
+          "Threads": 4,
           "Hash": 16,
           "Clear Hash": "",
           "Ponder": "false",
@@ -519,7 +519,7 @@
                               "check": false,
                               "showhelpashtml": true
                             },
-                            "value": 1,
+                            "value": 4,
                             "minvalue": 1,
                             "maxvalue": 512
                           }
