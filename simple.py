@@ -88,6 +88,8 @@ class EngineProcessManager(SimpleProcessManager):
                     self.infh = InfoHandler()    
                     self.eng.info_handlers.append(self.infh)
                     self.process.send_line("stop")            
+                    for ucioption in config.ucioptions:
+                        self.process.send_line("setoption name {} value {}".format(ucioption.name, ucioption.value))    
                     self.process.send_line("setoption name MultiPV value {}".format(multipv))
                     self.process.send_line("setoption name UCI_Variant value {}".format(type(self.board).uci_variant))
                     self.process.send_line("position fen {}".format(fen))
