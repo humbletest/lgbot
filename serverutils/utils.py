@@ -27,9 +27,12 @@ def geturl(url):
 
 def postjson(url, obj):
     #print("post json", url, obj)
-    r = http.request('POST', url, headers={'Content-Type': 'application/json'}, body=json.dumps(obj))
-    content = r.data.decode("utf-8")
-    return content
+    try:
+        r = http.request('POST', url, headers={'Content-Type': 'application/json'}, body=json.dumps(obj))
+        content = r.data.decode("utf-8")
+        return content
+    except:
+        return None
 
 def getjsonbin(id, version = "latest"):
     url = JSONBIN_APIBASEURL + "/b/" + id + "/" + version

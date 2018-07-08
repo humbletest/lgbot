@@ -106,7 +106,7 @@ def getchildatpath(path):
                 child  = child.child(part)
         return child
     except:
-        traceback.print_exc(file=sys.stderr)
+        #traceback.print_exc(file=sys.stderr)
         return None
 
 def storedb(path, dataobj):
@@ -116,7 +116,8 @@ def storedb(path, dataobj):
             child.set(json.dumps(dataobj))
             return "store db ok at {}".format(path)
     except:
-        traceback.print_exc(file=sys.stderr)
+        #traceback.print_exc(file=sys.stderr)
+        pass
     return "store db failed at {}".format(path)
 
 def retrievedb(path):
@@ -127,7 +128,8 @@ def retrievedb(path):
             obj = json.loads(val)
             return ( obj , "retrieve db ok at {} size {}".format(path, len(json.dumps(obj))) )
     except:
-        traceback.print_exc(file=sys.stderr)
+        #traceback.print_exc(file=sys.stderr)
+        pass
     return ( None , "retrieve db failed at {}".format(path) )
 
 def addpositioninfo(board, obj, genmove = None, genboard = None):
