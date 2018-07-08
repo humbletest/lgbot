@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-08 16:51:54
+// Transcrypt'ed from Python, 2018-07-08 18:57:10
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,23 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var View = __class__ ('View', [object], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, callback, value) {
+				if (typeof value == 'undefined' || (value != null && value .hasOwnProperty ("__kwargtrans__"))) {;
+					var value = null;
+				};
+				self.callback = callback;
+				self.value = value;
+			});},
+			get py_get () {return __get__ (this, function (self) {
+				return self.value;
+			});},
+			get set () {return __get__ (this, function (self, value) {
+				self.value = value;
+				self.callback ();
+			});}
+		});
 		var xor = function (b1, b2) {
 			if (b1 && b2) {
 				return false;
@@ -5182,7 +5199,7 @@ function app () {
 					var edithistory = true;
 				};
 				var restartanalysis = false;
-				if (self.analyzing) {
+				if (self.analyzing.py_get ()) {
 					self.stopanalyzecallback ();
 					var restartanalysis = true;
 				}
@@ -5203,7 +5220,7 @@ function app () {
 				if (restartanalysis) {
 					self.analyzecallbackfactory () ();
 				}
-				if (!(self.analyzing)) {
+				if (!(self.analyzing.py_get ())) {
 					self.sioreq (dict ({'kind': 'retrievedb', 'owner': 'board', 'path': 'analysisinfo/{}/{}'.format (self.basicboard.variantkey, self.positioninfo ['zobristkeyhex'])}));
 				}
 			});},
@@ -5307,13 +5324,17 @@ function app () {
 				self.buildpositioninfo ();
 				self.resizetabpanewidth (width);
 			});},
-			get analyzecallbackfactory () {return __get__ (this, function (self, all) {
+			get analyzecallbackfactory () {return __get__ (this, function (self, all, depthlimit) {
 				if (typeof all == 'undefined' || (all != null && all .hasOwnProperty ("__kwargtrans__"))) {;
 					var all = false;
 				};
+				if (typeof depthlimit == 'undefined' || (depthlimit != null && depthlimit .hasOwnProperty ("__kwargtrans__"))) {;
+					var depthlimit = null;
+				};
 				var analyzecallback = function () {
+					self.depthlimit = depthlimit;
 					self.bestmoveuci = null;
-					self.analyzing = true;
+					self.analyzing.set (true);
 					if (!(self.enginecommandcallback === null)) {
 						var mpv = cpick (all, 200, self.getmultipv ());
 						self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, mpv, self.basicboard.fen));
@@ -5322,7 +5343,7 @@ function app () {
 				return analyzecallback;
 			});},
 			get stopanalyzecallback () {return __get__ (this, function (self) {
-				self.analyzing = false;
+				self.analyzing.set (false);
 				self.basicboard.clearcanvases ();
 				if (!(self.enginecommandcallback === null)) {
 					self.enginecommandcallback ('stopanalyze');
@@ -5343,11 +5364,13 @@ function app () {
 				self.analysisinfo = obj;
 				self.analysisinfodiv.x ();
 				self.basicboard.clearcanvases ();
+				var maxdepth = 0;
 				var __iterable0__ = sorted (self.analysisinfo ['pvitems'], __kwargtrans__ ({key: (function __lambda__ (item) {
 					return item ['i'];
 				})}));
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var infoi = __iterable0__ [__index0__];
+					var lastinfoi = infoi;
 					try {
 						var minfo = MultipvInfo (infoi);
 						minfo.bestmovesanclickedcallback = self.analysismoveclicked;
@@ -5356,10 +5379,19 @@ function app () {
 						}
 						var iw = 1 / (5 * minfo.i);
 						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': cpick (minfo.scorenumerical > 0, '#00FF00', '#FF0000'), 'linewidth': iw, 'headheight': iw}));
+						if (minfo.depth > maxdepth) {
+							var maxdepth = minfo.depth;
+						}
 						self.analysisinfodiv.a (minfo);
 					}
 					catch (__except0__) {
 						// pass;
+					}
+				}
+				if (!(self.depthlimit === null)) {
+					if (maxdepth > self.depthlimit) {
+						self.stopanalyzecallback ();
+						self.storeanalysiscallback ();
 					}
 				}
 			});},
@@ -5387,12 +5419,16 @@ function app () {
 					return self.defaultmultipv;
 				}
 			});},
+			get analyzingchangedcallback () {return __get__ (this, function (self) {
+				self.analysiscontrolpanel.cbc (self.analyzing.py_get (), '#afa', '#edd');
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.depthlimit = null;
 				self.analysisinfo = null;
 				self.defaultmultipv = 3;
 				self.bestmoveuci = null;
-				self.analyzing = false;
+				self.analyzing = View (self.analyzingchangedcallback, false);
 				self.history = list ([]);
 				self.basicboard = BasicBoard (args);
 				self.controlpanel = Div ().ac ('boardcontrolpanel');
@@ -5417,6 +5453,7 @@ function app () {
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
 				self.analysiscontrolpanel.a (Button ('Analyze all', self.analyzecallbackfactory (true)));
+				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 5)));
 				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
 				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
 				self.analysiscontrolpanel.a (Button ('Store', self.storeanalysiscallback));
@@ -5747,6 +5784,7 @@ function app () {
 			__all__.TextInputWithButton = TextInputWithButton;
 			__all__.VARIANT_OPTIONS = VARIANT_OPTIONS;
 			__all__.Vect = Vect;
+			__all__.View = View;
 			__all__.WHITE = WHITE;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
 			__all__.__name__ = __name__;
