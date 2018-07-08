@@ -2602,7 +2602,19 @@ class Board(e):
     def setvariantcombo(self):        
         self.variantcombo.setoptions(VARIANT_OPTIONS, self.basicboard.variantkey)
 
-    def variantchanged(self, variantkey):
+    def sioreq(self, obj):        
+        if not ( self.socket is None ):            
+            self.socket.emit("sioreq", obj)
+
+    def siores(self, response):
+        try:
+            dataobj = response["dataobj"]            
+            if "variantkey" in dataobj:
+                self.variantchanged(dataobj["variantkey"])
+        except:
+            print("error processing siores", response)
+
+    def variantchanged(self, variantkey):                
         self.basicboard.variantkey = variantkey
         self.basicboard.reset()
         try:
@@ -2616,7 +2628,14 @@ class Board(e):
         if not ( self.variantchangedcallback is None ):
             self.variantchangedcallback(self.basicboard.variantkey)
         self.basicresize()
-        self.buildpositioninfo()
+        self.buildpositioninfo()        
+        self.setvariantcombo()
+        self.sioreq({"kind": "storedb",
+            "path": "board/variantkey",            
+            "dataobj": {
+                "variantkey": self.basicboard.variantkey}
+            }
+        )
 
     def setvariantcallback(self):
         self.variantchanged(self.basicboard.variantkey)
@@ -2735,6 +2754,7 @@ class Board(e):
         self.variantchangedcallback = args.get("variantchangedcallback", None)
         self.moveclickedcallback = args.get("moveclickedcallback", None)
         self.enginecommandcallback = args.get("enginecommandcallback", None)
+        self.socket = args.get("socket", None)
         self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth).mw(self.basicboard.outerwidth)
         self.controlpanel.a(Button("Del", self.delcallback))
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
@@ -2770,6 +2790,10 @@ class Board(e):
         self.a(self.verticalcontainer)
         self.basicresize()
         self.buildpositioninfo()
+        self.sioreq({"kind": "retrievedb",
+            "owner": "board",
+            "path": "board/variantkey"
+        })
 ######################################################
 class DirBrowser(e):
     def __init__(self):
@@ -2993,7 +3017,7 @@ def mainboardenginecommandcallback(sline):
 ######################################################
 # app
 def build():
-    global processconsoles, maintabpane, mainlogpane, mainboard
+    global processconsoles, maintabpane, mainlogpane, mainboard, socket
 
     processconsoles["engine"] = ProcessConsole({
         "key": "engine",
@@ -3019,7 +3043,8 @@ def build():
         "movecallback": mainboardmovecallback,
         "variantchangedcallback": mainboardvariantchangedcallback,
         "moveclickedcallback": mainboardmoveclickedcallback,
-        "enginecommandcallback": mainboardenginecommandcallback
+        "enginecommandcallback": mainboardenginecommandcallback,
+        "socket": socket
     })
 
     maintabpane = TabPane({"kind":"main", "id":"main"}).setTabs(
@@ -3098,6 +3123,10 @@ def onevent(json):
                 fen = response["fen"]
                 positioninfo = response["positioninfo"]
                 mainboard.setfromfen(fen, positioninfo)
+        if "owner" in response:
+            owner = response["owner"]
+            if owner == "board":
+                mainboard.siores(response)
     if ( logitem is None ) or ( dest is None ):
         jsonstr = JSON.stringify(json, null, 2)
         mainlog(LogItem(jsonstr))
@@ -3106,22 +3135,22 @@ def onevent(json):
 
 def windowresizehandler():
     maintabpane.resize()
-
-def startup():
-    global socket
-
-    mainlog(LogItem("creating socket for submit url [ " + SUBMIT_URL + " ]", "cmdinfo"))
-
-    socket = io.connect(SUBMIT_URL)
-
-    mainlog(LogItem("socket created ok", "cmdstatusok"))
-
-    socket.on('connect', onconnect)
-    socket.on('siores', lambda json: onevent(json))
-
-    addEventListener(window, "resize", windowresizehandler)
 ######################################################
+
+######################################################
+# startup
+
+console.log("creating socket for submit url [ {} ]".format(SUBMIT_URL))
+
+socket = io.connect(SUBMIT_URL)
+
+console.log("socket created ok")
 
 build()
 
-startup()
+socket.on('connect', onconnect)
+socket.on('siores', lambda json: onevent(json))
+
+addEventListener(window, "resize", windowresizehandler)
+
+######################################################

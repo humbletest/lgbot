@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-07 21:25:45
+// Transcrypt'ed from Python, 2018-07-08 13:38:11
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5206,6 +5206,22 @@ function app () {
 			get setvariantcombo () {return __get__ (this, function (self) {
 				self.variantcombo.setoptions (VARIANT_OPTIONS, self.basicboard.variantkey);
 			});},
+			get sioreq () {return __get__ (this, function (self, obj) {
+				if (!(self.socket === null)) {
+					self.socket.emit ('sioreq', obj);
+				}
+			});},
+			get siores () {return __get__ (this, function (self, response) {
+				try {
+					var dataobj = response ['dataobj'];
+					if (__in__ ('variantkey', dataobj)) {
+						self.variantchanged (dataobj ['variantkey']);
+					}
+				}
+				catch (__except0__) {
+					print ('error processing siores', response);
+				}
+			});},
 			get variantchanged () {return __get__ (this, function (self, variantkey) {
 				self.basicboard.variantkey = variantkey;
 				self.basicboard.reset ();
@@ -5226,6 +5242,8 @@ function app () {
 				}
 				self.basicresize ();
 				self.buildpositioninfo ();
+				self.setvariantcombo ();
+				self.sioreq (dict ({'kind': 'storedb', 'path': 'board/variantkey', 'dataobj': dict ({'variantkey': self.basicboard.variantkey})}));
 			});},
 			get setvariantcallback () {return __get__ (this, function (self) {
 				self.variantchanged (self.basicboard.variantkey);
@@ -5357,6 +5375,7 @@ function app () {
 				self.variantchangedcallback = args.py_get ('variantchangedcallback', null);
 				self.moveclickedcallback = args.py_get ('moveclickedcallback', null);
 				self.enginecommandcallback = args.py_get ('enginecommandcallback', null);
+				self.socket = args.py_get ('socket', null);
 				self.controlpanel.a (self.variantcombo).w (self.basicboard.outerwidth).mw (self.basicboard.outerwidth);
 				self.controlpanel.a (Button ('Del', self.delcallback));
 				self.controlpanel.a (Button ('Reset', self.setvariantcallback));
@@ -5384,6 +5403,7 @@ function app () {
 				self.a (self.verticalcontainer);
 				self.basicresize ();
 				self.buildpositioninfo ();
+				self.sioreq (dict ({'kind': 'retrievedb', 'owner': 'board', 'path': 'board/variantkey'}));
 			});}
 		});
 		if (window.location.protocol == 'https:') {
@@ -5530,7 +5550,7 @@ function app () {
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
-			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback, 'moveclickedcallback': mainboardmoveclickedcallback, 'enginecommandcallback': mainboardenginecommandcallback}));
+			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback, 'moveclickedcallback': mainboardmoveclickedcallback, 'enginecommandcallback': mainboardenginecommandcallback, 'socket': socket}));
 			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'})).setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
@@ -5606,6 +5626,12 @@ function app () {
 						mainboard.setfromfen (fen, positioninfo);
 					}
 				}
+				if (__in__ ('owner', response)) {
+					var owner = response ['owner'];
+					if (owner == 'board') {
+						mainboard.siores (response);
+					}
+				}
 			}
 			if (logitem === null || dest === null) {
 				var jsonstr = JSON.stringify (json, null, 2);
@@ -5618,18 +5644,15 @@ function app () {
 		var windowresizehandler = function () {
 			maintabpane.resize ();
 		};
-		var startup = function () {
-			mainlog (LogItem (('creating socket for submit url [ ' + SUBMIT_URL) + ' ]', 'cmdinfo'));
-			socket = io.connect (SUBMIT_URL);
-			mainlog (LogItem ('socket created ok', 'cmdstatusok'));
-			socket.on ('connect', onconnect);
-			socket.on ('siores', (function __lambda__ (json) {
-				return onevent (json);
-			}));
-			addEventListener (window, 'resize', windowresizehandler);
-		};
+		console.log ('creating socket for submit url [ {} ]'.format (SUBMIT_URL));
+		var socket = io.connect (SUBMIT_URL);
+		console.log ('socket created ok');
 		build ();
-		startup ();
+		socket.on ('connect', onconnect);
+		socket.on ('siores', (function __lambda__ (json) {
+			return onevent (json);
+		}));
+		addEventListener (window, 'resize', windowresizehandler);
 		__pragma__ ('<all>')
 			__all__.ANTICHESS_START_FEN = ANTICHESS_START_FEN;
 			__all__.BLACK = BLACK;
@@ -5763,7 +5786,6 @@ function app () {
 			__all__.simulateserverlag = simulateserverlag;
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
-			__all__.startup = startup;
 			__all__.striplonglines = striplonglines;
 			__all__.uid = uid;
 			__all__.windowresizehandler = windowresizehandler;
