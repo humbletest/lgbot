@@ -96,6 +96,39 @@ def my_broadcast(obj):
             except:
                 print("emit failed for sid {}".format(sid))
 
+def getchildatpath(path):
+    try:
+        parts = path.split("/")
+        child = db.child(parts[0])
+        if len(parts) > 1:
+            for part in parts:
+                child  = child.child(part)
+        return child
+    except:
+        traceback.print_exc(file=sys.stderr)
+        return None
+
+def storedb(path, dataobj):
+    try:
+        child = getchildatpath(path)
+        if not ( child is None ):
+            child.set(json.dumps(dataobj))
+            return "store db ok at {}".format(path)
+    except:
+        traceback.print_exc(file=sys.stderr)
+    return "store db failed at {}".format(path)
+
+def retrievedb(path):
+    try:
+        child = getchildatpath(path)
+        if not ( child is None ):
+            val = child.get().val()
+            obj = json.loads(val)
+            return ( obj , "retrieve db ok at {} size {}".format(path, len(json.dumps(obj))) )
+    except:
+        traceback.print_exc(file=sys.stderr)
+    return ( None , "retrieve db failed at {}".format(path) )
+
 def addpositioninfo(board, obj, genmove = None, genboard = None):
     moves = board.generate_legal_moves()
     movelist = []
@@ -132,6 +165,8 @@ class socket_handler:
             if "kind" in jsonobj:                
                 try:          
                     kind = jsonobj["kind"]
+                    if "owner" in jsonobj:
+                        rjsonobj["owner"] = jsonobj["owner"]
                     if kind == "cmd":    
                         key = jsonobj["key"]
                         commandjsonstr = json.dumps({"command": jsonobj["data"], "key": key})                        
@@ -151,6 +186,24 @@ class socket_handler:
                         except:                            
                             print("setting config on firebase failed")
                             rjsonobj["status"] = "config stored only locally"
+                    elif kind == "storedb":
+                        try:
+                            path = jsonobj["path"]
+                            dataobj = jsonobj["dataobj"]                                                                                    
+                            rjsonobj["status"] = storedb(path, dataobj)
+                            rjsonobj["path"] = path                            
+                        except:                            
+                            traceback.print_exc(file=sys.stderr)
+                            rjsonobj["status"] = "! store db failed at {}".format(path)
+                    elif kind == "retrievedb":
+                        try:
+                            path = jsonobj["path"]
+                            rjsonobj["dataobj"] , rjsonobj["status"] = retrievedb(path)
+                            rjsonobj["path"] = path                            
+                        except:                            
+                            traceback.print_exc(file=sys.stderr)
+                            rjsonobj["dataobj"] = None
+                            rjsonobj["status"] = "! retrieve db failed at {}".format(path)
                     elif kind == "getlocalconfig":
                         rjsonobj["kind"] = "setlocalconfig"
                         try:

@@ -179,7 +179,7 @@ def mainboardenginecommandcallback(sline):
 ######################################################
 # app
 def build():
-    global processconsoles, maintabpane, mainlogpane, mainboard
+    global processconsoles, maintabpane, mainlogpane, mainboard, socket
 
     processconsoles["engine"] = ProcessConsole({
         "key": "engine",
@@ -205,7 +205,8 @@ def build():
         "movecallback": mainboardmovecallback,
         "variantchangedcallback": mainboardvariantchangedcallback,
         "moveclickedcallback": mainboardmoveclickedcallback,
-        "enginecommandcallback": mainboardenginecommandcallback
+        "enginecommandcallback": mainboardenginecommandcallback,
+        "socket": socket
     })
 
     maintabpane = TabPane({"kind":"main", "id":"main"}).setTabs(
@@ -284,6 +285,10 @@ def onevent(json):
                 fen = response["fen"]
                 positioninfo = response["positioninfo"]
                 mainboard.setfromfen(fen, positioninfo)
+        if "owner" in response:
+            owner = response["owner"]
+            if owner == "board":
+                mainboard.siores(response)
     if ( logitem is None ) or ( dest is None ):
         jsonstr = JSON.stringify(json, null, 2)
         mainlog(LogItem(jsonstr))
@@ -292,22 +297,22 @@ def onevent(json):
 
 def windowresizehandler():
     maintabpane.resize()
-
-def startup():
-    global socket
-
-    mainlog(LogItem("creating socket for submit url [ " + SUBMIT_URL + " ]", "cmdinfo"))
-
-    socket = io.connect(SUBMIT_URL)
-
-    mainlog(LogItem("socket created ok", "cmdstatusok"))
-
-    socket.on('connect', onconnect)
-    socket.on('siores', lambda json: onevent(json))
-
-    addEventListener(window, "resize", windowresizehandler)
 ######################################################
+
+######################################################
+# startup
+
+console.log("creating socket for submit url [ {} ]".format(SUBMIT_URL))
+
+socket = io.connect(SUBMIT_URL)
+
+console.log("socket created ok")
 
 build()
 
-startup()
+socket.on('connect', onconnect)
+socket.on('siores', lambda json: onevent(json))
+
+addEventListener(window, "resize", windowresizehandler)
+
+######################################################
