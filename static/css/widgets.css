@@ -570,6 +570,19 @@
     margin: 1px;
 }
 
+.multipvinfobonussliderdiv {
+    display: flex; justify-content: space-around; align-items: center;
+    width: 150px;    
+    min-width: 150px;    
+    height: var(--multipvinfoheight);
+    background-color: #ffd;
+    margin: 1px;
+}
+
+.multipvinfobonusslider {
+    width: 140px;    
+}
+
 .multipvinfomisc {
     display: flex; justify-content: left; align-items: center;
     width: 120px;

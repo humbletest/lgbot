@@ -623,28 +623,56 @@ class MultipvInfo(e):
                 self.bestmovesanclickedcallback(moveuci)
         return bestmovesanclicked
 
-    def __init__(self, infoi):
-        super().__init__("div")
-        self.infoi = infoi
-        self.i = infoi["i"]
-        self.bestmoveuci = infoi["bestmoveuci"]
-        self.bestmovesan = infoi["bestmovesan"]
-        self.scorenumerical = infoi["scorenumerical"]
-        self.pvsan = infoi["pvsan"]
-        self.pvpgn = infoi["pvpgn"]
-        self.depth = infoi["depth"]
-        self.nps = infoi["nps"]
+    def scorebonus(self):
+        if "scorebonus" in self.infoi:
+            try:
+                scorebonus = int(self.infoi["scorebonus"])
+                return scorebonus
+            except:
+                pass
+        return 0
+
+    def effscore(self):
+        return self.scorenumerical + self.scorebonus()
+
+    def bonussliderchanged(self):
+        self.infoi["scorebonus"] = self.bonusslider.v()
+        self.build()            
+        if not ( self.bonussliderchangedcallback is None ):            
+            self.bonussliderchangedcallback()
+
+    def build(self):
+        self.i = self.infoi["i"]
+        self.bestmoveuci = self.infoi["bestmoveuci"]
+        self.bestmovesan = self.infoi["bestmovesan"]
+        self.scorenumerical = self.infoi["scorenumerical"]
+        self.pvsan = self.infoi["pvsan"]
+        self.pvpgn = self.infoi["pvpgn"]
+        self.depth = self.infoi["depth"]
+        self.nps = self.infoi["nps"]
         self.container = Div().ac("multipvinfocontainer")
         self.idiv = Div().ac("multipvinfoi").html("{}.".format(self.i))
         self.bestmovesandiv = Div().ac("multipvinfobestmovesan").html(self.bestmovesan)
         self.bestmovesandiv.ae("mousedown", self.bestmovesanclickedfactory(self.bestmoveuci))
-        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.scorenumerical))
+        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.effscore()))
+        self.bonussliderdiv = Div().ac("multipvinfobonussliderdiv")
+        self.bonusslider = Slider().setmin(-500).setmax(500).ac("multipvinfobonusslider").sv(self.scorebonus())
+        self.bonusslider.ae("change", self.bonussliderchanged)
+        self.bonussliderdiv.a(self.bonusslider)
         self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
         self.pvdiv = Div().ac("multipvinfopv").html(self.pvpgn)
-        self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv])
-        self.a(self.container)        
-        self.bestmovesandiv.c(scorecolor(self.scorenumerical))
-        self.scorenumericaldiv.c(scorecolor(self.scorenumerical))
+        self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.bonussliderdiv, self.miscdiv, self.pvdiv])        
+        self.bestmovesandiv.c(scorecolor(self.effscore()))
+        self.scorenumericaldiv.c(scorecolor(self.effscore()))
+        self.x().a(self.container)        
+
+    def __init__(self, infoi):
+        super().__init__("div")
+        self.bestmovesanclickedcallback = None
+        self.bonussliderchangedcallback = None
+        self.infoi = infoi
+        self.build()
+        
 
 class Board(e):
     def flipcallback(self):
@@ -792,19 +820,17 @@ class Board(e):
         if not ( self.moveclickedcallback is None ):
             self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, moveuci)
 
-    def processanalysisinfo(self, obj, force = False):
-        if ( not self.analyzing ) and ( not force ):
-            return        
-        elapsed = __new__(Date()).getTime() - self.analysisstartedat
-        self.analysisinfo = obj        
+    def buildanalysisinfodiv(self):
         self.analysisinfodiv.x()
         self.basicboard.clearcanvases()        
-        maxdepth = 0
-        for infoi in sorted(self.analysisinfo["pvitems"], key = lambda item: item["i"]):
+        self.maxdepth = 0
+        minfos = []
+        for infoi in self.analysisinfo["pvitems"]:
             lastinfoi = infoi
             try:                   
                 minfo = MultipvInfo(infoi)
                 minfo.bestmovesanclickedcallback = self.analysismoveclicked
+                minfo.bonussliderchangedcallback = self.buildanalysisinfodiv
                 if minfo.i == 1:
                     self.bestmoveuci = minfo.bestmoveuci
                 iw = 1 / ( 5 * minfo.i )
@@ -813,13 +839,21 @@ class Board(e):
                     "linewidth": iw,
                     "headheight": iw
                 })
-                if minfo.depth > maxdepth:
-                    maxdepth = minfo.depth
-                self.analysisinfodiv.a(minfo)
+                if minfo.depth > self.maxdepth:
+                    self.maxdepth = minfo.depth
+                minfos.append(minfo)
             except:                
                 pass
+        self.analysisinfodiv.aa(sorted(minfos, key = lambda item: item.effscore(), reverse = True))
+
+    def processanalysisinfo(self, obj, force = False):
+        if ( not self.analyzing ) and ( not force ):
+            return        
+        elapsed = __new__(Date()).getTime() - self.analysisstartedat
+        self.analysisinfo = obj        
+        self.buildanalysisinfodiv()
         if ( not ( self.depthlimit is None ) ) or ( not ( self.timelimit is None ) ):
-            depthok = ( not ( self.depthlimit is None ) ) and ( maxdepth > self.depthlimit )
+            depthok = ( not ( self.depthlimit is None ) ) and ( self.maxdepth > self.depthlimit )
             timeok = ( not ( self.timelimit is None ) ) and ( elapsed > self.timelimit )
             if depthok and timeok:
                 self.stopandstoreanalysis()
