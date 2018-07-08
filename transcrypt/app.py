@@ -1,3 +1,45 @@
+MAX_CONTENT_LENGTH = 500
+
+MATE_SCORE = 10000
+MATE_LIMIT = MATE_SCORE * 0.9
+WINNING_MOVE_LIMIT = 1000
+DOUBLE_EXCLAM_LIMIT = 500
+EXCLAM_LIMIT = 350
+PROMISING_LIMIT = 250
+INTERESTING_LIMIT = 150
+DRAWISH_LIMIT = 80
+
+def scorecolor(score):
+    if score > MATE_LIMIT:
+        return "#0f0"
+    if score > WINNING_MOVE_LIMIT:
+        return "#0e0"
+    if score > DOUBLE_EXCLAM_LIMIT:
+        return "#0c0"
+    if score > EXCLAM_LIMIT:
+        return "#0a0"
+    if score > PROMISING_LIMIT:
+        return "#090"
+    if score > INTERESTING_LIMIT:
+        return "#070"
+    if score > DRAWISH_LIMIT:
+        return "#050"
+    if score > 0:
+        return "#033"
+    if score > (-DRAWISH_LIMIT):
+        return "#330"
+    if score > (-INTERESTING_LIMIT):
+        return "#500"
+    if score > (-PROMISING_LIMIT):
+        return "#900"
+    if score > (-EXCLAM_LIMIT):
+        return "#a00"
+    if score > (-DOUBLE_EXCLAM_LIMIT):
+        return "#c00"
+    if score > WINNING_MOVE_LIMIT:
+        return "#e00"
+    return "#f00"
+
 class View:
     def __init__(self, callback, value = None):
         self.callback = callback
@@ -71,7 +113,7 @@ def getglobalcssvarpxint(key, default):
     except:
         return default
 
-def striplonglines(content, maxlen = 500):
+def striplonglines(content, maxlen = MAX_CONTENT_LENGTH):
     lines = content.split("\n")    
     strippedlines = []
     for line in lines:        
@@ -247,6 +289,11 @@ class e:
         self.e.style.backgroundColor = cpick(cond, colortrue, colorfalse)
         return self
 
+    # color
+    def c(self, color):
+        self.e.style.color = color
+        return self
+    
     # conditional color
     def cc(self, cond, colortrue, colorfalse):
         self.e.style.color = cpick(cond, colortrue, colorfalse)
@@ -634,6 +681,8 @@ class LogItem(e):
                 except:
                     pass
         self.content = striplonglines(self.content)
+        if len(self.content) > MAX_CONTENT_LENGTH:
+            self.content = self.content[:MAX_CONTENT_LENGTH]
         self.cdiv.html(self.content)
         if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")
@@ -2578,10 +2627,9 @@ class MultipvInfo(e):
         self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
         self.pvdiv = Div().ac("multipvinfopv").html(self.pvpgn)
         self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv])
-        self.a(self.container)
-        ps = self.scorenumerical > 0
-        self.bestmovesandiv.cc(ps, "#070", "#700")
-        self.scorenumericaldiv.cc(ps, "#070", "#700")
+        self.a(self.container)        
+        self.bestmovesandiv.c(scorecolor(self.scorenumerical))
+        self.scorenumericaldiv.c(scorecolor(self.scorenumerical))
 
 class Board(e):
     def flipcallback(self):
@@ -2746,7 +2794,7 @@ class Board(e):
                     self.bestmoveuci = minfo.bestmoveuci
                 iw = 1 / ( 5 * minfo.i )
                 self.basicboard.drawuciarrow(minfo.bestmoveuci, {
-                    "strokecolor": cpick(minfo.scorenumerical > 0, "#00FF00", "#FF0000"),
+                    "strokecolor": scorecolor(minfo.scorenumerical),
                     "linewidth": iw,
                     "headheight": iw
                 })

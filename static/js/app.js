@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-08 20:00:39
+// Transcrypt'ed from Python, 2018-07-08 21:27:38
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,6 +2202,60 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
+		var MAX_CONTENT_LENGTH = 500;
+		var MATE_SCORE = 10000;
+		var MATE_LIMIT = MATE_SCORE * 0.9;
+		var WINNING_MOVE_LIMIT = 1000;
+		var DOUBLE_EXCLAM_LIMIT = 500;
+		var EXCLAM_LIMIT = 350;
+		var PROMISING_LIMIT = 250;
+		var INTERESTING_LIMIT = 150;
+		var DRAWISH_LIMIT = 80;
+		var scorecolor = function (score) {
+			if (score > MATE_LIMIT) {
+				return '#0f0';
+			}
+			if (score > WINNING_MOVE_LIMIT) {
+				return '#0e0';
+			}
+			if (score > DOUBLE_EXCLAM_LIMIT) {
+				return '#0c0';
+			}
+			if (score > EXCLAM_LIMIT) {
+				return '#0a0';
+			}
+			if (score > PROMISING_LIMIT) {
+				return '#090';
+			}
+			if (score > INTERESTING_LIMIT) {
+				return '#070';
+			}
+			if (score > DRAWISH_LIMIT) {
+				return '#050';
+			}
+			if (score > 0) {
+				return '#033';
+			}
+			if (score > -(DRAWISH_LIMIT)) {
+				return '#330';
+			}
+			if (score > -(INTERESTING_LIMIT)) {
+				return '#500';
+			}
+			if (score > -(PROMISING_LIMIT)) {
+				return '#900';
+			}
+			if (score > -(EXCLAM_LIMIT)) {
+				return '#a00';
+			}
+			if (score > -(DOUBLE_EXCLAM_LIMIT)) {
+				return '#c00';
+			}
+			if (score > WINNING_MOVE_LIMIT) {
+				return '#e00';
+			}
+			return '#f00';
+		};
 		var View = __class__ ('View', [object], {
 			__module__: __name__,
 			get __init__ () {return __get__ (this, function (self, callback, value) {
@@ -2299,7 +2353,7 @@ function app () {
 		};
 		var striplonglines = function (content, maxlen) {
 			if (typeof maxlen == 'undefined' || (maxlen != null && maxlen .hasOwnProperty ("__kwargtrans__"))) {;
-				var maxlen = 500;
+				var maxlen = MAX_CONTENT_LENGTH;
 			};
 			var lines = content.py_split ('\n');
 			var strippedlines = list ([]);
@@ -2457,6 +2511,10 @@ function app () {
 			});},
 			get cbc () {return __get__ (this, function (self, cond, colortrue, colorfalse) {
 				self.e.style.backgroundColor = cpick (cond, colortrue, colorfalse);
+				return self;
+			});},
+			get c () {return __get__ (this, function (self, color) {
+				self.e.style.color = color;
 				return self;
 			});},
 			get cc () {return __get__ (this, function (self, cond, colortrue, colorfalse) {
@@ -2868,6 +2926,9 @@ function app () {
 					}
 				}
 				self.content = striplonglines (self.content);
+				if (len (self.content) > MAX_CONTENT_LENGTH) {
+					self.content = self.content.__getslice__ (0, MAX_CONTENT_LENGTH, 1);
+				}
 				self.cdiv.html (self.content);
 				if (self.kind == 'cmd') {
 					self.cdiv.ac ('logcontentcmd');
@@ -5178,9 +5239,8 @@ function app () {
 				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvpgn);
 				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv]));
 				self.a (self.container);
-				var ps = self.scorenumerical > 0;
-				self.bestmovesandiv.cc (ps, '#070', '#700');
-				self.scorenumericaldiv.cc (ps, '#070', '#700');
+				self.bestmovesandiv.c (scorecolor (self.scorenumerical));
+				self.scorenumericaldiv.c (scorecolor (self.scorenumerical));
 			});}
 		});
 		var Board = __class__ ('Board', [e], {
@@ -5387,7 +5447,7 @@ function app () {
 							self.bestmoveuci = minfo.bestmoveuci;
 						}
 						var iw = 1 / (5 * minfo.i);
-						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': cpick (minfo.scorenumerical > 0, '#00FF00', '#FF0000'), 'linewidth': iw, 'headheight': iw}));
+						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': scorecolor (minfo.scorenumerical), 'linewidth': iw, 'headheight': iw}));
 						if (minfo.depth > maxdepth) {
 							var maxdepth = minfo.depth;
 						}
@@ -5627,6 +5687,24 @@ function app () {
 		var mainboardenginecommandcallback = function (sline) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': 'engine', 'data': sline}));
 		};
+		var mainboardmovecallback = function (variantkey, fen, moveuci) {
+			setTimeout ((function __lambda__ (ev) {
+				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
+			}), simulateserverlag ());
+		};
+		var mainboardvariantchangedcallback = function (variantkey) {
+			setTimeout ((function __lambda__ (ev) {
+				return socket.emit ('sioreq', dict ({'kind': 'mainboardsetvariant', 'variantkey': variantkey}));
+			}), simulateserverlag ());
+		};
+		var mainboardmoveclickedcallback = function (variantkey, fen, moveuci) {
+			setTimeout ((function __lambda__ (ev) {
+				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
+			}), simulateserverlag ());
+		};
+		var mainboardenginecommandcallback = function (sline) {
+			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': 'engine', 'data': sline}));
+		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
@@ -5750,10 +5828,14 @@ function app () {
 			__all__.ComboOption = ComboOption;
 			__all__.DEFAULT_ENABLED = DEFAULT_ENABLED;
 			__all__.DEFAULT_HELP = DEFAULT_HELP;
+			__all__.DOUBLE_EXCLAM_LIMIT = DOUBLE_EXCLAM_LIMIT;
+			__all__.DRAWISH_LIMIT = DRAWISH_LIMIT;
 			__all__.DirBrowser = DirBrowser;
 			__all__.Div = Div;
 			__all__.ENGINE_CMD_ALIASES = ENGINE_CMD_ALIASES;
+			__all__.EXCLAM_LIMIT = EXCLAM_LIMIT;
 			__all__.HORDE_START_FEN = HORDE_START_FEN;
+			__all__.INTERESTING_LIMIT = INTERESTING_LIMIT;
 			__all__.Input = Input;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
@@ -5763,12 +5845,16 @@ function app () {
 			__all__.Log = Log;
 			__all__.LogItem = LogItem;
 			__all__.LogPane = LogPane;
+			__all__.MATE_LIMIT = MATE_LIMIT;
+			__all__.MATE_SCORE = MATE_SCORE;
+			__all__.MAX_CONTENT_LENGTH = MAX_CONTENT_LENGTH;
 			__all__.Move = Move;
 			__all__.MultipvInfo = MultipvInfo;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
 			__all__.PIECE_KINDS = PIECE_KINDS;
 			__all__.PIECE_NAMES = PIECE_NAMES;
+			__all__.PROMISING_LIMIT = PROMISING_LIMIT;
 			__all__.PROMPIECEKINDS_ANTICHESS = PROMPIECEKINDS_ANTICHESS;
 			__all__.PROMPIECEKINDS_STANDARD = PROMPIECEKINDS_STANDARD;
 			__all__.Piece = Piece;
@@ -5801,6 +5887,7 @@ function app () {
 			__all__.View = View;
 			__all__.WHITE = WHITE;
 			__all__.WINDOW_SAFETY_MARGIN = WINDOW_SAFETY_MARGIN;
+			__all__.WINNING_MOVE_LIMIT = WINNING_MOVE_LIMIT;
 			__all__.__name__ = __name__;
 			__all__.addEventListener = addEventListener;
 			__all__.build = build;
@@ -5861,6 +5948,7 @@ function app () {
 			__all__.schemafromucioptionsobj = schemafromucioptionsobj;
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
+			__all__.scorecolor = scorecolor;
 			__all__.serializecallback = serializecallback;
 			__all__.serializeconfig = serializeconfig;
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;
