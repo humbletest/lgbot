@@ -1,3 +1,15 @@
+class View:
+    def __init__(self, callback, value = None):
+        self.callback = callback
+        self.value = value
+
+    def get(self):
+        return self.value
+
+    def set(self, value):
+        self.value = value
+        self.callback()
+
 def xor(b1, b2):
     if b1 and b2:
         return False

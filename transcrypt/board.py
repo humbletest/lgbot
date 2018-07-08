@@ -656,7 +656,7 @@ class Board(e):
 
     def setfromfen(self, fen, positioninfo = {}, edithistory = True):
         restartanalysis = False
-        if self.analyzing:
+        if self.analyzing.get():
             self.stopanalyzecallback()
             restartanalysis = True
         if edithistory and ( "genmove" in positioninfo ):
@@ -675,7 +675,7 @@ class Board(e):
         self.analysisinfodiv.x()
         if restartanalysis:
             self.analyzecallbackfactory()()
-        if not self.analyzing:                
+        if not self.analyzing.get():                
             self.sioreq({"kind": "retrievedb",
                 "owner": "board",
                 "path": "analysisinfo/{}/{}".format(self.basicboard.variantkey, self.positioninfo["zobristkeyhex"])
@@ -769,17 +769,18 @@ class Board(e):
         self.buildpositioninfo()
         self.resizetabpanewidth(width)
 
-    def analyzecallbackfactory(self, all = False):
+    def analyzecallbackfactory(self, all = False, depthlimit = None):
         def analyzecallback():
+            self.depthlimit = depthlimit
             self.bestmoveuci = None
-            self.analyzing = True
+            self.analyzing.set(True)
             if not ( self.enginecommandcallback is None ):            
                 mpv = cpick(all, 200, self.getmultipv())
                 self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, mpv, self.basicboard.fen))
         return analyzecallback
 
     def stopanalyzecallback(self):
-        self.analyzing = False
+        self.analyzing.set(False)
         self.basicboard.clearcanvases()
         if not ( self.enginecommandcallback is None ):
             self.enginecommandcallback("stopanalyze")
@@ -794,7 +795,9 @@ class Board(e):
         self.analysisinfo = obj        
         self.analysisinfodiv.x()
         self.basicboard.clearcanvases()        
+        maxdepth = 0
         for infoi in sorted(self.analysisinfo["pvitems"], key = lambda item: item["i"]):
+            lastinfoi = infoi
             try:                   
                 minfo = MultipvInfo(infoi)
                 minfo.bestmovesanclickedcallback = self.analysismoveclicked
@@ -806,9 +809,15 @@ class Board(e):
                     "linewidth": iw,
                     "headheight": iw
                 })
+                if minfo.depth > maxdepth:
+                    maxdepth = minfo.depth
                 self.analysisinfodiv.a(minfo)
             except:                
                 pass
+        if not ( self.depthlimit is None ):
+            if maxdepth > self.depthlimit:
+                self.stopanalyzecallback()
+                self.storeanalysiscallback()
 
     def makeanalyzedmovecallback(self):
         if not ( self.bestmoveuci is None ):
@@ -833,12 +842,16 @@ class Board(e):
         except:
             return self.defaultmultipv
 
+    def analyzingchangedcallback(self):
+        self.analysiscontrolpanel.cbc(self.analyzing.get(), "#afa", "#edd")
+
     def __init__(self, args):
         super().__init__("div")
+        self.depthlimit = None
         self.analysisinfo = None
         self.defaultmultipv = 3
         self.bestmoveuci = None
-        self.analyzing = False        
+        self.analyzing = View(self.analyzingchangedcallback, False)
         self.history = []
         self.basicboard = BasicBoard(args)        
         self.controlpanel = Div().ac("boardcontrolpanel")
@@ -868,6 +881,7 @@ class Board(e):
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
         self.analysiscontrolpanel.a(Button("Analyze all", self.analyzecallbackfactory(True)))
+        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 5)))
         self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
         self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
         self.analysiscontrolpanel.a(Button("Store", self.storeanalysiscallback))
