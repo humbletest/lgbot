@@ -261,8 +261,8 @@ def onevent(json):
                 maintabpane.setTabElementByKey("config", buildconfigdiv())
                 maintabpane.selectByKey("config")
                 window.alert("UCI options stored in current profile.")
-        elif kind == "analyzeinfo":
-            mainboard.processanalysisinfo(json["analyzeinfo"])
+        elif kind == "analysisinfo":
+            mainboard.processanalysisinfo(json["analysisinfo"])
     if "response" in json:        
         status = "?"
         response = json["response"]        
@@ -283,7 +283,7 @@ def onevent(json):
                 window.alert("Config storing status: " + status + ".")            
             elif kind == "setmainboardfen":                
                 fen = response["fen"]
-                positioninfo = response["positioninfo"]
+                positioninfo = response["positioninfo"]                
                 mainboard.setfromfen(fen, positioninfo)
         if "owner" in response:
             owner = response["owner"]

@@ -20,6 +20,7 @@ from serverutils.utils import read_string_from_file
 from serverutils.utils import dir_listing_as_obj
 from serverutils.utils import get_variant_board
 import chess
+from cbuild.book import get_zobrist_key_hex
 #########################################################
 
 #########################################################
@@ -138,7 +139,8 @@ def addpositioninfo(board, obj, genmove = None, genboard = None):
             "san": board.san(move)
         })
     obj["positioninfo"] = {
-        "movelist": movelist
+        "movelist": movelist,
+        "zobristkeyhex": get_zobrist_key_hex(board)
     }
     if genmove == "reset":
         obj["positioninfo"]["genmove"] = "reset"

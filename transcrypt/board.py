@@ -601,10 +601,10 @@ class BasicBoard(e):
         self.variantkey = args.get("variantkey", "standard")
         self.setrepfromfen(args.get("fen", getstartfenforvariantkey(self.variantkey)))
 
-    def setfromfen(self, fen, positioninfo = {}):
+    def setfromfen(self, fen, positioninfo = {}):                        
         self.positioninfo = positioninfo
         self.setrepfromfen(fen)
-        self.build()
+        self.build()                
 
     def reset(self):
         self.setfromfen(getstartfenforvariantkey(self.variantkey))
@@ -672,8 +672,14 @@ class Board(e):
         self.movelist = cpick("movelist" in self.positioninfo, self.positioninfo["movelist"], [])        
         self.basicboard.setfromfen(fen, self.positioninfo)
         self.buildpositioninfo()
+        self.analysisinfodiv.x()
         if restartanalysis:
-            self.analyzecallback()
+            self.analyzecallbackfactory()()
+        if not self.analyzing:                
+            self.sioreq({"kind": "retrievedb",
+                "owner": "board",
+                "path": "analysisinfo/{}/{}".format(self.basicboard.variantkey, self.positioninfo["zobristkeyhex"])
+            })
 
     def setvariantcombo(self):        
         self.variantcombo.setoptions(VARIANT_OPTIONS, self.basicboard.variantkey)
@@ -683,10 +689,14 @@ class Board(e):
             self.socket.emit("sioreq", obj)
 
     def siores(self, response):
-        try:
+        try:            
             dataobj = response["dataobj"]            
+            if dataobj == None:
+                return
             if "variantkey" in dataobj:
                 self.variantchanged(dataobj["variantkey"])
+            elif "analysisinfo" in dataobj:                
+                self.processanalysisinfo(dataobj["analysisinfo"], True)
         except:
             print("error processing siores", response)
 
@@ -709,9 +719,9 @@ class Board(e):
         self.sioreq({"kind": "storedb",
             "path": "board/variantkey",            
             "dataobj": {
-                "variantkey": self.basicboard.variantkey}
+                "variantkey": self.basicboard.variantkey
             }
-        )
+        })
 
     def setvariantcallback(self):
         self.variantchanged(self.basicboard.variantkey)
@@ -759,11 +769,14 @@ class Board(e):
         self.buildpositioninfo()
         self.resizetabpanewidth(width)
 
-    def analyzecallback(self):
-        self.bestmoveuci = None
-        self.analyzing = True
-        if not ( self.enginecommandcallback is None ):            
-            self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, self.getmultipv(), self.basicboard.fen))
+    def analyzecallbackfactory(self, all = False):
+        def analyzecallback():
+            self.bestmoveuci = None
+            self.analyzing = True
+            if not ( self.enginecommandcallback is None ):            
+                mpv = cpick(all, 200, self.getmultipv())
+                self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, mpv, self.basicboard.fen))
+        return analyzecallback
 
     def stopanalyzecallback(self):
         self.analyzing = False
@@ -775,13 +788,13 @@ class Board(e):
         if not ( self.moveclickedcallback is None ):
             self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, moveuci)
 
-    def processanalysisinfo(self, obj):
-        if not self.analyzing:
-            return
-        content = JSON.stringify(obj, None, 2)
+    def processanalysisinfo(self, obj, force = False):
+        if ( not self.analyzing ) and ( not force ):
+            return        
+        self.analysisinfo = obj        
         self.analysisinfodiv.x()
         self.basicboard.clearcanvases()        
-        for infoi in sorted(obj, key = lambda item: item["i"]):
+        for infoi in sorted(self.analysisinfo["pvitems"], key = lambda item: item["i"]):
             try:                   
                 minfo = MultipvInfo(infoi)
                 minfo.bestmovesanclickedcallback = self.analysismoveclicked
@@ -802,6 +815,17 @@ class Board(e):
             if not ( self.moveclickedcallback is None ):
                 self.moveclickedcallback(self.basicboard.variantkey, self.basicboard.fen, self.bestmoveuci)
 
+    def storeanalysiscallback(self):
+        if not ( self.analysisinfo is None ):
+            self.sioreq({"kind": "storedb",
+                "path": "analysisinfo/{}/{}".format(self.basicboard.variantkey, self.analysisinfo["zobristkeyhex"]),            
+                "dataobj": {
+                    "analysisinfo": self.analysisinfo
+                }
+            })
+        else:
+            window.alert("No analysis to store.")
+
     def getmultipv(self):
         try:
             multipv = int(self.multipvcombo.select.v())
@@ -811,6 +835,7 @@ class Board(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.analysisinfo = None
         self.defaultmultipv = 3
         self.bestmoveuci = None
         self.analyzing = False        
@@ -841,9 +866,11 @@ class Board(e):
         self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
         self.analysisdiv = Div()
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
-        self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallback))
+        self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
+        self.analysiscontrolpanel.a(Button("Analyze all", self.analyzecallbackfactory(True)))
         self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
         self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
+        self.analysiscontrolpanel.a(Button("Store", self.storeanalysiscallback))
         mopts = {}
         for i in range(1,21):
             mopts[str(i)] = "MultiPV {}".format(i)

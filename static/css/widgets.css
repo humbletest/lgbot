@@ -592,7 +592,7 @@
 }
 
 .bigboardanalysiscontrolpanel {
-    width: 400px;
+    width: 600px;
     display: flex; justify-content: space-around; align-items: center;
     height: 30px;
     margin: 3px;

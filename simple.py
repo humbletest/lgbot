@@ -21,6 +21,7 @@ from serverutils.utils import get_variant_board
 from serverutils.utils import get_score_numerical
 import chess
 from chess.uci import InfoHandler, Engine
+from cbuild.book import get_zobrist_key_hex
 #############################################
 
 def SIMPLE_ENGINE_PATH():
@@ -116,7 +117,10 @@ class EngineProcessManager(SimpleProcessManager):
                     return
             now = time.time()
             if ( now - self.analyzestarted ) > 0.5:
-                analyzeinfo = []
+                analysisinfo = {
+                    "zobristkeyhex": get_zobrist_key_hex(self.board),
+                    "pvitems": []
+                }
                 info = self.infh.info
                 firstdepth = None
                 depthsequal = True
@@ -169,7 +173,7 @@ class EngineProcessManager(SimpleProcessManager):
                         if not ( depthi == firstdepth ):
                             depthsequal = False
                     npsi = info["npss"][i]
-                    analyzeinfo.append({
+                    analysisinfo["pvitems"].append({
                         "i": i,
                         "score": score,
                         "pvsan": pvsan,
@@ -184,9 +188,9 @@ class EngineProcessManager(SimpleProcessManager):
                     })
                 if depthsequal or config.analysisdepth == "partial":
                     postjson(PROCESS_READ_CALLBACK_URL, {
-                        "kind": "analyzeinfo",
+                        "kind": "analysisinfo",
                         "prockey": self.key,
-                        "analyzeinfo": analyzeinfo
+                        "analysisinfo": analysisinfo
                     })
                     self.analyzestarted = now                
             return
