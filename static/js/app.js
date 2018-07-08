@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-08 22:28:14
+// Transcrypt'ed from Python, 2018-07-09 01:14:40
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5220,28 +5220,59 @@ function app () {
 				};
 				return bestmovesanclicked;
 			});},
-			get __init__ () {return __get__ (this, function (self, infoi) {
-				__super__ (MultipvInfo, '__init__') (self, 'div');
-				self.infoi = infoi;
-				self.i = infoi ['i'];
-				self.bestmoveuci = infoi ['bestmoveuci'];
-				self.bestmovesan = infoi ['bestmovesan'];
-				self.scorenumerical = infoi ['scorenumerical'];
-				self.pvsan = infoi ['pvsan'];
-				self.pvpgn = infoi ['pvpgn'];
-				self.depth = infoi ['depth'];
-				self.nps = infoi ['nps'];
+			get scorebonus () {return __get__ (this, function (self) {
+				if (__in__ ('scorebonus', self.infoi)) {
+					try {
+						var scorebonus = int (self.infoi ['scorebonus']);
+						return scorebonus;
+					}
+					catch (__except0__) {
+						// pass;
+					}
+				}
+				return 0;
+			});},
+			get effscore () {return __get__ (this, function (self) {
+				return self.scorenumerical + self.scorebonus ();
+			});},
+			get bonussliderchanged () {return __get__ (this, function (self) {
+				self.infoi ['scorebonus'] = self.bonusslider.v ();
+				self.build ();
+				if (!(self.bonussliderchangedcallback === null)) {
+					self.bonussliderchangedcallback ();
+				}
+			});},
+			get build () {return __get__ (this, function (self) {
+				self.i = self.infoi ['i'];
+				self.bestmoveuci = self.infoi ['bestmoveuci'];
+				self.bestmovesan = self.infoi ['bestmovesan'];
+				self.scorenumerical = self.infoi ['scorenumerical'];
+				self.pvsan = self.infoi ['pvsan'];
+				self.pvpgn = self.infoi ['pvpgn'];
+				self.depth = self.infoi ['depth'];
+				self.nps = self.infoi ['nps'];
 				self.container = Div ().ac ('multipvinfocontainer');
 				self.idiv = Div ().ac ('multipvinfoi').html ('{}.'.format (self.i));
 				self.bestmovesandiv = Div ().ac ('multipvinfobestmovesan').html (self.bestmovesan);
 				self.bestmovesandiv.ae ('mousedown', self.bestmovesanclickedfactory (self.bestmoveuci));
-				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (self.scorenumerical));
+				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (self.effscore ()));
+				self.bonussliderdiv = Div ().ac ('multipvinfobonussliderdiv');
+				self.bonusslider = Slider ().setmin (-(500)).setmax (500).ac ('multipvinfobonusslider').sv (self.scorebonus ());
+				self.bonusslider.ae ('change', self.bonussliderchanged);
+				self.bonussliderdiv.a (self.bonusslider);
 				self.miscdiv = Div ().ac ('multipvinfomisc').html ('d: {} , nps: {}'.format (self.depth, self.nps));
 				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvpgn);
-				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv]));
-				self.a (self.container);
-				self.bestmovesandiv.c (scorecolor (self.scorenumerical));
-				self.scorenumericaldiv.c (scorecolor (self.scorenumerical));
+				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.bonussliderdiv, self.miscdiv, self.pvdiv]));
+				self.bestmovesandiv.c (scorecolor (self.effscore ()));
+				self.scorenumericaldiv.c (scorecolor (self.effscore ()));
+				self.x ().a (self.container);
+			});},
+			get __init__ () {return __get__ (this, function (self, infoi) {
+				__super__ (MultipvInfo, '__init__') (self, 'div');
+				self.bestmovesanclickedcallback = null;
+				self.bonussliderchangedcallback = null;
+				self.infoi = infoi;
+				self.build ();
 			});}
 		});
 		var Board = __class__ ('Board', [e], {
@@ -5423,6 +5454,37 @@ function app () {
 					self.moveclickedcallback (self.basicboard.variantkey, self.basicboard.fen, moveuci);
 				}
 			});},
+			get buildanalysisinfodiv () {return __get__ (this, function (self) {
+				self.analysisinfodiv.x ();
+				self.basicboard.clearcanvases ();
+				self.maxdepth = 0;
+				var minfos = list ([]);
+				var __iterable0__ = self.analysisinfo ['pvitems'];
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var infoi = __iterable0__ [__index0__];
+					var lastinfoi = infoi;
+					try {
+						var minfo = MultipvInfo (infoi);
+						minfo.bestmovesanclickedcallback = self.analysismoveclicked;
+						minfo.bonussliderchangedcallback = self.buildanalysisinfodiv;
+						if (minfo.i == 1) {
+							self.bestmoveuci = minfo.bestmoveuci;
+						}
+						var iw = 1 / (5 * minfo.i);
+						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': scorecolor (minfo.scorenumerical), 'linewidth': iw, 'headheight': iw}));
+						if (minfo.depth > self.maxdepth) {
+							self.maxdepth = minfo.depth;
+						}
+						minfos.append (minfo);
+					}
+					catch (__except0__) {
+						// pass;
+					}
+				}
+				self.analysisinfodiv.aa (sorted (minfos, __kwargtrans__ ({key: (function __lambda__ (item) {
+					return item.effscore ();
+				}), reverse: true})));
+			});},
 			get processanalysisinfo () {return __get__ (this, function (self, obj, force) {
 				if (typeof force == 'undefined' || (force != null && force .hasOwnProperty ("__kwargtrans__"))) {;
 					var force = false;
@@ -5432,34 +5494,9 @@ function app () {
 				}
 				var elapsed = new Date ().getTime () - self.analysisstartedat;
 				self.analysisinfo = obj;
-				self.analysisinfodiv.x ();
-				self.basicboard.clearcanvases ();
-				var maxdepth = 0;
-				var __iterable0__ = sorted (self.analysisinfo ['pvitems'], __kwargtrans__ ({key: (function __lambda__ (item) {
-					return item ['i'];
-				})}));
-				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
-					var infoi = __iterable0__ [__index0__];
-					var lastinfoi = infoi;
-					try {
-						var minfo = MultipvInfo (infoi);
-						minfo.bestmovesanclickedcallback = self.analysismoveclicked;
-						if (minfo.i == 1) {
-							self.bestmoveuci = minfo.bestmoveuci;
-						}
-						var iw = 1 / (5 * minfo.i);
-						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': scorecolor (minfo.scorenumerical), 'linewidth': iw, 'headheight': iw}));
-						if (minfo.depth > maxdepth) {
-							var maxdepth = minfo.depth;
-						}
-						self.analysisinfodiv.a (minfo);
-					}
-					catch (__except0__) {
-						// pass;
-					}
-				}
+				self.buildanalysisinfodiv ();
 				if (!(self.depthlimit === null) || !(self.timelimit === null)) {
-					var depthok = !(self.depthlimit === null) && maxdepth > self.depthlimit;
+					var depthok = !(self.depthlimit === null) && self.maxdepth > self.depthlimit;
 					var timeok = !(self.timelimit === null) && elapsed > self.timelimit;
 					if (depthok && timeok) {
 						self.stopandstoreanalysis ();
