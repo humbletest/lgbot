@@ -1,4 +1,5 @@
-MAX_CONTENT_LENGTH = 500
+MAX_CONTENT_LENGTH = 1000
+MAX_LINE_LENGTH = 500
 
 MATE_SCORE = 10000
 MATE_LIMIT = MATE_SCORE * 0.9
@@ -113,7 +114,7 @@ def getglobalcssvarpxint(key, default):
     except:
         return default
 
-def striplonglines(content, maxlen = MAX_CONTENT_LENGTH):
+def striplonglines(content, maxlen = MAX_LINE_LENGTH):
     lines = content.split("\n")    
     strippedlines = []
     for line in lines:        

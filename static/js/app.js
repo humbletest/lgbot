@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-08 21:27:38
+// Transcrypt'ed from Python, 2018-07-08 22:28:14
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2202,7 +2202,8 @@ function app () {
     __all__.__setslice__ = __setslice__;
 	(function () {
 		var __name__ = '__main__';
-		var MAX_CONTENT_LENGTH = 500;
+		var MAX_CONTENT_LENGTH = 1000;
+		var MAX_LINE_LENGTH = 500;
 		var MATE_SCORE = 10000;
 		var MATE_LIMIT = MATE_SCORE * 0.9;
 		var WINNING_MOVE_LIMIT = 1000;
@@ -2353,7 +2354,7 @@ function app () {
 		};
 		var striplonglines = function (content, maxlen) {
 			if (typeof maxlen == 'undefined' || (maxlen != null && maxlen .hasOwnProperty ("__kwargtrans__"))) {;
-				var maxlen = MAX_CONTENT_LENGTH;
+				var maxlen = MAX_LINE_LENGTH;
 			};
 			var lines = content.py_split ('\n');
 			var strippedlines = list ([]);
@@ -5687,24 +5688,6 @@ function app () {
 		var mainboardenginecommandcallback = function (sline) {
 			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': 'engine', 'data': sline}));
 		};
-		var mainboardmovecallback = function (variantkey, fen, moveuci) {
-			setTimeout ((function __lambda__ (ev) {
-				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
-			}), simulateserverlag ());
-		};
-		var mainboardvariantchangedcallback = function (variantkey) {
-			setTimeout ((function __lambda__ (ev) {
-				return socket.emit ('sioreq', dict ({'kind': 'mainboardsetvariant', 'variantkey': variantkey}));
-			}), simulateserverlag ());
-		};
-		var mainboardmoveclickedcallback = function (variantkey, fen, moveuci) {
-			setTimeout ((function __lambda__ (ev) {
-				return socket.emit ('sioreq', dict ({'kind': 'mainboardmove', 'variantkey': variantkey, 'fen': fen, 'moveuci': moveuci}));
-			}), simulateserverlag ());
-		};
-		var mainboardenginecommandcallback = function (sline) {
-			socket.emit ('sioreq', dict ({'kind': 'cmd', 'key': 'engine', 'data': sline}));
-		};
 		var build = function () {
 			processconsoles ['engine'] = ProcessConsole (dict ({'key': 'engine', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': ENGINE_CMD_ALIASES}));
 			processconsoles ['bot'] = ProcessConsole (dict ({'key': 'bot', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': BOT_CMD_ALIASES}));
@@ -5848,6 +5831,7 @@ function app () {
 			__all__.MATE_LIMIT = MATE_LIMIT;
 			__all__.MATE_SCORE = MATE_SCORE;
 			__all__.MAX_CONTENT_LENGTH = MAX_CONTENT_LENGTH;
+			__all__.MAX_LINE_LENGTH = MAX_LINE_LENGTH;
 			__all__.Move = Move;
 			__all__.MultipvInfo = MultipvInfo;
 			__all__.NamedSchemaItem = NamedSchemaItem;
