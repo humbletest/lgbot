@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-08 13:38:11
+// Transcrypt'ed from Python, 2018-07-08 16:51:54
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5199,8 +5199,12 @@ function app () {
 				self.movelist = cpick (__in__ ('movelist', self.positioninfo), self.positioninfo ['movelist'], list ([]));
 				self.basicboard.setfromfen (fen, self.positioninfo);
 				self.buildpositioninfo ();
+				self.analysisinfodiv.x ();
 				if (restartanalysis) {
-					self.analyzecallback ();
+					self.analyzecallbackfactory () ();
+				}
+				if (!(self.analyzing)) {
+					self.sioreq (dict ({'kind': 'retrievedb', 'owner': 'board', 'path': 'analysisinfo/{}/{}'.format (self.basicboard.variantkey, self.positioninfo ['zobristkeyhex'])}));
 				}
 			});},
 			get setvariantcombo () {return __get__ (this, function (self) {
@@ -5214,8 +5218,14 @@ function app () {
 			get siores () {return __get__ (this, function (self, response) {
 				try {
 					var dataobj = response ['dataobj'];
+					if (dataobj == null) {
+						return ;
+					}
 					if (__in__ ('variantkey', dataobj)) {
 						self.variantchanged (dataobj ['variantkey']);
+					}
+					else if (__in__ ('analysisinfo', dataobj)) {
+						self.processanalysisinfo (dataobj ['analysisinfo'], true);
 					}
 				}
 				catch (__except0__) {
@@ -5297,12 +5307,19 @@ function app () {
 				self.buildpositioninfo ();
 				self.resizetabpanewidth (width);
 			});},
-			get analyzecallback () {return __get__ (this, function (self) {
-				self.bestmoveuci = null;
-				self.analyzing = true;
-				if (!(self.enginecommandcallback === null)) {
-					self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, self.getmultipv (), self.basicboard.fen));
-				}
+			get analyzecallbackfactory () {return __get__ (this, function (self, all) {
+				if (typeof all == 'undefined' || (all != null && all .hasOwnProperty ("__kwargtrans__"))) {;
+					var all = false;
+				};
+				var analyzecallback = function () {
+					self.bestmoveuci = null;
+					self.analyzing = true;
+					if (!(self.enginecommandcallback === null)) {
+						var mpv = cpick (all, 200, self.getmultipv ());
+						self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, mpv, self.basicboard.fen));
+					}
+				};
+				return analyzecallback;
 			});},
 			get stopanalyzecallback () {return __get__ (this, function (self) {
 				self.analyzing = false;
@@ -5316,14 +5333,17 @@ function app () {
 					self.moveclickedcallback (self.basicboard.variantkey, self.basicboard.fen, moveuci);
 				}
 			});},
-			get processanalysisinfo () {return __get__ (this, function (self, obj) {
-				if (!(self.analyzing)) {
+			get processanalysisinfo () {return __get__ (this, function (self, obj, force) {
+				if (typeof force == 'undefined' || (force != null && force .hasOwnProperty ("__kwargtrans__"))) {;
+					var force = false;
+				};
+				if (!(self.analyzing) && !(force)) {
 					return ;
 				}
-				var content = JSON.stringify (obj, null, 2);
+				self.analysisinfo = obj;
 				self.analysisinfodiv.x ();
 				self.basicboard.clearcanvases ();
-				var __iterable0__ = sorted (obj, __kwargtrans__ ({key: (function __lambda__ (item) {
+				var __iterable0__ = sorted (self.analysisinfo ['pvitems'], __kwargtrans__ ({key: (function __lambda__ (item) {
 					return item ['i'];
 				})}));
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
@@ -5350,6 +5370,14 @@ function app () {
 					}
 				}
 			});},
+			get storeanalysiscallback () {return __get__ (this, function (self) {
+				if (!(self.analysisinfo === null)) {
+					self.sioreq (dict ({'kind': 'storedb', 'path': 'analysisinfo/{}/{}'.format (self.basicboard.variantkey, self.analysisinfo ['zobristkeyhex']), 'dataobj': dict ({'analysisinfo': self.analysisinfo})}));
+				}
+				else {
+					window.alert ('No analysis to store.');
+				}
+			});},
 			get getmultipv () {return __get__ (this, function (self) {
 				try {
 					var multipv = int (self.multipvcombo.select.v ());
@@ -5361,6 +5389,7 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.analysisinfo = null;
 				self.defaultmultipv = 3;
 				self.bestmoveuci = null;
 				self.analyzing = false;
@@ -5386,9 +5415,11 @@ function app () {
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
 				self.analysisdiv = Div ();
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
-				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallback));
+				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
+				self.analysiscontrolpanel.a (Button ('Analyze all', self.analyzecallbackfactory (true)));
 				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
 				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
+				self.analysiscontrolpanel.a (Button ('Store', self.storeanalysiscallback));
 				var mopts = dict ({});
 				for (var i = 1; i < 21; i++) {
 					mopts [str (i)] = 'MultiPV {}'.format (i);
@@ -5592,8 +5623,8 @@ function app () {
 						window.alert ('UCI options stored in current profile.');
 					}
 				}
-				else if (kind == 'analyzeinfo') {
-					mainboard.processanalysisinfo (json ['analyzeinfo']);
+				else if (kind == 'analysisinfo') {
+					mainboard.processanalysisinfo (json ['analysisinfo']);
 				}
 			}
 			if (__in__ ('response', json)) {
