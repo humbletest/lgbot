@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-08 18:57:10
+// Transcrypt'ed from Python, 2018-07-08 20:00:39
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5324,20 +5324,28 @@ function app () {
 				self.buildpositioninfo ();
 				self.resizetabpanewidth (width);
 			});},
-			get analyzecallbackfactory () {return __get__ (this, function (self, all, depthlimit) {
+			get analyzecallbackfactory () {return __get__ (this, function (self, all, depthlimit, timelimit) {
 				if (typeof all == 'undefined' || (all != null && all .hasOwnProperty ("__kwargtrans__"))) {;
 					var all = false;
 				};
 				if (typeof depthlimit == 'undefined' || (depthlimit != null && depthlimit .hasOwnProperty ("__kwargtrans__"))) {;
 					var depthlimit = null;
 				};
+				if (typeof timelimit == 'undefined' || (timelimit != null && timelimit .hasOwnProperty ("__kwargtrans__"))) {;
+					var timelimit = null;
+				};
 				var analyzecallback = function () {
 					self.depthlimit = depthlimit;
+					self.timelimit = timelimit;
+					self.analysisstartedat = new Date ().getTime ();
 					self.bestmoveuci = null;
 					self.analyzing.set (true);
 					if (!(self.enginecommandcallback === null)) {
 						var mpv = cpick (all, 200, self.getmultipv ());
 						self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, mpv, self.basicboard.fen));
+					}
+					if (!(self.timelimit === null)) {
+						setTimeout (self.stopandstoreanalysis, self.timelimit);
 					}
 				};
 				return analyzecallback;
@@ -5361,6 +5369,7 @@ function app () {
 				if (!(self.analyzing) && !(force)) {
 					return ;
 				}
+				var elapsed = new Date ().getTime () - self.analysisstartedat;
 				self.analysisinfo = obj;
 				self.analysisinfodiv.x ();
 				self.basicboard.clearcanvases ();
@@ -5388,12 +5397,17 @@ function app () {
 						// pass;
 					}
 				}
-				if (!(self.depthlimit === null)) {
-					if (maxdepth > self.depthlimit) {
-						self.stopanalyzecallback ();
-						self.storeanalysiscallback ();
+				if (!(self.depthlimit === null) || !(self.timelimit === null)) {
+					var depthok = !(self.depthlimit === null) && maxdepth > self.depthlimit;
+					var timeok = !(self.timelimit === null) && elapsed > self.timelimit;
+					if (depthok && timeok) {
+						self.stopandstoreanalysis ();
 					}
 				}
+			});},
+			get stopandstoreanalysis () {return __get__ (this, function (self) {
+				self.stopanalyzecallback ();
+				self.storeanalysiscallback ();
 			});},
 			get makeanalyzedmovecallback () {return __get__ (this, function (self) {
 				if (!(self.bestmoveuci === null)) {
@@ -5453,7 +5467,7 @@ function app () {
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
 				self.analysiscontrolpanel.a (Button ('Analyze all', self.analyzecallbackfactory (true)));
-				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 5)));
+				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 10, 10000)));
 				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
 				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
 				self.analysiscontrolpanel.a (Button ('Store', self.storeanalysiscallback));

@@ -2705,14 +2705,18 @@ class Board(e):
         self.buildpositioninfo()
         self.resizetabpanewidth(width)
 
-    def analyzecallbackfactory(self, all = False, depthlimit = None):
+    def analyzecallbackfactory(self, all = False, depthlimit = None, timelimit = None):
         def analyzecallback():
             self.depthlimit = depthlimit
+            self.timelimit = timelimit
+            self.analysisstartedat = __new__(Date()).getTime()
             self.bestmoveuci = None
             self.analyzing.set(True)
             if not ( self.enginecommandcallback is None ):            
                 mpv = cpick(all, 200, self.getmultipv())
                 self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, mpv, self.basicboard.fen))
+            if not ( self.timelimit is None ):
+                setTimeout(self.stopandstoreanalysis, self.timelimit)
         return analyzecallback
 
     def stopanalyzecallback(self):
@@ -2728,6 +2732,7 @@ class Board(e):
     def processanalysisinfo(self, obj, force = False):
         if ( not self.analyzing ) and ( not force ):
             return        
+        elapsed = __new__(Date()).getTime() - self.analysisstartedat
         self.analysisinfo = obj        
         self.analysisinfodiv.x()
         self.basicboard.clearcanvases()        
@@ -2750,10 +2755,15 @@ class Board(e):
                 self.analysisinfodiv.a(minfo)
             except:                
                 pass
-        if not ( self.depthlimit is None ):
-            if maxdepth > self.depthlimit:
-                self.stopanalyzecallback()
-                self.storeanalysiscallback()
+        if ( not ( self.depthlimit is None ) ) or ( not ( self.timelimit is None ) ):
+            depthok = ( not ( self.depthlimit is None ) ) and ( maxdepth > self.depthlimit )
+            timeok = ( not ( self.timelimit is None ) ) and ( elapsed > self.timelimit )
+            if depthok and timeok:
+                self.stopandstoreanalysis()
+                
+    def stopandstoreanalysis(self):
+        self.stopanalyzecallback()
+        self.storeanalysiscallback()
 
     def makeanalyzedmovecallback(self):
         if not ( self.bestmoveuci is None ):
@@ -2817,7 +2827,7 @@ class Board(e):
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
         self.analysiscontrolpanel.a(Button("Analyze all", self.analyzecallbackfactory(True)))
-        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 5)))
+        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 10, 10000)))
         self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
         self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
         self.analysiscontrolpanel.a(Button("Store", self.storeanalysiscallback))
