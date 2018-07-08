@@ -97,6 +97,8 @@ class LogItem(e):
                 except:
                     pass
         self.content = striplonglines(self.content)
+        if len(self.content) > MAX_CONTENT_LENGTH:
+            self.content = self.content[:MAX_CONTENT_LENGTH]
         self.cdiv.html(self.content)
         if self.kind == "cmd":
             self.cdiv.ac("logcontentcmd")

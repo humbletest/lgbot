@@ -124,6 +124,7 @@ def dir_listing_as_obj(path):
 #############################################
 
 MATE_SCORE = 10000
+MATE_LIMIT = MATE_SCORE * 0.9
 
 def get_score_numerical(score):
     cp = score[0]
@@ -133,6 +134,10 @@ def get_score_numerical(score):
             return MATE_SCORE - mate
         else:
             return -MATE_SCORE - mate
+    if cp > MATE_LIMIT:
+        cp = MATE_LIMIT
+    elif cp < (-MATE_LIMIT):
+        cp = (-MATE_LIMIT)
     return cp
 
 def get_variant_board(variantkey):
@@ -160,7 +165,7 @@ class ProcessManager:
     def send_line(self, sline):
         if self.process is None:
             msg = "! no {} process to send line".format(self.key)
-            print(msg)
+            #print(msg)
             return msg
         else:
             self.send_line_task(sline)

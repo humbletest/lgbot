@@ -642,10 +642,9 @@ class MultipvInfo(e):
         self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
         self.pvdiv = Div().ac("multipvinfopv").html(self.pvpgn)
         self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.miscdiv, self.pvdiv])
-        self.a(self.container)
-        ps = self.scorenumerical > 0
-        self.bestmovesandiv.cc(ps, "#070", "#700")
-        self.scorenumericaldiv.cc(ps, "#070", "#700")
+        self.a(self.container)        
+        self.bestmovesandiv.c(scorecolor(self.scorenumerical))
+        self.scorenumericaldiv.c(scorecolor(self.scorenumerical))
 
 class Board(e):
     def flipcallback(self):
@@ -810,7 +809,7 @@ class Board(e):
                     self.bestmoveuci = minfo.bestmoveuci
                 iw = 1 / ( 5 * minfo.i )
                 self.basicboard.drawuciarrow(minfo.bestmoveuci, {
-                    "strokecolor": cpick(minfo.scorenumerical > 0, "#00FF00", "#FF0000"),
+                    "strokecolor": scorecolor(minfo.scorenumerical),
                     "linewidth": iw,
                     "headheight": iw
                 })

@@ -30,6 +30,11 @@ class e:
         self.e.style.backgroundColor = cpick(cond, colortrue, colorfalse)
         return self
 
+    # color
+    def c(self, color):
+        self.e.style.color = color
+        return self
+    
     # conditional color
     def cc(self, cond, colortrue, colorfalse):
         self.e.style.color = cpick(cond, colortrue, colorfalse)

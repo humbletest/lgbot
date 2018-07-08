@@ -542,7 +542,8 @@ class Engine(object):
                 try:
                     pv.append(board.push_uci(token))
                 except ValueError:
-                    print("illegal uci", token, file = sys.stderr)
+                    #print("illegal uci", token, file = sys.stderr)
+                    pass
                     #LOGGER.exception("exception parsing pv from info: %r, position at root: %s", arg, self.board.fen())
             elif current_parameter == "multipv":
                 # Ignore multipv. It was already parsed before anything else.

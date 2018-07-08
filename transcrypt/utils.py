@@ -1,3 +1,45 @@
+MAX_CONTENT_LENGTH = 500
+
+MATE_SCORE = 10000
+MATE_LIMIT = MATE_SCORE * 0.9
+WINNING_MOVE_LIMIT = 1000
+DOUBLE_EXCLAM_LIMIT = 500
+EXCLAM_LIMIT = 350
+PROMISING_LIMIT = 250
+INTERESTING_LIMIT = 150
+DRAWISH_LIMIT = 80
+
+def scorecolor(score):
+    if score > MATE_LIMIT:
+        return "#0f0"
+    if score > WINNING_MOVE_LIMIT:
+        return "#0e0"
+    if score > DOUBLE_EXCLAM_LIMIT:
+        return "#0c0"
+    if score > EXCLAM_LIMIT:
+        return "#0a0"
+    if score > PROMISING_LIMIT:
+        return "#090"
+    if score > INTERESTING_LIMIT:
+        return "#070"
+    if score > DRAWISH_LIMIT:
+        return "#050"
+    if score > 0:
+        return "#033"
+    if score > (-DRAWISH_LIMIT):
+        return "#330"
+    if score > (-INTERESTING_LIMIT):
+        return "#500"
+    if score > (-PROMISING_LIMIT):
+        return "#900"
+    if score > (-EXCLAM_LIMIT):
+        return "#a00"
+    if score > (-DOUBLE_EXCLAM_LIMIT):
+        return "#c00"
+    if score > WINNING_MOVE_LIMIT:
+        return "#e00"
+    return "#f00"
+
 class View:
     def __init__(self, callback, value = None):
         self.callback = callback
@@ -71,7 +113,7 @@ def getglobalcssvarpxint(key, default):
     except:
         return default
 
-def striplonglines(content, maxlen = 500):
+def striplonglines(content, maxlen = MAX_CONTENT_LENGTH):
     lines = content.split("\n")    
     strippedlines = []
     for line in lines:        

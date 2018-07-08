@@ -42,7 +42,7 @@ class SimpleProcessManager(ProcessManager):
     def read_line_callback(self, sline):
         pass
 
-    def base_read_line_callback(self, sline):
+    def base_read_line_callback(self, sline):        
         if self.sendlog:
             postjson(PROCESS_READ_CALLBACK_URL, {
                 "kind": "procreadline",
@@ -107,14 +107,14 @@ class EngineProcessManager(SimpleProcessManager):
     def read_line_callback(self, sline):
         if self.analyze:
             parts = sline.split(" ")
-            kind = parts[0]        
+            kind = parts[0]               
             if kind == "info":
                 try:                    
                     self.eng._info(sline)                    
                 except:
                     print("info handler error", sline)
-                    traceback.print_exc(file = sys.stderr)
-                    return
+                    traceback.print_exc(file = sys.stderr)                    
+                    return                        
             now = time.time()
             if ( now - self.analyzestarted ) > 0.5:
                 analysisinfo = {
@@ -312,7 +312,7 @@ processmanagers = {
 }
 
 #############################################
- 
+
 class testHTTPServer_RequestHandler(BaseHTTPRequestHandler): 
     def do_GET(self):
         global processmanagers
@@ -351,7 +351,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 #############################################
 
 def bot_scheduler_thread_func(processmanagers):
-    delay = config.autostartbot * 3
+    delay = config.autostartbot
     if delay > 0:
         print("waiting {} seconds to start bot".format(delay))
         time.sleep(delay)
@@ -361,7 +361,7 @@ def bot_scheduler_thread_func(processmanagers):
         print("auto start bot disabled")
 
 def engine_scheduler_thread_func(processmanagers):
-    delay = config.autostartengine * 3
+    delay = config.autostartengine
     if delay > 0:
         print("waiting {} seconds to start engine".format(delay))
         time.sleep(delay)
