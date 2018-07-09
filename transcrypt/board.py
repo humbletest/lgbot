@@ -1097,7 +1097,7 @@ class Board(e):
         self.analysiscontrolpanel.a(Button("#", self.getstoredanalysisinfo))
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
         self.analysiscontrolpanel.a(Button("Analyze all", self.analyzecallbackfactory(True)))
-        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 5, 5000)))
+        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 5, None)))
         self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
         self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
         self.analysiscontrolpanel.a(Button("Store", self.storeanalysiscallback))
