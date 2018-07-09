@@ -544,6 +544,7 @@
     display: flex; justify-content: space-around; align-items: center;    
     font-size: 14px;
     width: 40px;
+    min-width: 40px;
     height: var(--multipvinfoheight);
     background-color: #ddd;
     margin: 1px;
@@ -554,6 +555,7 @@
     font-weight: bold;
     font-size: 20px;
     width: 80px;
+    min-width: 80px;
     height: var(--multipvinfoheight);
     background-color: #eee;
     margin: 1px;
@@ -564,6 +566,7 @@
     display: flex; justify-content: space-around; align-items: center;
     font-weight: bold;
     width: 80px;
+    min-width: 80px;
     font-size: 18px;
     height: var(--multipvinfoheight);
     background-color: #eee;
@@ -583,15 +586,25 @@
     width: 140px;    
 }
 
-.multipvinfomisc {
-    display: flex; justify-content: left; align-items: center;
-    width: 120px;
-    font-size: 12px;
+.multipvinfodepth {
+    display: flex; justify-content: space-around; align-items: center;
+    width: 30px;
+    font-size: 14px;
+    font-weight: bold;
     height: var(--multipvinfoheight);
     background-color: #ddd;
     margin: 1px;
-    padding-left: 10px;
     color: #007;
+}
+
+.multipvinfomisc {
+    display: flex; justify-content: space-around; align-items: center;
+    width: 80px;
+    font-size: 12px;
+    height: var(--multipvinfoheight);
+    background-color: #ddd;
+    margin: 1px;    
+    color: #777
 }
 
 .multipvinfopv {

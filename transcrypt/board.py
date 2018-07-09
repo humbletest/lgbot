@@ -641,8 +641,7 @@ class MultipvInfo(e):
         if not ( self.bonussliderchangedcallback is None ):            
             self.bonussliderchangedcallback()
 
-    def build(self):
-        self.i = self.infoi["i"]
+    def build(self):        
         self.bestmoveuci = self.infoi["bestmoveuci"]
         self.bestmovesan = self.infoi["bestmovesan"]
         self.scorenumerical = self.infoi["scorenumerical"]
@@ -659,9 +658,10 @@ class MultipvInfo(e):
         self.bonusslider = Slider().setmin(-500).setmax(500).ac("multipvinfobonusslider").sv(self.scorebonus())
         self.bonusslider.ae("change", self.bonussliderchanged)
         self.bonussliderdiv.a(self.bonusslider)
-        self.miscdiv = Div().ac("multipvinfomisc").html("d: {} , nps: {}".format(self.depth, self.nps))
+        self.depthdiv = Div().ac("multipvinfodepth").html("{}".format(self.depth))
+        self.miscdiv = Div().ac("multipvinfomisc").html("nps {}".format(self.nps))
         self.pvdiv = Div().ac("multipvinfopv").html(self.pvpgn)
-        self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.bonussliderdiv, self.miscdiv, self.pvdiv])        
+        self.container.aa([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.bonussliderdiv, self.depthdiv, self.miscdiv, self.pvdiv])        
         self.bestmovesandiv.c(scorecolor(self.effscore()))
         self.scorenumericaldiv.c(scorecolor(self.effscore()))
         self.x().a(self.container)        
@@ -671,6 +671,7 @@ class MultipvInfo(e):
         self.bestmovesanclickedcallback = None
         self.bonussliderchangedcallback = None
         self.infoi = infoi
+        self.i = self.infoi["i"]
         self.build()
         
 
@@ -702,6 +703,9 @@ class Board(e):
         self.analysisinfodiv.x()
         if restartanalysis:
             self.analyzecallbackfactory()()
+        self.getstoredanalysisinfo()
+
+    def getstoredanalysisinfo(self):
         if not self.analyzing.get():                
             self.sioreq({"kind": "retrievedb",
                 "owner": "board",
@@ -825,26 +829,30 @@ class Board(e):
         self.basicboard.clearcanvases()        
         self.maxdepth = 0
         minfos = []
-        for infoi in self.analysisinfo["pvitems"]:
-            lastinfoi = infoi
+        for infoi in self.analysisinfo["pvitems"]:            
             try:                   
                 minfo = MultipvInfo(infoi)
                 minfo.bestmovesanclickedcallback = self.analysismoveclicked
-                minfo.bonussliderchangedcallback = self.buildanalysisinfodiv
-                if minfo.i == 1:
-                    self.bestmoveuci = minfo.bestmoveuci
-                iw = 1 / ( 5 * minfo.i )
-                self.basicboard.drawuciarrow(minfo.bestmoveuci, {
-                    "strokecolor": scorecolor(minfo.scorenumerical),
-                    "linewidth": iw,
-                    "headheight": iw
-                })
+                minfo.bonussliderchangedcallback = self.buildanalysisinfodiv                
                 if minfo.depth > self.maxdepth:
                     self.maxdepth = minfo.depth
                 minfos.append(minfo)
             except:                
-                pass
-        self.analysisinfodiv.aa(sorted(minfos, key = lambda item: item.effscore(), reverse = True))
+                pass        
+        i = 1
+        for minfo in sorted(minfos, key = lambda item: item.effscore(), reverse = True):
+            minfo.i = i
+            minfo.build()
+            if i == 1:
+                self.bestmoveuci = minfo.bestmoveuci
+            iw = 1 / ( 5 * i )
+            self.basicboard.drawuciarrow(minfo.bestmoveuci, {
+                "strokecolor": scorecolor(minfo.effscore()),
+                "linewidth": iw,
+                "headheight": iw
+            })
+            self.analysisinfodiv.a(minfo)
+            i += 1
 
     def processanalysisinfo(self, obj, force = False):
         if ( not self.analyzing ) and ( not force ):
@@ -922,9 +930,10 @@ class Board(e):
         self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
         self.analysisdiv = Div()
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
+        self.analysiscontrolpanel.a(Button("#", self.getstoredanalysisinfo))
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
         self.analysiscontrolpanel.a(Button("Analyze all", self.analyzecallbackfactory(True)))
-        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 10, 10000)))
+        self.analysiscontrolpanel.a(Button("Quick all", self.analyzecallbackfactory(True, 10, 5000)))
         self.analysiscontrolpanel.a(Button("Stop", self.stopanalyzecallback))
         self.analysiscontrolpanel.a(Button("Make", self.makeanalyzedmovecallback))
         self.analysiscontrolpanel.a(Button("Store", self.storeanalysiscallback))
