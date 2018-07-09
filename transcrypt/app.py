@@ -257,6 +257,20 @@ def getjson(path, callback, errcallback):
         lambda err: errcallback(err)
     )
 
+def lichapiget(path, callback, errcallback):
+
+    args = {
+        "method": "GET"
+    }
+
+    fetch("https://lichess.org/" + path, args).then(
+        lambda response: response.text().then(
+            lambda content: callback(content),
+            lambda err: errcalback(err)
+        ),
+        lambda err: errcallback(err)
+    )
+
 __pragma__("nojsiter")
 ######################################################
 # dom
@@ -1867,6 +1881,17 @@ def getpathfromschema(sch, path):
     pathlist = path.split("/")
     return getpathlistfromschema(sch, pathlist)
 
+def getscalarfromschema(sch, path):
+    found = getpathfromschema(sch, path)
+    if not ( found is None ):
+        if found.kind == "scalar":
+            return found.value
+    found = getpathfromschema(sch, path + "/#")
+    if not ( found is None ):
+        if found.kind == "scalar":
+            return found.value
+    return None
+
 def schemafromucioptionsobj(obj):
     ucioptions = SchemaDict({})
     for opt in obj:
@@ -2659,8 +2684,68 @@ class MultipvInfo(e):
         self.infoi = infoi
         self.i = self.infoi["i"]
         self.build()
-        
 
+class PgnInfo(e):
+    def __init__(self, username = None):
+        super().__init__("div")
+        self.headers = []
+        self.username = username
+
+    def getheader(self, key, default):
+        for header in self.headers:
+            if header[0] == key:
+                return header[1]
+        return default
+
+    def parsecontent(self):        
+        lines = self.content.split("\n")
+        self.headers = []
+        for line in lines:
+            if line[0] == "[":
+                parts = line[1:].split("\"")
+                key = parts[0].split(" ")[0]
+                value = parts[1].split("\"")[0]
+                self.headers.append((key, value))
+        self.white = self.getheader("White", "?")
+        self.black = self.getheader("Black", "?")        
+        self.result = self.getheader("Result", "?")        
+        self.site = self.getheader("Site", "")                
+        self.id = self.site.split("/")[-1:][0]
+
+    def build(self):        
+        self.x().ac("pgninfocontainer")
+        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)
+        if self.white == self.username:
+            self.whitediv.ac("pgninfomeplayerdiv")
+        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)
+        if self.black == self.username:
+            self.blackdiv.ac("pgninfomeplayerdiv")
+        self.resultdiv = Div().ac("pgninforesultdiv").html(self.result)
+        self.iddiv = Div().ac("pgninfoiddiv").html(self.id)
+        self.aa([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv])
+        return self
+
+    def setcontent(self, content):
+        self.content = content
+        self.parsecontent()
+        return self.build()
+
+class PgnList(e):
+    def __init__(self, username = None):
+        super().__init__("div")
+        self.username = username
+
+    def build(self):
+        self.x()
+        for gamecontent in self.gamecontents:
+            self.a(PgnInfo(self.username).setcontent(gamecontent))
+        return self
+
+    def setcontent(self, content):
+        self.content = content
+        self.gamecontents = self.content.split("\n\n\n")[:-1]
+        return self.build()
+        
 class Board(e):
     def flipcallback(self):
         self.basicboard.setflip(not self.basicboard.flip)
@@ -2886,8 +2971,29 @@ class Board(e):
     def analyzingchangedcallback(self):
         self.analysiscontrolpanel.cbc(self.analyzing.get(), "#afa", "#edd")
 
+    def getconfigscalar(self, path, default):
+        if self.configschema is None:
+            return default
+        found = getscalarfromschema(self.configschema, path)
+        if found is None:
+            return default
+        return found
+
+    def gamesloadedok(self, content):
+        self.pgnlist = PgnList(self.username).setcontent(content)
+        self.gamesdiv.x().a(self.pgnlist)
+
+    def setconfigschema(self, configschema):
+        self.configschema = configschema
+        self.username = self.getconfigscalar("global/username", None)
+        if not ( self.username is None ):
+            lichapiget("games/export/{}?max=10".format(self.username), self.gamesloadedok, lambda err: print(err))
+
     def __init__(self, args):
         super().__init__("div")
+        self.pgnlist = None
+        self.username = None
+        self.configschema = None
         self.depthlimit = None
         self.analysisinfo = None
         self.defaultmultipv = 3
@@ -2909,7 +3015,7 @@ class Board(e):
         self.variantchangedcallback = args.get("variantchangedcallback", None)
         self.moveclickedcallback = args.get("moveclickedcallback", None)
         self.enginecommandcallback = args.get("enginecommandcallback", None)
-        self.socket = args.get("socket", None)
+        self.socket = args.get("socket", None)        
         self.controlpanel.a(self.variantcombo).w(self.basicboard.outerwidth).mw(self.basicboard.outerwidth)
         self.controlpanel.a(Button("Del", self.delcallback))
         self.controlpanel.a(Button("Reset", self.setvariantcallback))
@@ -2939,10 +3045,11 @@ class Board(e):
         self.analysisdiv.a(self.analysiscontrolpanel)
         self.analysisinfodiv = Div()
         self.analysisdiv.a(self.analysisinfodiv)
+        self.gamesdiv = Div()
         self.tabpane = TabPane({"kind":"normal", "id":"board"}).setTabs(
             [
                 Tab("analysis", "Analysis", self.analysisdiv),
-                Tab("book", "Book", Div())
+                Tab("games", "Games", self.gamesdiv)
             ], "analysis"
         )    
         self.verticalcontainer.aa([self.sectioncontainer, self.movelistdiv, self.tabpane])
@@ -3276,6 +3383,7 @@ def onevent(json):
             if kind == "setlocalconfig":                
                 data = response["data"]                
                 deserializeconfigcontent(data)
+                mainboard.setconfigschema(configschema)
             elif kind == "configstored":
                 window.alert("Config storing status: " + status + ".")            
             elif kind == "setmainboardfen":                

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 10:42:58
+// Transcrypt'ed from Python, 2018-07-09 14:34:11
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2487,6 +2487,18 @@ function app () {
 				return errcallback (err);
 			}));
 		};
+		var lichapiget = function (path, callback, errcallback) {
+			var args = {'method': 'GET'};
+			fetch ('https://lichess.org/' + path, args).then ((function __lambda__ (response) {
+				return response.text ().then ((function __lambda__ (content) {
+					return callback (content);
+				}), (function __lambda__ (err) {
+					return errcalback (err);
+				}));
+			}), (function __lambda__ (err) {
+				return errcallback (err);
+			}));
+		};
 		var SCROLL_BAR_WIDTH = getScrollBarWidth ();
 		var ce = function (tag) {
 			return document.createElement (tag);
@@ -4326,6 +4338,38 @@ function app () {
 			var pathlist = path.py_split ('/');
 			return getpathlistfromschema (sch, pathlist);
 		};
+		var getscalarfromschema = function (sch, path) {
+			var found = getpathfromschema (sch, path);
+			if (!(found === null)) {
+				if (found.kind == 'scalar') {
+					return found.value;
+				}
+			}
+			var found = getpathfromschema (sch, path + '/#');
+			if (!(found === null)) {
+				if (found.kind == 'scalar') {
+					return found.value;
+				}
+				else if (kind == 'ucioptionsparsed') {
+					var ucioptionsobj = json ['ucioptions'];
+					var ucischema = schemafromucioptionsobj (ucioptionsobj);
+					var selfprofile = getpathfromschema (configschema, 'profile/#');
+					if (selfprofile === null) {
+						window.alert ('Warning: no profile selected to store UCI options.');
+					}
+					else {
+						selfprofile.setchildatkey ('ucioptions', ucischema);
+						maintabpane.setTabElementByKey ('config', buildconfigdiv ());
+						maintabpane.selectByKey ('config');
+						window.alert ('UCI options stored in current profile.');
+					}
+				}
+				else if (kind == 'analysisinfo') {
+					mainboard.processanalysisinfo (json ['analysisinfo']);
+				}
+			}
+			return null;
+		};
 		var schemafromucioptionsobj = function (obj) {
 			var ucioptions = SchemaDict (dict ({}));
 			var __iterable0__ = obj;
@@ -5276,6 +5320,90 @@ function app () {
 				self.build ();
 			});}
 		});
+		var PgnInfo = __class__ ('PgnInfo', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, username) {
+				if (typeof username == 'undefined' || (username != null && username .hasOwnProperty ("__kwargtrans__"))) {;
+					var username = null;
+				};
+				__super__ (PgnInfo, '__init__') (self, 'div');
+				self.headers = list ([]);
+				self.username = username;
+			});},
+			get getheader () {return __get__ (this, function (self, key, py_default) {
+				var __iterable0__ = self.headers;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var header = __iterable0__ [__index0__];
+					if (header [0] == key) {
+						return header [1];
+					}
+				}
+				return py_default;
+			});},
+			get parsecontent () {return __get__ (this, function (self) {
+				var lines = self.content.py_split ('\n');
+				self.headers = list ([]);
+				var __iterable0__ = lines;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var line = __iterable0__ [__index0__];
+					if (line [0] == '[') {
+						var parts = line.__getslice__ (1, null, 1).py_split ('"');
+						var key = parts [0].py_split (' ') [0];
+						var value = parts [1].py_split ('"') [0];
+						self.headers.append (tuple ([key, value]));
+					}
+				}
+				self.white = self.getheader ('White', '?');
+				self.black = self.getheader ('Black', '?');
+				self.result = self.getheader ('Result', '?');
+				self.site = self.getheader ('Site', '');
+				self.id = self.site.py_split ('/').__getslice__ (-(1), null, 1) [0];
+			});},
+			get build () {return __get__ (this, function (self) {
+				self.x ().ac ('pgninfocontainer');
+				self.whitediv = Div ().ac ('pgninfoplayerdiv').html (self.white);
+				if (self.white == self.username) {
+					self.whitediv.ac ('pgninfomeplayerdiv');
+				}
+				self.blackdiv = Div ().ac ('pgninfoplayerdiv').html (self.black);
+				if (self.black == self.username) {
+					self.blackdiv.ac ('pgninfomeplayerdiv');
+				}
+				self.resultdiv = Div ().ac ('pgninforesultdiv').html (self.result);
+				self.iddiv = Div ().ac ('pgninfoiddiv').html (self.id);
+				self.aa (list ([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv]));
+				return self;
+			});},
+			get setcontent () {return __get__ (this, function (self, content) {
+				self.content = content;
+				self.parsecontent ();
+				return self.build ();
+			});}
+		});
+		var PgnList = __class__ ('PgnList', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self, username) {
+				if (typeof username == 'undefined' || (username != null && username .hasOwnProperty ("__kwargtrans__"))) {;
+					var username = null;
+				};
+				__super__ (PgnList, '__init__') (self, 'div');
+				self.username = username;
+			});},
+			get build () {return __get__ (this, function (self) {
+				self.x ();
+				var __iterable0__ = self.gamecontents;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var gamecontent = __iterable0__ [__index0__];
+					self.a (PgnInfo (self.username).setcontent (gamecontent));
+				}
+				return self;
+			});},
+			get setcontent () {return __get__ (this, function (self, content) {
+				self.content = content;
+				self.gamecontents = self.content.py_split ('\n\n\n').__getslice__ (0, -(1), 1);
+				return self.build ();
+			});}
+		});
 		var Board = __class__ ('Board', [e], {
 			__module__: __name__,
 			get flipcallback () {return __get__ (this, function (self) {
@@ -5550,8 +5678,34 @@ function app () {
 			get analyzingchangedcallback () {return __get__ (this, function (self) {
 				self.analysiscontrolpanel.cbc (self.analyzing.py_get (), '#afa', '#edd');
 			});},
+			get getconfigscalar () {return __get__ (this, function (self, path, py_default) {
+				if (self.configschema === null) {
+					return py_default;
+				}
+				var found = getscalarfromschema (self.configschema, path);
+				if (found === null) {
+					return py_default;
+				}
+				return found;
+			});},
+			get gamesloadedok () {return __get__ (this, function (self, content) {
+				self.pgnlist = PgnList (self.username).setcontent (content);
+				self.gamesdiv.x ().a (self.pgnlist);
+			});},
+			get setconfigschema () {return __get__ (this, function (self, configschema) {
+				self.configschema = configschema;
+				self.username = self.getconfigscalar ('global/username', null);
+				if (!(self.username === null)) {
+					lichapiget ('games/export/{}?max=10'.format (self.username), self.gamesloadedok, (function __lambda__ (err) {
+						return print (err);
+					}));
+				}
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.pgnlist = null;
+				self.username = null;
+				self.configschema = null;
 				self.depthlimit = null;
 				self.analysisinfo = null;
 				self.defaultmultipv = 3;
@@ -5595,7 +5749,8 @@ function app () {
 				self.analysisdiv.a (self.analysiscontrolpanel);
 				self.analysisinfodiv = Div ();
 				self.analysisdiv.a (self.analysisinfodiv);
-				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('book', 'Book', Div ())]), 'analysis');
+				self.gamesdiv = Div ();
+				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('games', 'Games', self.gamesdiv)]), 'analysis');
 				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv, self.tabpane]));
 				self.a (self.verticalcontainer);
 				self.basicresize ();
@@ -5813,6 +5968,7 @@ function app () {
 					if (kind == 'setlocalconfig') {
 						var data = response ['data'];
 						deserializeconfigcontent (data);
+						mainboard.setconfigschema (configschema);
 					}
 					else if (kind == 'configstored') {
 						window.alert (('Config storing status: ' + status) + '.');
@@ -5895,6 +6051,8 @@ function app () {
 			__all__.PROMISING_LIMIT = PROMISING_LIMIT;
 			__all__.PROMPIECEKINDS_ANTICHESS = PROMPIECEKINDS_ANTICHESS;
 			__all__.PROMPIECEKINDS_STANDARD = PROMPIECEKINDS_STANDARD;
+			__all__.PgnInfo = PgnInfo;
+			__all__.PgnList = PgnList;
 			__all__.Piece = Piece;
 			__all__.PieceStore = PieceStore;
 			__all__.ProcessConsole = ProcessConsole;
@@ -5952,8 +6110,10 @@ function app () {
 			__all__.getlocalconfig = getlocalconfig;
 			__all__.getpathfromschema = getpathfromschema;
 			__all__.getpathlistfromschema = getpathlistfromschema;
+			__all__.getscalarfromschema = getscalarfromschema;
 			__all__.getstartfenforvariantkey = getstartfenforvariantkey;
 			__all__.isvalidpieceletter = isvalidpieceletter;
+			__all__.lichapiget = lichapiget;
 			__all__.log = log;
 			__all__.mainboard = mainboard;
 			__all__.mainboardenginecommandcallback = mainboardenginecommandcallback;
