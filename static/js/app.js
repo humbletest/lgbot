@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 10:14:09
+// Transcrypt'ed from Python, 2018-07-09 10:33:23
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5509,8 +5509,8 @@ function app () {
 				self.analysisinfo = obj;
 				self.buildanalysisinfodiv ();
 				if (!(self.depthlimit === null) || !(self.timelimit === null)) {
-					var depthok = !(self.depthlimit === null) && self.maxdepth > self.depthlimit;
-					var timeok = !(self.timelimit === null) && elapsed > self.timelimit;
+					var depthok = !(self.depthlimit === null) && self.maxdepth >= self.depthlimit;
+					var timeok = !(self.timelimit === null) && elapsed >= self.timelimit;
 					if (depthok && timeok) {
 						self.stopandstoreanalysis ();
 					}

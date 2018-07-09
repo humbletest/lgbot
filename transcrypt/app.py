@@ -2849,8 +2849,8 @@ class Board(e):
         self.analysisinfo = obj        
         self.buildanalysisinfodiv()
         if ( not ( self.depthlimit is None ) ) or ( not ( self.timelimit is None ) ):
-            depthok = ( not ( self.depthlimit is None ) ) and ( self.maxdepth > self.depthlimit )
-            timeok = ( not ( self.timelimit is None ) ) and ( elapsed > self.timelimit )
+            depthok = ( not ( self.depthlimit is None ) ) and ( self.maxdepth >= self.depthlimit )
+            timeok = ( not ( self.timelimit is None ) ) and ( elapsed >= self.timelimit )
             if depthok and timeok:
                 self.stopandstoreanalysis()
                 
