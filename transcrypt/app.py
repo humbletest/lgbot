@@ -2788,6 +2788,7 @@ class Board(e):
 
     def analyzecallbackfactory(self, all = False, depthlimit = None, timelimit = None):
         def analyzecallback():
+            self.anyinfo = False
             self.depthlimit = depthlimit
             self.timelimit = timelimit
             self.analysisstartedat = __new__(Date()).getTime()
@@ -2843,6 +2844,7 @@ class Board(e):
     def processanalysisinfo(self, obj, force = False):
         if ( not self.analyzing ) and ( not force ):
             return        
+        self.anyinfo = True
         elapsed = __new__(Date()).getTime() - self.analysisstartedat
         self.analysisinfo = obj        
         self.buildanalysisinfodiv()
@@ -2853,6 +2855,8 @@ class Board(e):
                 self.stopandstoreanalysis()
                 
     def stopandstoreanalysis(self):
+        if not self.anyinfo:
+            return
         self.stopanalyzecallback()
         self.storeanalysiscallback()
 

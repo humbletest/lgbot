@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 09:42:57
+// Transcrypt'ed from Python, 2018-07-09 10:14:09
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5431,6 +5431,7 @@ function app () {
 					var timelimit = null;
 				};
 				var analyzecallback = function () {
+					self.anyinfo = false;
 					self.depthlimit = depthlimit;
 					self.timelimit = timelimit;
 					self.analysisstartedat = new Date ().getTime ();
@@ -5503,6 +5504,7 @@ function app () {
 				if (!(self.analyzing) && !(force)) {
 					return ;
 				}
+				self.anyinfo = true;
 				var elapsed = new Date ().getTime () - self.analysisstartedat;
 				self.analysisinfo = obj;
 				self.buildanalysisinfodiv ();
@@ -5515,6 +5517,9 @@ function app () {
 				}
 			});},
 			get stopandstoreanalysis () {return __get__ (this, function (self) {
+				if (!(self.anyinfo)) {
+					return ;
+				}
 				self.stopanalyzecallback ();
 				self.storeanalysiscallback ();
 			});},
