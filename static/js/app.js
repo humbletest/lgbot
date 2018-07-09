@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 10:33:23
+// Transcrypt'ed from Python, 2018-07-09 10:42:58
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5582,7 +5582,7 @@ function app () {
 				self.analysiscontrolpanel.a (Button ('#', self.getstoredanalysisinfo));
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
 				self.analysiscontrolpanel.a (Button ('Analyze all', self.analyzecallbackfactory (true)));
-				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 10, 5000)));
+				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 5, 5000)));
 				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
 				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
 				self.analysiscontrolpanel.a (Button ('Store', self.storeanalysiscallback));
