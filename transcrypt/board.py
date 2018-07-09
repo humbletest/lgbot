@@ -997,15 +997,15 @@ class Board(e):
         self.analysisinfo = obj        
         self.buildanalysisinfodiv()
         if ( not ( self.depthlimit is None ) ) or ( not ( self.timelimit is None ) ):
-            depthok = ( not ( self.depthlimit is None ) ) and ( self.maxdepth >= self.depthlimit )
-            timeok = ( not ( self.timelimit is None ) ) and ( elapsed >= self.timelimit )
+            depthok = ( self.depthlimit is None ) or ( self.maxdepth >= self.depthlimit )
+            timeok = ( self.timelimit is None ) or ( elapsed >= self.timelimit )
             if depthok and timeok:
                 self.stopandstoreanalysis()
                 
     def stopandstoreanalysis(self):
+        self.stopanalyzecallback()
         if not self.anyinfo:
             return
-        self.stopanalyzecallback()
         self.storeanalysiscallback()
 
     def makeanalyzedmovecallback(self):
