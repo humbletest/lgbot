@@ -995,8 +995,8 @@ class Board(e):
         self.anyinfo = True
         elapsed = __new__(Date()).getTime() - self.analysisstartedat
         self.analysisinfo = obj        
-        self.buildanalysisinfodiv()
-        if ( not ( self.depthlimit is None ) ) or ( not ( self.timelimit is None ) ):
+        self.buildanalysisinfodiv()        
+        if ( self.analyzing.get() ) and ( not ( self.depthlimit is None ) ) or ( not ( self.timelimit is None ) ):
             depthok = ( self.depthlimit is None ) or ( self.maxdepth >= self.depthlimit )
             timeok = ( self.timelimit is None ) or ( elapsed >= self.timelimit )
             if depthok and timeok:
