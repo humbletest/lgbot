@@ -2973,9 +2973,7 @@ class Board(e):
             self.analyzing.set(True)
             if not ( self.enginecommandcallback is None ):            
                 mpv = cpick(all, 200, self.getmultipv())
-                self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, mpv, self.basicboard.fen))
-            if not ( self.timelimit is None ):
-                setTimeout(self.stopandstoreanalysis, self.timelimit)
+                self.enginecommandcallback("analyze {} {} {}".format(self.basicboard.variantkey, mpv, self.basicboard.fen))            
         return analyzecallback
 
     def stopanalyzecallback(self):

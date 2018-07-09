@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 17:40:23
+// Transcrypt'ed from Python, 2018-07-09 21:54:11
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3749,6 +3749,26 @@ function app () {
 				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
 				self.move (dir);
 			});},
+			get elementdragstart () {return __get__ (this, function (self, ev) {
+				self.dragstartvect = getClientVect (ev);
+			});},
+			get elementdrag () {return __get__ (this, function (self, ev) {
+				// pass;
+			});},
+			get move () {return __get__ (this, function (self, dir) {
+				if (self.childparent === null) {
+					return ;
+				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (SchemaItem, '__init__') (self, 'div');
 				self.parent = null;
@@ -4384,20 +4404,6 @@ function app () {
 			if (!(found === null)) {
 				if (found.kind == 'scalar') {
 					return found.value;
-				}
-				else if (kind == 'ucioptionsparsed') {
-					var ucioptionsobj = json ['ucioptions'];
-					var ucischema = schemafromucioptionsobj (ucioptionsobj);
-					var selfprofile = getpathfromschema (configschema, 'profile/#');
-					if (selfprofile === null) {
-						window.alert ('Warning: no profile selected to store UCI options.');
-					}
-					else {
-						selfprofile.setchildatkey ('ucioptions', ucischema);
-						maintabpane.setTabElementByKey ('config', buildconfigdiv ());
-						maintabpane.selectByKey ('config');
-						window.alert ('UCI options stored in current profile.');
-					}
 				}
 				else if (kind == 'analysisinfo') {
 					mainboard.processanalysisinfo (json ['analysisinfo']);
@@ -5682,9 +5688,6 @@ function app () {
 					if (!(self.enginecommandcallback === null)) {
 						var mpv = cpick (all, 200, self.getmultipv ());
 						self.enginecommandcallback ('analyze {} {} {}'.format (self.basicboard.variantkey, mpv, self.basicboard.fen));
-					}
-					if (!(self.timelimit === null)) {
-						setTimeout (self.stopandstoreanalysis, self.timelimit);
 					}
 				};
 				return analyzecallback;
