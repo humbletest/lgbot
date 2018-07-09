@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 14:34:11
+// Transcrypt'ed from Python, 2018-07-09 17:40:23
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2212,6 +2212,32 @@ function app () {
 		var PROMISING_LIMIT = 250;
 		var INTERESTING_LIMIT = 150;
 		var DRAWISH_LIMIT = 80;
+		var uci_variant_to_variantkey = function (uci_variant, chess960) {
+			if (typeof chess960 == 'undefined' || (chess960 != null && chess960 .hasOwnProperty ("__kwargtrans__"))) {;
+				var chess960 = false;
+			};
+			if (uci_variant == 'chess') {
+				if (chess960) {
+					return 'chess960';
+				}
+				else {
+					return 'standard';
+				}
+			}
+			if (uci_variant == 'giveaway') {
+				return 'antichess';
+			}
+			if (uci_variant == 'kingofthehill') {
+				return 'kingOfTheHill';
+			}
+			if (uci_variant == 'racingkings') {
+				return 'racingKings';
+			}
+			if (uci_variant == '3check') {
+				return 'threeCheck';
+			}
+			return uci_variant;
+		};
 		var scorecolor = function (score) {
 			if (score > MATE_LIMIT) {
 				return '#0f0';
@@ -3693,6 +3719,15 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -5322,13 +5357,10 @@ function app () {
 		});
 		var PgnInfo = __class__ ('PgnInfo', [e], {
 			__module__: __name__,
-			get __init__ () {return __get__ (this, function (self, username) {
-				if (typeof username == 'undefined' || (username != null && username .hasOwnProperty ("__kwargtrans__"))) {;
-					var username = null;
-				};
+			get __init__ () {return __get__ (this, function (self, parent) {
 				__super__ (PgnInfo, '__init__') (self, 'div');
 				self.headers = list ([]);
-				self.username = username;
+				self.parent = parent;
 			});},
 			get getheader () {return __get__ (this, function (self, key, py_default) {
 				var __iterable0__ = self.headers;
@@ -5359,18 +5391,22 @@ function app () {
 				self.site = self.getheader ('Site', '');
 				self.id = self.site.py_split ('/').__getslice__ (-(1), null, 1) [0];
 			});},
+			get idclicked () {return __get__ (this, function (self) {
+				self.parent.sioreq (dict ({'kind': 'parsepgn', 'owner': 'board', 'data': self.content}));
+			});},
 			get build () {return __get__ (this, function (self) {
 				self.x ().ac ('pgninfocontainer');
 				self.whitediv = Div ().ac ('pgninfoplayerdiv').html (self.white);
-				if (self.white == self.username) {
+				if (self.white == self.parent.username) {
 					self.whitediv.ac ('pgninfomeplayerdiv');
 				}
 				self.blackdiv = Div ().ac ('pgninfoplayerdiv').html (self.black);
-				if (self.black == self.username) {
+				if (self.black == self.parent.username) {
 					self.blackdiv.ac ('pgninfomeplayerdiv');
 				}
 				self.resultdiv = Div ().ac ('pgninforesultdiv').html (self.result);
 				self.iddiv = Div ().ac ('pgninfoiddiv').html (self.id);
+				self.iddiv.ae ('mousedown', self.idclicked);
 				self.aa (list ([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv]));
 				return self;
 			});},
@@ -5382,19 +5418,16 @@ function app () {
 		});
 		var PgnList = __class__ ('PgnList', [e], {
 			__module__: __name__,
-			get __init__ () {return __get__ (this, function (self, username) {
-				if (typeof username == 'undefined' || (username != null && username .hasOwnProperty ("__kwargtrans__"))) {;
-					var username = null;
-				};
+			get __init__ () {return __get__ (this, function (self, parent) {
 				__super__ (PgnList, '__init__') (self, 'div');
-				self.username = username;
+				self.parent = parent;
 			});},
 			get build () {return __get__ (this, function (self) {
 				self.x ();
 				var __iterable0__ = self.gamecontents;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var gamecontent = __iterable0__ [__index0__];
-					self.a (PgnInfo (self.username).setcontent (gamecontent));
+					self.a (PgnInfo (self.parent).setcontent (gamecontent));
 				}
 				return self;
 			});},
@@ -5456,24 +5489,105 @@ function app () {
 					self.socket.emit ('sioreq', obj);
 				}
 			});},
+			get posclickedfactory () {return __get__ (this, function (self, i) {
+				var poslicked = function () {
+					self.gamei = i;
+					var pinfo = self.positioninfos [i];
+					self.setfromfen (pinfo ['fen'], pinfo ['positioninfo']);
+					for (var j = 0; j < len (self.positioninfos); j++) {
+						self.posdivs [j].arc (j == self.gamei, 'boardposdivselected');
+						var hidden = abs (j - self.gamei) > 10;
+						self.posdivs [j].arc (hidden, 'boardposdivhidden');
+					}
+				};
+				return poslicked;
+			});},
+			get selectgamei () {return __get__ (this, function (self, i) {
+				if (len (self.positioninfos) > 0) {
+					self.posclickedfactory (i) ();
+				}
+			});},
+			get gametobegin () {return __get__ (this, function (self) {
+				self.gamei = 0;
+				self.selectgamei (self.gamei);
+			});},
+			get gameback () {return __get__ (this, function (self) {
+				self.gamei--;
+				if (self.gamei < 0) {
+					self.gamei = 0;
+				}
+				self.selectgamei (self.gamei);
+			});},
+			get gameforward () {return __get__ (this, function (self) {
+				self.gamei++;
+				if (self.gamei >= len (self.positioninfos)) {
+					self.gamei = len (self.positioninfos) - 1;
+				}
+				self.selectgamei (self.gamei);
+			});},
+			get gametoend () {return __get__ (this, function (self) {
+				self.gamei = len (self.positioninfos) - 1;
+				self.selectgamei (self.gamei);
+			});},
+			get buildgame () {return __get__ (this, function (self) {
+				self.gamediv.x ();
+				self.gamediv.a (Button ('<<', self.gametobegin));
+				self.gamediv.a (Button ('<', self.gameback));
+				self.gamediv.a (Button ('>', self.gameforward));
+				self.gamediv.a (Button ('>>', self.gametoend));
+				self.posdivs = list ([]);
+				var i = 0;
+				var __iterable0__ = self.positioninfos;
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var pinfo = __iterable0__ [__index0__];
+					var fen = pinfo ['fen'];
+					var posinfo = pinfo ['positioninfo'];
+					var genmove = '*';
+					if (__in__ ('genmove', posinfo)) {
+						var genmove = posinfo ['genmove'] ['san'];
+					}
+					var posdiv = Div ().ac ('boardposdiv');
+					self.posdivs.append (posdiv);
+					posdiv.ae ('mousedown', self.posclickedfactory (i));
+					var movediv = Div ().ac ('boardposmovediv').html (genmove);
+					var fendiv = Div ().ac ('boardposfendiv').html (fen);
+					posdiv.aa (list ([movediv, fendiv]));
+					self.gamediv.a (posdiv);
+					i++;
+				}
+				self.gamei = 0;
+				self.selectgamei (self.gamei);
+			});},
 			get siores () {return __get__ (this, function (self, response) {
 				try {
-					var dataobj = response ['dataobj'];
-					if (dataobj == null) {
-						return ;
+					if (__in__ ('dataobj', response)) {
+						var dataobj = response ['dataobj'];
+						if (__in__ ('variantkey', dataobj)) {
+							self.variantchanged (dataobj ['variantkey']);
+						}
+						else if (__in__ ('analysisinfo', dataobj)) {
+							self.processanalysisinfo (dataobj ['analysisinfo'], true);
+						}
 					}
-					if (__in__ ('variantkey', dataobj)) {
-						self.variantchanged (dataobj ['variantkey']);
-					}
-					else if (__in__ ('analysisinfo', dataobj)) {
-						self.processanalysisinfo (dataobj ['analysisinfo'], true);
+					if (__in__ ('historyobj', response)) {
+						var historyobj = response ['historyobj'];
+						var uci_variant = historyobj ['uci_variant'];
+						var chess960 = historyobj ['chess960'];
+						var vk = uci_variant_to_variantkey (uci_variant, chess960);
+						self.variantchanged (vk, false);
+						self.positioninfos = historyobj ['positioninfos'];
+						self.buildgame ();
+						self.tabpane.selectByKey ('game');
 					}
 				}
 				catch (__except0__) {
 					print ('error processing siores', response);
 				}
 			});},
-			get variantchanged () {return __get__ (this, function (self, variantkey) {
+			get variantchanged () {return __get__ (this, function (self, variantkey, docallback) {
+				if (typeof docallback == 'undefined' || (docallback != null && docallback .hasOwnProperty ("__kwargtrans__"))) {;
+					var docallback = true;
+				};
 				self.basicboard.variantkey = variantkey;
 				self.basicboard.reset ();
 				try {
@@ -5488,7 +5602,7 @@ function app () {
 				catch (__except0__) {
 					// pass;
 				}
-				if (!(self.variantchangedcallback === null)) {
+				if (!(self.variantchangedcallback === null) && docallback) {
 					self.variantchangedcallback (self.basicboard.variantkey);
 				}
 				self.basicresize ();
@@ -5689,20 +5803,21 @@ function app () {
 				return found;
 			});},
 			get gamesloadedok () {return __get__ (this, function (self, content) {
-				self.pgnlist = PgnList (self.username).setcontent (content);
+				self.pgnlist = PgnList (self).setcontent (content);
 				self.gamesdiv.x ().a (self.pgnlist);
 			});},
 			get setconfigschema () {return __get__ (this, function (self, configschema) {
 				self.configschema = configschema;
 				self.username = self.getconfigscalar ('global/username', null);
 				if (!(self.username === null)) {
-					lichapiget ('games/export/{}?max=10'.format (self.username), self.gamesloadedok, (function __lambda__ (err) {
+					lichapiget ('games/export/{}?max=25'.format (self.username), self.gamesloadedok, (function __lambda__ (err) {
 						return print (err);
 					}));
 				}
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.positioninfos = list ([]);
 				self.pgnlist = null;
 				self.username = null;
 				self.configschema = null;
@@ -5732,6 +5847,10 @@ function app () {
 				self.movelistdivwidth = 100;
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
 				self.analysisdiv = Div ();
+				self.analysisdiv.a (Button ('<<', self.gametobegin));
+				self.analysisdiv.a (Button ('<', self.gameback));
+				self.analysisdiv.a (Button ('>', self.gameforward));
+				self.analysisdiv.a (Button ('>>', self.gametoend));
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
 				self.analysiscontrolpanel.a (Button ('#', self.getstoredanalysisinfo));
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
@@ -5750,7 +5869,8 @@ function app () {
 				self.analysisinfodiv = Div ();
 				self.analysisdiv.a (self.analysisinfodiv);
 				self.gamesdiv = Div ();
-				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('games', 'Games', self.gamesdiv)]), 'analysis');
+				self.gamediv = Div ();
+				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('game', 'Game', self.gamediv), Tab ('games', 'Games', self.gamesdiv)]), 'analysis');
 				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv, self.tabpane]));
 				self.a (self.verticalcontainer);
 				self.basicresize ();
@@ -6156,6 +6276,7 @@ function app () {
 			__all__.socket = socket;
 			__all__.srcdiv = srcdiv;
 			__all__.striplonglines = striplonglines;
+			__all__.uci_variant_to_variantkey = uci_variant_to_variantkey;
 			__all__.uid = uid;
 			__all__.windowresizehandler = windowresizehandler;
 			__all__.ws_scheme = ws_scheme;
