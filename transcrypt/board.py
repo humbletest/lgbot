@@ -675,10 +675,10 @@ class MultipvInfo(e):
         self.build()
 
 class PgnInfo(e):
-    def __init__(self, username = None):
+    def __init__(self, parent):
         super().__init__("div")
         self.headers = []
-        self.username = username
+        self.parent = parent
 
     def getheader(self, key, default):
         for header in self.headers:
@@ -701,16 +701,23 @@ class PgnInfo(e):
         self.site = self.getheader("Site", "")                
         self.id = self.site.split("/")[-1:][0]
 
+    def idclicked(self):
+        self.parent.sioreq({"kind": "parsepgn",
+            "owner": "board",
+            "data": self.content
+        })
+
     def build(self):        
         self.x().ac("pgninfocontainer")
         self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)
-        if self.white == self.username:
+        if self.white == self.parent.username:
             self.whitediv.ac("pgninfomeplayerdiv")
         self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)
-        if self.black == self.username:
+        if self.black == self.parent.username:
             self.blackdiv.ac("pgninfomeplayerdiv")
         self.resultdiv = Div().ac("pgninforesultdiv").html(self.result)
         self.iddiv = Div().ac("pgninfoiddiv").html(self.id)
+        self.iddiv.ae("mousedown", self.idclicked)
         self.aa([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv])
         return self
 
@@ -720,14 +727,14 @@ class PgnInfo(e):
         return self.build()
 
 class PgnList(e):
-    def __init__(self, username = None):
+    def __init__(self, parent):
         super().__init__("div")
-        self.username = username
+        self.parent = parent
 
     def build(self):
         self.x()
         for gamecontent in self.gamecontents:
-            self.a(PgnInfo(self.username).setcontent(gamecontent))
+            self.a(PgnInfo(self.parent).setcontent(gamecontent))
         return self
 
     def setcontent(self, content):
@@ -779,19 +786,88 @@ class Board(e):
         if not ( self.socket is None ):            
             self.socket.emit("sioreq", obj)
 
+    def posclickedfactory(self, i):
+        def poslicked():
+            self.gamei = i
+            pinfo = self.positioninfos[i]
+            self.setfromfen(pinfo["fen"], pinfo["positioninfo"])
+            for j in range(len(self.positioninfos)):
+                self.posdivs[j].arc(j == self.gamei, "boardposdivselected")                                
+                hidden = abs(j - self.gamei) > 10
+                self.posdivs[j].arc(hidden, "boardposdivhidden")
+        return poslicked
+
+    def selectgamei(self, i):
+        if len(self.positioninfos) > 0:
+            self.posclickedfactory(i)()            
+
+    def gametobegin(self):
+        self.gamei = 0
+        self.selectgamei(self.gamei)            
+
+    def gameback(self):
+        self.gamei -= 1
+        if self.gamei < 0:
+            self.gamei = 0
+        self.selectgamei(self.gamei)            
+
+    def gameforward(self):
+        self.gamei += 1
+        if self.gamei >= len(self.positioninfos):
+            self.gamei = len(self.positioninfos) - 1
+        self.selectgamei(self.gamei)            
+
+    def gametoend(self):
+        self.gamei = len(self.positioninfos) - 1
+        self.selectgamei(self.gamei)            
+
+    def buildgame(self):
+        self.gamediv.x()
+        self.gamediv.a(Button("<<", self.gametobegin))
+        self.gamediv.a(Button("<", self.gameback))
+        self.gamediv.a(Button(">", self.gameforward))
+        self.gamediv.a(Button(">>", self.gametoend))
+        self.posdivs = []
+        i = 0
+        for pinfo in self.positioninfos:
+            fen = pinfo["fen"]
+            posinfo = pinfo["positioninfo"]
+            genmove = "*"
+            if "genmove" in posinfo:
+                genmove = posinfo["genmove"]["san"]
+            posdiv = Div().ac("boardposdiv")
+            self.posdivs.append(posdiv)
+            posdiv.ae("mousedown", self.posclickedfactory(i))            
+            movediv = Div().ac("boardposmovediv").html(genmove)
+            fendiv = Div().ac("boardposfendiv").html(fen)
+            posdiv.aa([movediv, fendiv])
+            self.gamediv.a(posdiv)
+            i += 1
+        self.gamei = 0
+        self.selectgamei(self.gamei)
+
     def siores(self, response):
-        try:            
-            dataobj = response["dataobj"]            
-            if dataobj == None:
-                return
-            if "variantkey" in dataobj:
-                self.variantchanged(dataobj["variantkey"])
-            elif "analysisinfo" in dataobj:                
-                self.processanalysisinfo(dataobj["analysisinfo"], True)
+        try:                        
+            if "dataobj" in response:
+                dataobj = response["dataobj"]            
+                if "variantkey" in dataobj:
+                    self.variantchanged(dataobj["variantkey"])
+                elif "analysisinfo" in dataobj:                
+                    self.processanalysisinfo(dataobj["analysisinfo"], True)                
+            
+            if "historyobj" in response:
+                historyobj = response["historyobj"]
+                uci_variant = historyobj["uci_variant"]
+                chess960 = historyobj["chess960"]
+                vk = uci_variant_to_variantkey(uci_variant, chess960)
+                self.variantchanged(vk, False)                
+                self.positioninfos = historyobj["positioninfos"]
+                self.buildgame()
+                self.tabpane.selectByKey("game")
         except:
             print("error processing siores", response)
 
-    def variantchanged(self, variantkey):                
+    def variantchanged(self, variantkey, docallback = True):                
         self.basicboard.variantkey = variantkey
         self.basicboard.reset()
         try:
@@ -802,7 +878,7 @@ class Board(e):
             self.resizetabpanewidth(self.resizewidth)
         except:
             pass
-        if not ( self.variantchangedcallback is None ):
+        if ( not ( self.variantchangedcallback is None ) ) and ( docallback ):
             self.variantchangedcallback(self.basicboard.variantkey)
         self.basicresize()
         self.buildpositioninfo()        
@@ -969,17 +1045,18 @@ class Board(e):
         return found
 
     def gamesloadedok(self, content):
-        self.pgnlist = PgnList(self.username).setcontent(content)
+        self.pgnlist = PgnList(self).setcontent(content)
         self.gamesdiv.x().a(self.pgnlist)
 
     def setconfigschema(self, configschema):
         self.configschema = configschema
         self.username = self.getconfigscalar("global/username", None)
         if not ( self.username is None ):
-            lichapiget("games/export/{}?max=10".format(self.username), self.gamesloadedok, lambda err: print(err))
+            lichapiget("games/export/{}?max=25".format(self.username), self.gamesloadedok, lambda err: print(err))
 
     def __init__(self, args):
         super().__init__("div")
+        self.positioninfos = []
         self.pgnlist = None
         self.username = None
         self.configschema = None
@@ -1014,6 +1091,10 @@ class Board(e):
         self.movelistdivwidth = 100
         self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
         self.analysisdiv = Div()
+        self.analysisdiv.a(Button("<<", self.gametobegin))
+        self.analysisdiv.a(Button("<", self.gameback))
+        self.analysisdiv.a(Button(">", self.gameforward))
+        self.analysisdiv.a(Button(">>", self.gametoend))
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
         self.analysiscontrolpanel.a(Button("#", self.getstoredanalysisinfo))
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
@@ -1035,9 +1116,11 @@ class Board(e):
         self.analysisinfodiv = Div()
         self.analysisdiv.a(self.analysisinfodiv)
         self.gamesdiv = Div()
+        self.gamediv = Div()
         self.tabpane = TabPane({"kind":"normal", "id":"board"}).setTabs(
             [
                 Tab("analysis", "Analysis", self.analysisdiv),
+                Tab("game", "Game", self.gamediv),
                 Tab("games", "Games", self.gamesdiv)
             ], "analysis"
         )    

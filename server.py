@@ -20,6 +20,7 @@ from serverutils.utils import read_string_from_file
 from serverutils.utils import dir_listing_as_obj
 from serverutils.utils import get_variant_board
 import chess
+from chess.pgn import read_game
 from cbuild.book import get_zobrist_key_hex
 #########################################################
 
@@ -33,6 +34,7 @@ from urllib.parse import quote
 import random
 import json
 import functools
+import io
 
 print("importing pyrebase")
 import pyrebase
@@ -152,6 +154,37 @@ def addpositioninfo(board, obj, genmove = None, genboard = None):
             "san": genboard.san(genmove)
         }
 
+def createhistory(pgn):
+    historyobj = None
+    try:    
+        pgnio = io.StringIO(pgn)
+        game = read_game(pgnio)
+        board = game.board()
+        positioninfos = []
+        pinfo = {
+            "fen": board.fen()
+        }
+        addpositioninfo(board, pinfo)
+        positioninfos.append(pinfo)
+        for move in game.main_line():
+            genboard = board.copy()
+            board.push(move)
+            pinfo = {
+                "fen": board.fen()
+            }
+            addpositioninfo(board, pinfo, move, genboard)
+            positioninfos.append(pinfo)
+        historyobj = {            
+            "positioninfos": positioninfos,
+            "pgn": pgn,
+            "uci_variant": board.uci_variant,
+            "chess960": board.chess960
+        }
+        return ( historyobj , "game history created ok" )
+    except:
+        traceback.print_exc(file=sys.stderr)
+        return ( None , "! create game history failed" )
+
 class socket_handler:
     def __init__(self, ev):
         self.ev = ev
@@ -208,6 +241,14 @@ class socket_handler:
                             traceback.print_exc(file=sys.stderr)
                             rjsonobj["dataobj"] = None
                             rjsonobj["status"] = "! retrieve db failed at {}".format(path)
+                    elif kind == "parsepgn":
+                        rjsonobj["historyobj"] = None
+                        try:
+                            data = jsonobj["data"]
+                            rjsonobj["historyobj"] , rjsonobj["status"] = createhistory(data)
+                        except:                            
+                            traceback.print_exc(file=sys.stderr)                            
+                            rjsonobj["status"] = "! parse pgn failed"
                     elif kind == "getlocalconfig":
                         rjsonobj["kind"] = "setlocalconfig"
                         try:

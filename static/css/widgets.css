@@ -673,9 +673,47 @@
     background-color: #ccf;
     font-family: monospace;
     text-align: center;
+    cursor: pointer;
 }
 
 .pgninfomeplayerdiv {
     color: #07f;
     font-weight: bold;
+}
+
+.boardposdiv {
+    height: 24px;
+    width: 600px;
+    display: flex; justify-content: space-around; align-items: center;
+    margin: 1px; 
+    font-family: monospace;
+    cursor: pointer;
+    background-color: #ddd;
+}
+
+.boardposdivselected {
+    background-color: #ff7;
+}
+
+.boardposdivhidden {
+    visibility: hidden;    
+    width: 0px; max-width: 0px;
+    height: 0px; max-height: 0px;
+    margin: 0px;
+}
+
+.boardposmovediv {
+    padding: 2px;    
+    width: 50px;
+    text-align: center;
+    background-color: #fff;
+    font-weight: bold;
+}
+
+.boardposfendiv {
+    padding: 2px;
+    width: 520px;
+    font-size: 10px;
+    vertical-align: middle;
+    background-color: #eee;
 }

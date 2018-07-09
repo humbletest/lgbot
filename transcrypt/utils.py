@@ -10,6 +10,22 @@ PROMISING_LIMIT = 250
 INTERESTING_LIMIT = 150
 DRAWISH_LIMIT = 80
 
+def uci_variant_to_variantkey(uci_variant, chess960 = False):
+    if uci_variant == "chess":
+        if chess960:
+            return "chess960"
+        else:
+            return "standard"
+    if uci_variant == "giveaway":
+        return "antichess"
+    if uci_variant == "kingofthehill":
+        return "kingOfTheHill"
+    if uci_variant == "racingkings":
+        return "racingKings"
+    if uci_variant == "3check":
+        return "threeCheck"
+    return uci_variant
+
 def scorecolor(score):
     if score > MATE_LIMIT:
         return "#0f0"
