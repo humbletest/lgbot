@@ -257,4 +257,18 @@ def getjson(path, callback, errcallback):
         lambda err: errcallback(err)
     )
 
+def lichapiget(path, callback, errcallback):
+
+    args = {
+        "method": "GET"
+    }
+
+    fetch("https://lichess.org/" + path, args).then(
+        lambda response: response.text().then(
+            lambda content: callback(content),
+            lambda err: errcalback(err)
+        ),
+        lambda err: errcallback(err)
+    )
+
 __pragma__("nojsiter")

@@ -713,6 +713,17 @@ def getpathfromschema(sch, path):
     pathlist = path.split("/")
     return getpathlistfromschema(sch, pathlist)
 
+def getscalarfromschema(sch, path):
+    found = getpathfromschema(sch, path)
+    if not ( found is None ):
+        if found.kind == "scalar":
+            return found.value
+    found = getpathfromschema(sch, path + "/#")
+    if not ( found is None ):
+        if found.kind == "scalar":
+            return found.value
+    return None
+
 def schemafromucioptionsobj(obj):
     ucioptions = SchemaDict({})
     for opt in obj:

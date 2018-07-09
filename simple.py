@@ -31,7 +31,7 @@ def SIMPLE_ENGINE_PATH():
 FLASK_SERVER_URL = config.flaskserverurl
 PROCESS_READ_CALLBACK_URL = FLASK_SERVER_URL + "/read"
 
-MAX_PV_LENGTH = 6
+MAX_PV_LENGTH = 4
 
 #############################################
 

@@ -609,7 +609,7 @@
 
 .multipvinfopv {
     display: flex; justify-content: left; align-items: center;
-    width: 300px;
+    width: 250px;
     font-size: 14px;
     height: var(--multipvinfoheight);
     background-color: #ddd;
@@ -636,4 +636,46 @@
 
 .boardmultipvcombooption {
     font-weight: normal;
+}
+
+.pgninfocontainer {
+    height: 24px;
+    width: 500px;
+    display: flex; justify-content: space-around; align-items: center;
+    margin: 1px;
+    background-color: #eee;
+}
+
+.pgninfoplayerdiv {
+    padding: 2px;
+    width: 120px;
+    height: 16px;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;    
+    background-color: #ffe;
+    font-family: monospace;
+}
+
+.pgninforesultdiv {
+    padding: 2px;
+    width: 60px;
+    height: 16px;    
+    background-color: #fff;
+    font-family: monospace;
+    text-align: center;
+}
+
+.pgninfoiddiv {
+    padding: 2px;
+    width: 70px;
+    height: 16px;    
+    background-color: #ccf;
+    font-family: monospace;
+    text-align: center;
+}
+
+.pgninfomeplayerdiv {
+    color: #07f;
+    font-weight: bold;
 }

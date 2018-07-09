@@ -279,6 +279,7 @@ def onevent(json):
             if kind == "setlocalconfig":                
                 data = response["data"]                
                 deserializeconfigcontent(data)
+                mainboard.setconfigschema(configschema)
             elif kind == "configstored":
                 window.alert("Config storing status: " + status + ".")            
             elif kind == "setmainboardfen":                
