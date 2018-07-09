@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 01:14:40
+// Transcrypt'ed from Python, 2018-07-09 09:42:57
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5243,7 +5243,6 @@ function app () {
 				}
 			});},
 			get build () {return __get__ (this, function (self) {
-				self.i = self.infoi ['i'];
 				self.bestmoveuci = self.infoi ['bestmoveuci'];
 				self.bestmovesan = self.infoi ['bestmovesan'];
 				self.scorenumerical = self.infoi ['scorenumerical'];
@@ -5260,9 +5259,10 @@ function app () {
 				self.bonusslider = Slider ().setmin (-(500)).setmax (500).ac ('multipvinfobonusslider').sv (self.scorebonus ());
 				self.bonusslider.ae ('change', self.bonussliderchanged);
 				self.bonussliderdiv.a (self.bonusslider);
-				self.miscdiv = Div ().ac ('multipvinfomisc').html ('d: {} , nps: {}'.format (self.depth, self.nps));
+				self.depthdiv = Div ().ac ('multipvinfodepth').html ('{}'.format (self.depth));
+				self.miscdiv = Div ().ac ('multipvinfomisc').html ('nps {}'.format (self.nps));
 				self.pvdiv = Div ().ac ('multipvinfopv').html (self.pvpgn);
-				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.bonussliderdiv, self.miscdiv, self.pvdiv]));
+				self.container.aa (list ([self.idiv, self.bestmovesandiv, self.scorenumericaldiv, self.bonussliderdiv, self.depthdiv, self.miscdiv, self.pvdiv]));
 				self.bestmovesandiv.c (scorecolor (self.effscore ()));
 				self.scorenumericaldiv.c (scorecolor (self.effscore ()));
 				self.x ().a (self.container);
@@ -5272,6 +5272,7 @@ function app () {
 				self.bestmovesanclickedcallback = null;
 				self.bonussliderchangedcallback = null;
 				self.infoi = infoi;
+				self.i = self.infoi ['i'];
 				self.build ();
 			});}
 		});
@@ -5312,6 +5313,9 @@ function app () {
 				if (restartanalysis) {
 					self.analyzecallbackfactory () ();
 				}
+				self.getstoredanalysisinfo ();
+			});},
+			get getstoredanalysisinfo () {return __get__ (this, function (self) {
 				if (!(self.analyzing.py_get ())) {
 					self.sioreq (dict ({'kind': 'retrievedb', 'owner': 'board', 'path': 'analysisinfo/{}/{}'.format (self.basicboard.variantkey, self.positioninfo ['zobristkeyhex'])}));
 				}
@@ -5462,16 +5466,10 @@ function app () {
 				var __iterable0__ = self.analysisinfo ['pvitems'];
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
 					var infoi = __iterable0__ [__index0__];
-					var lastinfoi = infoi;
 					try {
 						var minfo = MultipvInfo (infoi);
 						minfo.bestmovesanclickedcallback = self.analysismoveclicked;
 						minfo.bonussliderchangedcallback = self.buildanalysisinfodiv;
-						if (minfo.i == 1) {
-							self.bestmoveuci = minfo.bestmoveuci;
-						}
-						var iw = 1 / (5 * minfo.i);
-						self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': scorecolor (minfo.scorenumerical), 'linewidth': iw, 'headheight': iw}));
 						if (minfo.depth > self.maxdepth) {
 							self.maxdepth = minfo.depth;
 						}
@@ -5481,9 +5479,22 @@ function app () {
 						// pass;
 					}
 				}
-				self.analysisinfodiv.aa (sorted (minfos, __kwargtrans__ ({key: (function __lambda__ (item) {
+				var i = 1;
+				var __iterable0__ = sorted (minfos, __kwargtrans__ ({key: (function __lambda__ (item) {
 					return item.effscore ();
-				}), reverse: true})));
+				}), reverse: true}));
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var minfo = __iterable0__ [__index0__];
+					minfo.i = i;
+					minfo.build ();
+					if (i == 1) {
+						self.bestmoveuci = minfo.bestmoveuci;
+					}
+					var iw = 1 / (5 * i);
+					self.basicboard.drawuciarrow (minfo.bestmoveuci, dict ({'strokecolor': scorecolor (minfo.effscore ()), 'linewidth': iw, 'headheight': iw}));
+					self.analysisinfodiv.a (minfo);
+					i++;
+				}
 			});},
 			get processanalysisinfo () {return __get__ (this, function (self, obj, force) {
 				if (typeof force == 'undefined' || (force != null && force .hasOwnProperty ("__kwargtrans__"))) {;
@@ -5563,9 +5574,10 @@ function app () {
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
 				self.analysisdiv = Div ();
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
+				self.analysiscontrolpanel.a (Button ('#', self.getstoredanalysisinfo));
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
 				self.analysiscontrolpanel.a (Button ('Analyze all', self.analyzecallbackfactory (true)));
-				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 10, 10000)));
+				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 10, 5000)));
 				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
 				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
 				self.analysiscontrolpanel.a (Button ('Store', self.storeanalysiscallback));
