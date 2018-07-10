@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-10 14:49:54
+// Transcrypt'ed from Python, 2018-07-10 16:56:11
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5372,9 +5372,16 @@ function app () {
 				self.black = self.getheader ('Black', '?');
 				self.result = self.getheader ('Result', '?');
 				self.site = self.getheader ('Site', '');
+				self.whiteelo = self.getheader ('WhiteElo', '?');
+				self.whiteratingdiff = self.getheader ('WhiteRatingDiff', '?');
+				self.blackelo = self.getheader ('BlackElo', '?');
+				self.blackratingdiff = self.getheader ('BlackRatingDiff', '?');
+				self.variant = self.getheader ('Variant', 'Standard');
+				self.timecontrol = self.getheader ('TimeControl', '?');
 				self.id = self.site.py_split ('/').__getslice__ (-(1), null, 1) [0];
 			});},
 			get idclicked () {return __get__ (this, function (self) {
+				self.parent.pgntext.setpgn (self.content);
 				self.parent.sioreq (dict ({'kind': 'parsepgn', 'owner': 'board', 'data': self.content}));
 			});},
 			get mecolor () {return __get__ (this, function (self) {
@@ -5415,9 +5422,12 @@ function app () {
 			});},
 			get build () {return __get__ (this, function (self) {
 				self.x ().ac ('pgninfocontainer');
+				self.tcdiv = Div ().ac ('pgninfotcdiv').html ('{} {}'.format (self.timecontrol, self.variant));
 				self.whitediv = Div ().ac ('pgninfoplayerdiv').html (self.white);
+				self.whiteelodiv = Div ().ac ('pgninfoplayerelodiv').html ('{} {}'.format (self.whiteelo, self.whiteratingdiff));
 				self.whitediv.acc (self.meblack (), 'pgninfotheyplayerdiv');
 				self.blackdiv = Div ().ac ('pgninfoplayerdiv').html (self.black);
+				self.blackelodiv = Div ().ac ('pgninfoplayerelodiv').html ('{} {}'.format (self.blackelo, self.blackratingdiff));
 				self.blackdiv.acc (self.mewhite (), 'pgninfotheyplayerdiv');
 				self.resultdiv = Div ().ac ('pgninforesultdiv').html (self.result);
 				self.iddiv = Div ().ac ('pgninfoiddiv').html (self.id);
@@ -5432,7 +5442,7 @@ function app () {
 				else {
 					self.ac ('pgninfodraw');
 				}
-				self.aa (list ([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv]));
+				self.aa (list ([self.tcdiv, self.whitediv, self.whiteelodiv, self.blackdiv, self.blackelodiv, self.resultdiv, self.iddiv]));
 				return self;
 			});},
 			get setcontent () {return __get__ (this, function (self, content) {
@@ -5460,6 +5470,29 @@ function app () {
 				self.content = content;
 				self.gamecontents = self.content.py_split ('\n\n\n').__getslice__ (0, -(1), 1);
 				return self.build ();
+			});}
+		});
+		var PgnText = __class__ ('PgnText', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (PgnText, '__init__') (self, 'div');
+				self.ac ('pgntextcontainer');
+				self.textarea = TextArea ();
+				self.a (self.textarea);
+				self.resize (600, 300);
+			});},
+			get setpgn () {return __get__ (this, function (self, pgn) {
+				self.textarea.setText (pgn);
+				return self;
+			});},
+			get getpgn () {return __get__ (this, function (self) {
+				return self.textarea.getText ();
+			});},
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.width = width;
+				self.height = height;
+				self.textarea.w (width - 15).h (height - 15);
+				return self;
 			});}
 		});
 		var Board = __class__ ('Board', [e], {
@@ -5901,7 +5934,8 @@ function app () {
 				self.analysisdiv.a (self.analysisinfodiv);
 				self.gamesdiv = Div ();
 				self.gamediv = Div ();
-				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('game', 'Game', self.gamediv), Tab ('games', 'Games', self.gamesdiv)]), 'analysis');
+				self.pgntext = PgnText ();
+				self.tabpane = TabPane (dict ({'kind': 'normal', 'id': 'board'})).setTabs (list ([Tab ('analysis', 'Analysis', self.analysisdiv), Tab ('game', 'Game', self.gamediv), Tab ('pgn', 'Pgn', self.pgntext), Tab ('games', 'Games', self.gamesdiv)]), 'analysis');
 				self.verticalcontainer.aa (list ([self.sectioncontainer, self.movelistdiv, self.tabpane]));
 				self.a (self.verticalcontainer);
 				self.basicresize ();
@@ -6215,6 +6249,7 @@ function app () {
 			__all__.PROMPIECEKINDS_STANDARD = PROMPIECEKINDS_STANDARD;
 			__all__.PgnInfo = PgnInfo;
 			__all__.PgnList = PgnList;
+			__all__.PgnText = PgnText;
 			__all__.Piece = Piece;
 			__all__.PieceStore = PieceStore;
 			__all__.ProcessConsole = ProcessConsole;

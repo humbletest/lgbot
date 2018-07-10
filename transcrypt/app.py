@@ -2736,10 +2736,17 @@ class PgnInfo(e):
         self.white = self.getheader("White", "?")
         self.black = self.getheader("Black", "?")        
         self.result = self.getheader("Result", "?")        
-        self.site = self.getheader("Site", "")                
+        self.site = self.getheader("Site", "")               
+        self.whiteelo =  self.getheader("WhiteElo", "?")
+        self.whiteratingdiff =  self.getheader("WhiteRatingDiff", "?")
+        self.blackelo =  self.getheader("BlackElo", "?")
+        self.blackratingdiff =  self.getheader("BlackRatingDiff", "?")
+        self.variant = self.getheader("Variant", "Standard")
+        self.timecontrol = self.getheader("TimeControl", "?")
         self.id = self.site.split("/")[-1:][0]
 
     def idclicked(self):
+        self.parent.pgntext.setpgn(self.content)
         self.parent.sioreq({"kind": "parsepgn",
             "owner": "board",
             "data": self.content
@@ -2777,9 +2784,12 @@ class PgnInfo(e):
 
     def build(self):        
         self.x().ac("pgninfocontainer")
+        self.tcdiv = Div().ac("pgninfotcdiv").html("{} {}".format(self.timecontrol, self.variant))        
         self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)        
+        self.whiteelodiv = Div().ac("pgninfoplayerelodiv").html("{} {}".format(self.whiteelo, self.whiteratingdiff))        
         self.whitediv.acc(self.meblack(), "pgninfotheyplayerdiv")
         self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)        
+        self.blackelodiv = Div().ac("pgninfoplayerelodiv").html("{} {}".format(self.blackelo, self.blackratingdiff))        
         self.blackdiv.acc(self.mewhite(), "pgninfotheyplayerdiv")
         self.resultdiv = Div().ac("pgninforesultdiv").html(self.result)
         self.iddiv = Div().ac("pgninfoiddiv").html(self.id)
@@ -2791,7 +2801,7 @@ class PgnInfo(e):
             self.ac("pgninfoblackwin")
         else:
             self.ac("pgninfodraw")
-        self.aa([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv])
+        self.aa([self.tcdiv, self.whitediv, self.whiteelodiv, self.blackdiv, self.blackelodiv, self.resultdiv, self.iddiv])
         return self
 
     def setcontent(self, content):
@@ -2814,6 +2824,27 @@ class PgnList(e):
         self.content = content
         self.gamecontents = self.content.split("\n\n\n")[:-1]
         return self.build()
+
+class PgnText(e):
+    def __init__(self):
+        super().__init__("div")
+        self.ac("pgntextcontainer")
+        self.textarea = TextArea()
+        self.a(self.textarea)
+        self.resize(600,300)
+
+    def setpgn(self, pgn):
+        self.textarea.setText(pgn)
+        return self
+
+    def getpgn(self):
+        return self.textarea.getText()
+
+    def resize(self, width, height):
+        self.width = width
+        self.height = height
+        self.textarea.w(width - 15).h(height - 15)
+        return self
         
 class Board(e):
     def flipcallback(self):
@@ -3197,10 +3228,12 @@ class Board(e):
         self.analysisdiv.a(self.analysisinfodiv)
         self.gamesdiv = Div()
         self.gamediv = Div()
+        self.pgntext = PgnText()
         self.tabpane = TabPane({"kind":"normal", "id":"board"}).setTabs(
             [
                 Tab("analysis", "Analysis", self.analysisdiv),
                 Tab("game", "Game", self.gamediv),
+                Tab("pgn", "Pgn", self.pgntext),
                 Tab("games", "Games", self.gamesdiv)
             ], "analysis"
         )    
