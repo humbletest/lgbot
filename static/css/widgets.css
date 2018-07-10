@@ -640,10 +640,21 @@
 
 .pgninfocontainer {
     height: 24px;
-    width: 500px;
+    width: 650px;
     display: flex; justify-content: space-around; align-items: center;
     margin: 2px;
     background-color: #eee;
+}
+
+.pgninfotcdiv {
+    padding: 2px;
+    width: 80px;
+    height: 16px;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;    
+    background-color: #ddd;
+    font-family: monospace;
 }
 
 .pgninfoplayerdiv {
@@ -653,6 +664,14 @@
     white-space: nowrap; 
     overflow: hidden;
     text-overflow: ellipsis;    
+    background-color: #eee;
+    font-family: monospace;
+}
+
+.pgninfoplayerelodiv {
+    padding: 2px;
+    width: 60px;
+    height: 16px;    
     background-color: #eee;
     font-family: monospace;
 }
@@ -723,4 +742,8 @@
 
 .pgninfodraw {
     background-color: #ff7;
+}
+
+.pgntextcontainer {
+    padding: 2px;
 }
