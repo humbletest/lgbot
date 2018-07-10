@@ -697,13 +697,6 @@
     background-color: #ff7;
 }
 
-.boardposdivhidden {
-    visibility: hidden;    
-    width: 0px; max-width: 0px;
-    height: 0px; max-height: 0px;
-    margin: 0px;
-}
-
 .boardposmovediv {
     padding: 2px;    
     width: 50px;

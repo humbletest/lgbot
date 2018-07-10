@@ -827,9 +827,7 @@ class Board(e):
             pinfo = self.positioninfos[i]
             self.setfromfen(pinfo["fen"], pinfo["positioninfo"])
             for j in range(len(self.positioninfos)):
-                self.posdivs[j].arc(j == self.gamei, "boardposdivselected")                                
-                hidden = abs(j - self.gamei) > 10
-                self.posdivs[j].arc(hidden, "boardposdivhidden")
+                self.posdivs[j].arc(j == self.gamei, "boardposdivselected")                                                
         return poslicked
 
     def selectgamei(self, i):
@@ -857,11 +855,7 @@ class Board(e):
         self.selectgamei(self.gamei)            
 
     def buildgame(self):
-        self.gamediv.x()
-        self.gamediv.a(Button("<<", self.gametobegin))
-        self.gamediv.a(Button("<", self.gameback))
-        self.gamediv.a(Button(">", self.gameforward))
-        self.gamediv.a(Button(">>", self.gametoend))
+        self.gamediv.x()        
         self.posdivs = []
         i = 0
         for pinfo in self.positioninfos:
@@ -898,7 +892,7 @@ class Board(e):
                 self.variantchanged(vk, False)                
                 self.positioninfos = historyobj["positioninfos"]
                 self.buildgame()
-                self.tabpane.selectByKey("game")
+                self.tabpane.selectByKey("analysis")
         except:
             print("error processing siores", response)
 
@@ -1095,6 +1089,10 @@ class Board(e):
         self.usertoken = self.getconfigscalar("global/usertoken", None)
         self.loadgames()
 
+    def storeforward(self):        
+        self.gameforward()
+        setTimeout(self.storeanalysiscallback, 10)
+
     def __init__(self, args):
         super().__init__("div")
         self.gamesloadingdiv = Div()
@@ -1138,6 +1136,7 @@ class Board(e):
         self.analysisdiv.a(Button("<", self.gameback))
         self.analysisdiv.a(Button(">", self.gameforward))
         self.analysisdiv.a(Button(">>", self.gametoend))
+        self.analysisdiv.a(Button("Store >", self.storeforward))
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
         self.analysiscontrolpanel.a(Button("#", self.getstoredanalysisinfo))
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
