@@ -174,6 +174,12 @@ class e:
         self.e.classList.add(klass)
         return self
 
+    # add class conditional
+    def acc(self, cond, klass):
+        if cond:
+            self.e.classList.add(klass)
+        return self
+
     # add classes
     def aac(self, klasses):
         for klass in klasses:

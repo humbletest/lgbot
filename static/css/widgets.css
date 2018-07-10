@@ -642,7 +642,7 @@
     height: 24px;
     width: 500px;
     display: flex; justify-content: space-around; align-items: center;
-    margin: 1px;
+    margin: 2px;
     background-color: #eee;
 }
 
@@ -653,7 +653,7 @@
     white-space: nowrap; 
     overflow: hidden;
     text-overflow: ellipsis;    
-    background-color: #ffe;
+    background-color: #eee;
     font-family: monospace;
 }
 
@@ -674,11 +674,13 @@
     font-family: monospace;
     text-align: center;
     cursor: pointer;
+    color: #555;
 }
 
-.pgninfomeplayerdiv {
-    color: #07f;
+.pgninfotheyplayerdiv {
+    color: #00a;
     font-weight: bold;
+    background-color: #ffc;
 }
 
 .boardposdiv {
@@ -716,4 +718,16 @@
     font-size: 10px;
     vertical-align: middle;
     background-color: #eee;
+}
+
+.pgninfowhitewin {
+    background-color: #7f7;
+}
+
+.pgninfoblackwin {
+    background-color: #f33;
+}
+
+.pgninfodraw {
+    background-color: #ff7;
 }
