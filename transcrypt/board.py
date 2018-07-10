@@ -1121,8 +1121,12 @@ class Board(e):
         self.loadgames()
 
     def storeforward(self):        
+        self.storeanalysiscallback()
         self.gameforward()
-        setTimeout(self.storeanalysiscallback, 10)
+
+    def storemake(self):
+        self.storeanalysiscallback()
+        self.makeanalyzedmovecallback()
 
     def __init__(self, args):
         super().__init__("div")
@@ -1168,6 +1172,8 @@ class Board(e):
         self.analysisdiv.a(Button(">", self.gameforward))
         self.analysisdiv.a(Button(">>", self.gametoend))
         self.analysisdiv.a(Button("Store >", self.storeforward))
+        self.analysisdiv.a(Button("Store Make", self.storemake))
+        self.analysisdiv.a(Button("Store Stop", self.stopandstoreanalysis))
         self.analysiscontrolpanel = Div().ac("bigboardanalysiscontrolpanel")
         self.analysiscontrolpanel.a(Button("#", self.getstoredanalysisinfo))
         self.analysiscontrolpanel.a(Button("Analyze", self.analyzecallbackfactory()))
