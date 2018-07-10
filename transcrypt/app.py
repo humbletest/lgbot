@@ -273,11 +273,16 @@ def getjson(path, callback, errcallback):
         lambda err: errcallback(err)
     )
 
-def lichapiget(path, callback, errcallback):
+def lichapiget(path, token, callback, errcallback):
 
     args = {
         "method": "GET"
     }
+
+    if ( not ( token is None ) ) and ( False ):
+        args["headers"] = {
+            "Authorization": "Bearer {}".format(token)
+        }
 
     fetch("https://lichess.org/" + path, args).then(
         lambda response: response.text().then(
@@ -3071,19 +3076,29 @@ class Board(e):
 
     def gamesloadedok(self, content):
         self.pgnlist = PgnList(self).setcontent(content)
-        self.gamesdiv.x().a(self.pgnlist)
+        self.gamesdiv.x()
+        self.gamesdiv.a(Button("Reload", self.loadgames))        
+        self.gamesdiv.a(self.gamesloadingdiv.x())
+        self.gamesdiv.a(self.pgnlist)
+
+    def loadgames(self):
+        self.gamesloadingdiv.html("Games loading...")
+        if not ( self.username is None ):
+            lichapiget("games/export/{}?max=25".format(self.username), self.usertoken, self.gamesloadedok, lambda err: print(err))
 
     def setconfigschema(self, configschema):
         self.configschema = configschema
         self.username = self.getconfigscalar("global/username", None)
-        if not ( self.username is None ):
-            lichapiget("games/export/{}?max=25".format(self.username), self.gamesloadedok, lambda err: print(err))
+        self.usertoken = self.getconfigscalar("global/usertoken", None)
+        self.loadgames()
 
     def __init__(self, args):
         super().__init__("div")
+        self.gamesloadingdiv = Div()
         self.positioninfos = []
         self.pgnlist = None
         self.username = None
+        self.usertoken = None
         self.configschema = None
         self.depthlimit = None
         self.analysisinfo = None

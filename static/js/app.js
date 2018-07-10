@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-09 22:52:19
+// Transcrypt'ed from Python, 2018-07-10 11:43:43
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2513,8 +2513,11 @@ function app () {
 				return errcallback (err);
 			}));
 		};
-		var lichapiget = function (path, callback, errcallback) {
+		var lichapiget = function (path, token, callback, errcallback) {
 			var args = {'method': 'GET'};
+			if (!(token === null) && false) {
+				args ['headers'] = {'Authorization': 'Bearer {}'.format (token)};
+			}
 			fetch ('https://lichess.org/' + path, args).then ((function __lambda__ (response) {
 				return response.text ().then ((function __lambda__ (content) {
 					return callback (content);
@@ -3719,95 +3722,6 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
-			});},
-			get elementdragstart () {return __get__ (this, function (self, ev) {
-				self.dragstartvect = getClientVect (ev);
-			});},
-			get elementdrag () {return __get__ (this, function (self, ev) {
-				// pass;
-			});},
-			get move () {return __get__ (this, function (self, dir) {
-				if (self.childparent === null) {
-					return ;
-				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -5881,22 +5795,32 @@ function app () {
 			});},
 			get gamesloadedok () {return __get__ (this, function (self, content) {
 				self.pgnlist = PgnList (self).setcontent (content);
-				self.gamesdiv.x ().a (self.pgnlist);
+				self.gamesdiv.x ();
+				self.gamesdiv.a (Button ('Reload', self.loadgames));
+				self.gamesdiv.a (self.gamesloadingdiv.x ());
+				self.gamesdiv.a (self.pgnlist);
 			});},
-			get setconfigschema () {return __get__ (this, function (self, configschema) {
-				self.configschema = configschema;
-				self.username = self.getconfigscalar ('global/username', null);
+			get loadgames () {return __get__ (this, function (self) {
+				self.gamesloadingdiv.html ('Games loading...');
 				if (!(self.username === null)) {
-					lichapiget ('games/export/{}?max=25'.format (self.username), self.gamesloadedok, (function __lambda__ (err) {
+					lichapiget ('games/export/{}?max=25'.format (self.username), self.usertoken, self.gamesloadedok, (function __lambda__ (err) {
 						return print (err);
 					}));
 				}
 			});},
+			get setconfigschema () {return __get__ (this, function (self, configschema) {
+				self.configschema = configschema;
+				self.username = self.getconfigscalar ('global/username', null);
+				self.usertoken = self.getconfigscalar ('global/usertoken', null);
+				self.loadgames ();
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.gamesloadingdiv = Div ();
 				self.positioninfos = list ([]);
 				self.pgnlist = null;
 				self.username = null;
+				self.usertoken = null;
 				self.configschema = null;
 				self.depthlimit = null;
 				self.analysisinfo = null;
