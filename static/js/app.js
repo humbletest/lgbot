@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-10 16:56:11
+// Transcrypt'ed from Python, 2018-07-10 18:13:55
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5873,8 +5873,12 @@ function app () {
 				self.loadgames ();
 			});},
 			get storeforward () {return __get__ (this, function (self) {
+				self.storeanalysiscallback ();
 				self.gameforward ();
-				setTimeout (self.storeanalysiscallback, 10);
+			});},
+			get storemake () {return __get__ (this, function (self) {
+				self.storeanalysiscallback ();
+				self.makeanalyzedmovecallback ();
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
@@ -5915,6 +5919,8 @@ function app () {
 				self.analysisdiv.a (Button ('>', self.gameforward));
 				self.analysisdiv.a (Button ('>>', self.gametoend));
 				self.analysisdiv.a (Button ('Store >', self.storeforward));
+				self.analysisdiv.a (Button ('Store Make', self.storemake));
+				self.analysisdiv.a (Button ('Store Stop', self.stopandstoreanalysis));
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
 				self.analysiscontrolpanel.a (Button ('#', self.getstoredanalysisinfo));
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
