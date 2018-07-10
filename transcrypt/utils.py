@@ -273,11 +273,16 @@ def getjson(path, callback, errcallback):
         lambda err: errcallback(err)
     )
 
-def lichapiget(path, callback, errcallback):
+def lichapiget(path, token, callback, errcallback):
 
     args = {
         "method": "GET"
     }
+
+    if ( not ( token is None ) ) and ( False ):
+        args["headers"] = {
+            "Authorization": "Bearer {}".format(token)
+        }
 
     fetch("https://lichess.org/" + path, args).then(
         lambda response: response.text().then(
