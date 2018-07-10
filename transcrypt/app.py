@@ -469,6 +469,12 @@ class e:
         self.e.classList.add(klass)
         return self
 
+    # add class conditional
+    def acc(self, cond, klass):
+        if cond:
+            self.e.classList.add(klass)
+        return self
+
     # add classes
     def aac(self, klasses):
         for klass in klasses:
@@ -2739,17 +2745,52 @@ class PgnInfo(e):
             "data": self.content
         })
 
+    def mecolor(self):
+        if self.white == self.parent.username:
+            return WHITE
+        if self.black == self.parent.username:
+            return BLACK
+        return None
+
+    def mewhite(self):
+        return self.mecolor() == WHITE
+
+    def meblack(self):
+        return self.mecolor() == BLACK
+
+    def hasme(self):
+        return not ( self.mecolor() is None )
+
+    def score(self):
+        if self.result == "1-0":
+            return 1
+        if self.result == "0-1":
+            return 0
+        return 0.5
+
+    def mescore(self):
+        if self.hasme():
+            if self.mewhite():
+                return self.score()
+            return 1 - self.score()
+        return self.score()
+
     def build(self):        
         self.x().ac("pgninfocontainer")
-        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)
-        if self.white == self.parent.username:
-            self.whitediv.ac("pgninfomeplayerdiv")
-        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)
-        if self.black == self.parent.username:
-            self.blackdiv.ac("pgninfomeplayerdiv")
+        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)        
+        self.whitediv.acc(self.meblack(), "pgninfotheyplayerdiv")
+        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)        
+        self.blackdiv.acc(self.mewhite(), "pgninfotheyplayerdiv")
         self.resultdiv = Div().ac("pgninforesultdiv").html(self.result)
         self.iddiv = Div().ac("pgninfoiddiv").html(self.id)
         self.iddiv.ae("mousedown", self.idclicked)
+        mescore = self.mescore()
+        if mescore == 1:
+            self.ac("pgninfowhitewin")
+        elif mescore == 0:
+            self.ac("pgninfoblackwin")
+        else:
+            self.ac("pgninfodraw")
         self.aa([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv])
         return self
 

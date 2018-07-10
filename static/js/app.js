@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-10 11:43:43
+// Transcrypt'ed from Python, 2018-07-10 13:25:22
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2675,6 +2675,12 @@ function app () {
 				self.e.classList.add (klass);
 				return self;
 			});},
+			get acc () {return __get__ (this, function (self, cond, klass) {
+				if (cond) {
+					self.e.classList.add (klass);
+				}
+				return self;
+			});},
 			get aac () {return __get__ (this, function (self, klasses) {
 				var __iterable0__ = klasses;
 				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
@@ -4379,23 +4385,6 @@ function app () {
 				if (found.kind == 'scalar') {
 					return found.value;
 				}
-				else if (kind == 'ucioptionsparsed') {
-					var ucioptionsobj = json ['ucioptions'];
-					var ucischema = schemafromucioptionsobj (ucioptionsobj);
-					var selfprofile = getpathfromschema (configschema, 'profile/#');
-					if (selfprofile === null) {
-						window.alert ('Warning: no profile selected to store UCI options.');
-					}
-					else {
-						selfprofile.setchildatkey ('ucioptions', ucischema);
-						maintabpane.setTabElementByKey ('config', buildconfigdiv ());
-						maintabpane.selectByKey ('config');
-						window.alert ('UCI options stored in current profile.');
-					}
-				}
-				else if (kind == 'analysisinfo') {
-					mainboard.processanalysisinfo (json ['analysisinfo']);
-				}
 			}
 			return null;
 		};
@@ -5388,19 +5377,61 @@ function app () {
 			get idclicked () {return __get__ (this, function (self) {
 				self.parent.sioreq (dict ({'kind': 'parsepgn', 'owner': 'board', 'data': self.content}));
 			});},
+			get mecolor () {return __get__ (this, function (self) {
+				if (self.white == self.parent.username) {
+					return WHITE;
+				}
+				if (self.black == self.parent.username) {
+					return BLACK;
+				}
+				return null;
+			});},
+			get mewhite () {return __get__ (this, function (self) {
+				return self.mecolor () == WHITE;
+			});},
+			get meblack () {return __get__ (this, function (self) {
+				return self.mecolor () == BLACK;
+			});},
+			get hasme () {return __get__ (this, function (self) {
+				return !(self.mecolor () === null);
+			});},
+			get score () {return __get__ (this, function (self) {
+				if (self.result == '1-0') {
+					return 1;
+				}
+				if (self.result == '0-1') {
+					return 0;
+				}
+				return 0.5;
+			});},
+			get mescore () {return __get__ (this, function (self) {
+				if (self.hasme ()) {
+					if (self.mewhite ()) {
+						return self.score ();
+					}
+					return 1 - self.score ();
+				}
+				return self.score ();
+			});},
 			get build () {return __get__ (this, function (self) {
 				self.x ().ac ('pgninfocontainer');
 				self.whitediv = Div ().ac ('pgninfoplayerdiv').html (self.white);
-				if (self.white == self.parent.username) {
-					self.whitediv.ac ('pgninfomeplayerdiv');
-				}
+				self.whitediv.acc (self.meblack (), 'pgninfotheyplayerdiv');
 				self.blackdiv = Div ().ac ('pgninfoplayerdiv').html (self.black);
-				if (self.black == self.parent.username) {
-					self.blackdiv.ac ('pgninfomeplayerdiv');
-				}
+				self.blackdiv.acc (self.mewhite (), 'pgninfotheyplayerdiv');
 				self.resultdiv = Div ().ac ('pgninforesultdiv').html (self.result);
 				self.iddiv = Div ().ac ('pgninfoiddiv').html (self.id);
 				self.iddiv.ae ('mousedown', self.idclicked);
+				var mescore = self.mescore ();
+				if (mescore == 1) {
+					self.ac ('pgninfowhitewin');
+				}
+				else if (mescore == 0) {
+					self.ac ('pgninfoblackwin');
+				}
+				else {
+					self.ac ('pgninfodraw');
+				}
 				self.aa (list ([self.whitediv, self.blackdiv, self.resultdiv, self.iddiv]));
 				return self;
 			});},
@@ -6075,14 +6106,14 @@ function app () {
 				if (__in__ ('key', response)) {
 					var dest = response ['key'];
 				}
-				if (__in__ ('status', response)) {
-					var status = response ['status'];
-					var logitem = LogItem (status, 'cmdstatusok');
-					if (len (status) > 0) {
-						if (status [0] == '!') {
-							var logitem = LogItem (status, 'cmdstatuserr');
-						}
+				else if (kind == 'check') {
+					item.value = 'false';
+					if (py_default) {
+						item.value = 'true';
 					}
+					item.writepreference.check = true;
+					item.setenabled (py_default);
+					item.build ();
 				}
 				if (__in__ ('kind', response)) {
 					var kind = response ['kind'];
@@ -6105,7 +6136,12 @@ function app () {
 					if (owner == 'board') {
 						mainboard.siores (response);
 					}
+					item.openchilds ();
+					item.openchilds ();
 				}
+				item.setchildparent (ucioptions);
+				var nameditem = NamedSchemaItem (dict ({'key': key, 'item': item}));
+				ucioptions.childs.append (nameditem);
 			}
 			if (logitem === null || dest === null) {
 				var jsonstr = JSON.stringify (json, null, 2);
