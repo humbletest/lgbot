@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-10 13:25:22
+// Transcrypt'ed from Python, 2018-07-10 14:49:54
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5521,8 +5521,6 @@ function app () {
 					self.setfromfen (pinfo ['fen'], pinfo ['positioninfo']);
 					for (var j = 0; j < len (self.positioninfos); j++) {
 						self.posdivs [j].arc (j == self.gamei, 'boardposdivselected');
-						var hidden = abs (j - self.gamei) > 10;
-						self.posdivs [j].arc (hidden, 'boardposdivhidden');
 					}
 				};
 				return poslicked;
@@ -5556,10 +5554,6 @@ function app () {
 			});},
 			get buildgame () {return __get__ (this, function (self) {
 				self.gamediv.x ();
-				self.gamediv.a (Button ('<<', self.gametobegin));
-				self.gamediv.a (Button ('<', self.gameback));
-				self.gamediv.a (Button ('>', self.gameforward));
-				self.gamediv.a (Button ('>>', self.gametoend));
 				self.posdivs = list ([]);
 				var i = 0;
 				var __iterable0__ = self.positioninfos;
@@ -5602,7 +5596,7 @@ function app () {
 						self.variantchanged (vk, false);
 						self.positioninfos = historyobj ['positioninfos'];
 						self.buildgame ();
-						self.tabpane.selectByKey ('game');
+						self.tabpane.selectByKey ('analysis');
 					}
 				}
 				catch (__except0__) {
@@ -5845,6 +5839,10 @@ function app () {
 				self.usertoken = self.getconfigscalar ('global/usertoken', null);
 				self.loadgames ();
 			});},
+			get storeforward () {return __get__ (this, function (self) {
+				self.gameforward ();
+				setTimeout (self.storeanalysiscallback, 10);
+			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
 				self.gamesloadingdiv = Div ();
@@ -5883,6 +5881,7 @@ function app () {
 				self.analysisdiv.a (Button ('<', self.gameback));
 				self.analysisdiv.a (Button ('>', self.gameforward));
 				self.analysisdiv.a (Button ('>>', self.gametoend));
+				self.analysisdiv.a (Button ('Store >', self.storeforward));
 				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
 				self.analysiscontrolpanel.a (Button ('#', self.getstoredanalysisinfo));
 				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
@@ -6129,6 +6128,12 @@ function app () {
 						var fen = response ['fen'];
 						var positioninfo = response ['positioninfo'];
 						mainboard.setfromfen (fen, positioninfo);
+					}
+				}
+				if (__in__ ('owner', response)) {
+					var owner = response ['owner'];
+					if (owner == 'board') {
+						mainboard.siores (response);
 					}
 				}
 				if (__in__ ('owner', response)) {
