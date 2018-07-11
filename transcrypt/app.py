@@ -2732,6 +2732,9 @@ class PgnInfo(e):
                 return header[1]
         return default
 
+    def playerlink(self, username):
+        return "<a href='https://lichess.org/@/{}' target='_blank' rel='noopener noreferrer'>{}</a>".format(username, username)
+
     def parsecontent(self):        
         lines = self.content.split("\n")
         self.headers = []
@@ -2741,7 +2744,7 @@ class PgnInfo(e):
                 key = parts[0].split(" ")[0]
                 value = parts[1].split("\"")[0]
                 self.headers.append((key, value))
-        self.white = self.getheader("White", "?")
+        self.white = self.getheader("White", "?")        
         self.black = self.getheader("Black", "?")        
         self.result = self.getheader("Result", "?")        
         self.site = self.getheader("Site", "")               
@@ -2793,10 +2796,10 @@ class PgnInfo(e):
     def build(self):        
         self.x().ac("pgninfocontainer")
         self.tcdiv = Div().ac("pgninfotcdiv").html("{} {}".format(self.timecontrol, self.variant))        
-        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)        
+        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.playerlink(self.white))        
         self.whiteelodiv = Div().ac("pgninfoplayerelodiv").html("{} {}".format(self.whiteelo, self.whiteratingdiff))        
         self.whitediv.acc(self.meblack(), "pgninfotheyplayerdiv")
-        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)        
+        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.playerlink(self.black))        
         self.blackelodiv = Div().ac("pgninfoplayerelodiv").html("{} {}".format(self.blackelo, self.blackratingdiff))        
         self.blackdiv.acc(self.mewhite(), "pgninfotheyplayerdiv")
         self.resultdiv = Div().ac("pgninforesultdiv").html(self.result)
@@ -2949,7 +2952,8 @@ class Board(e):
                 "show": True,
                 "positioninfo": posinfo,
                 "fen": fen,
-                "squaresize": 20
+                "squaresize": 20,
+                "flip": self.flip
             })
             fendiv.a(showboard)
             posdiv.aa([movediv, fendiv])
@@ -2971,8 +2975,12 @@ class Board(e):
                 historyobj = response["historyobj"]
                 uci_variant = historyobj["uci_variant"]
                 chess960 = historyobj["chess960"]
+                pgn = historyobj["pgn"]
+                pgninfo = PgnInfo(self).setcontent(pgn)
                 vk = uci_variant_to_variantkey(uci_variant, chess960)
-                self.variantchanged(vk, False)                
+                self.variantchanged(vk, False)         
+                self.flip = pgninfo.meblack()
+                self.basicboard.setflip(self.flip)
                 self.positioninfos = historyobj["positioninfos"]
                 self.buildgame()
                 self.tabpane.selectByKey("analysis")
@@ -3182,6 +3190,7 @@ class Board(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.flip = False
         self.gamesloadingdiv = Div()
         self.positioninfos = []
         self.pgnlist = None

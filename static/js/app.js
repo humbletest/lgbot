@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-11 12:01:59
+// Transcrypt'ed from Python, 2018-07-11 13:24:58
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5362,6 +5362,9 @@ function app () {
 				}
 				return py_default;
 			});},
+			get playerlink () {return __get__ (this, function (self, username) {
+				return "<a href='https://lichess.org/@/{}' target='_blank' rel='noopener noreferrer'>{}</a>".format (username, username);
+			});},
 			get parsecontent () {return __get__ (this, function (self) {
 				var lines = self.content.py_split ('\n');
 				self.headers = list ([]);
@@ -5430,10 +5433,10 @@ function app () {
 			get build () {return __get__ (this, function (self) {
 				self.x ().ac ('pgninfocontainer');
 				self.tcdiv = Div ().ac ('pgninfotcdiv').html ('{} {}'.format (self.timecontrol, self.variant));
-				self.whitediv = Div ().ac ('pgninfoplayerdiv').html (self.white);
+				self.whitediv = Div ().ac ('pgninfoplayerdiv').html (self.playerlink (self.white));
 				self.whiteelodiv = Div ().ac ('pgninfoplayerelodiv').html ('{} {}'.format (self.whiteelo, self.whiteratingdiff));
 				self.whitediv.acc (self.meblack (), 'pgninfotheyplayerdiv');
-				self.blackdiv = Div ().ac ('pgninfoplayerdiv').html (self.black);
+				self.blackdiv = Div ().ac ('pgninfoplayerdiv').html (self.playerlink (self.black));
 				self.blackelodiv = Div ().ac ('pgninfoplayerelodiv').html ('{} {}'.format (self.blackelo, self.blackratingdiff));
 				self.blackdiv.acc (self.mewhite (), 'pgninfotheyplayerdiv');
 				self.resultdiv = Div ().ac ('pgninforesultdiv').html (self.result);
@@ -5610,7 +5613,7 @@ function app () {
 					posdiv.ae ('mousedown', self.posclickedfactory (i));
 					var movediv = Div ().ac ('boardposmovediv').html (genmove);
 					var fendiv = Div ().ac ('boardposfendiv');
-					var showboard = BasicBoard (dict ({'show': true, 'positioninfo': posinfo, 'fen': fen, 'squaresize': 20}));
+					var showboard = BasicBoard (dict ({'show': true, 'positioninfo': posinfo, 'fen': fen, 'squaresize': 20, 'flip': self.flip}));
 					fendiv.a (showboard);
 					posdiv.aa (list ([movediv, fendiv]));
 					self.gamediv.a (posdiv);
@@ -5634,8 +5637,12 @@ function app () {
 						var historyobj = response ['historyobj'];
 						var uci_variant = historyobj ['uci_variant'];
 						var chess960 = historyobj ['chess960'];
+						var pgn = historyobj ['pgn'];
+						var pgninfo = PgnInfo (self).setcontent (pgn);
 						var vk = uci_variant_to_variantkey (uci_variant, chess960);
 						self.variantchanged (vk, false);
+						self.flip = pgninfo.meblack ();
+						self.basicboard.setflip (self.flip);
 						self.positioninfos = historyobj ['positioninfos'];
 						self.buildgame ();
 						self.tabpane.selectByKey ('analysis');
@@ -5891,6 +5898,7 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.flip = false;
 				self.gamesloadingdiv = Div ();
 				self.positioninfos = list ([]);
 				self.pgnlist = null;
