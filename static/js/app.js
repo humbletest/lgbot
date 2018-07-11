@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-11 13:24:58
+// Transcrypt'ed from Python, 2018-07-11 18:57:58
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4789,7 +4789,7 @@ function app () {
 				self.build ();
 			});},
 			get totalheight () {return __get__ (this, function (self) {
-				var th = self.outerheight + self.fendivheight;
+				var th = self.outerheight + cpick (self.showfen, self.fendivheight, 0);
 				if (self.variantkey == 'crazyhouse') {
 					th += 2 * self.squaresize;
 				}
@@ -5063,14 +5063,17 @@ function app () {
 					self.whitestore = PieceStore (dict ({'show': self.show, 'parent': self, 'color': WHITE, 'store': self.crazyfen, 'containerdiv': self.whitestorediv}));
 					self.blackstore = PieceStore (dict ({'show': self.show, 'parent': self, 'color': BLACK, 'store': self.crazyfen, 'containerdiv': self.blackstorediv}));
 					if (self.flip) {
-						self.sectioncontainer.aa (list ([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv]));
+						self.sectioncontainer.aa (list ([self.whitestorediv, self.outercontainer, self.blackstorediv]));
 					}
 					else {
-						self.sectioncontainer.aa (list ([self.blackstorediv, self.outercontainer, self.whitestorediv, self.fendiv]));
+						self.sectioncontainer.aa (list ([self.blackstorediv, self.outercontainer, self.whitestorediv]));
 					}
 				}
 				else {
-					self.sectioncontainer.aa (list ([self.outercontainer, self.fendiv]));
+					self.sectioncontainer.aa (list ([self.outercontainer]));
+				}
+				if (self.showfen) {
+					self.sectioncontainer.a (self.fendiv);
 				}
 				self.x ().a (self.sectioncontainer);
 				self.movecanvas = Canvas (self.width, self.height).pa ().t (0).l (0);
@@ -5103,6 +5106,7 @@ function app () {
 			get parseargs () {return __get__ (this, function (self, args) {
 				self.positioninfo = args.py_get ('positioninfo', dict ({}));
 				self.show = args.py_get ('show', false);
+				self.showfen = args.py_get ('showfen', true);
 				self.squaresize = args.py_get ('squaresize', 45);
 				self.squarepaddingratio = args.py_get ('squarepaddingratio', 0.04);
 				self.marginratio = args.py_get ('marginratio', 0.02);
@@ -5613,7 +5617,7 @@ function app () {
 					posdiv.ae ('mousedown', self.posclickedfactory (i));
 					var movediv = Div ().ac ('boardposmovediv').html (genmove);
 					var fendiv = Div ().ac ('boardposfendiv');
-					var showboard = BasicBoard (dict ({'show': true, 'positioninfo': posinfo, 'fen': fen, 'squaresize': 20, 'flip': self.flip}));
+					var showboard = BasicBoard (dict ({'show': true, 'showfen': false, 'positioninfo': posinfo, 'fen': fen, 'squaresize': 20, 'flip': self.flip}));
 					fendiv.a (showboard);
 					posdiv.aa (list ([movediv, fendiv]));
 					self.gamediv.a (posdiv);
@@ -5722,13 +5726,18 @@ function app () {
 			get resizetabpanewidth () {return __get__ (this, function (self, width) {
 				self.tabpane.resize (max (width - self.totalwidth (), 600), null);
 			});},
-			get resize () {return __get__ (this, function (self, width, height) {
-				self.resizewidth = width;
-				self.resizeheight = height - self.controlpanelheight;
+			get resizetask () {return __get__ (this, function (self) {
+				self.resizewidth = self.resizeorigwidth;
+				self.resizeheight = self.resizeorigheight - self.controlpanelheight;
 				self.basicboard.resize (self.resizewidth, self.resizeheight);
 				self.basicresize ();
 				self.buildpositioninfo ();
-				self.resizetabpanewidth (width);
+				self.resizetabpanewidth (self.resizeorigwidth);
+			});},
+			get resize () {return __get__ (this, function (self, width, height) {
+				self.resizeorigwidth = width;
+				self.resizeorigheight = height;
+				self.resizetask ();
 			});},
 			get analyzecallbackfactory () {return __get__ (this, function (self, all, depthlimit, timelimit) {
 				if (typeof all == 'undefined' || (all != null && all .hasOwnProperty ("__kwargtrans__"))) {;
@@ -5867,6 +5876,19 @@ function app () {
 				}
 				return found;
 			});},
+			get getconfigbool () {return __get__ (this, function (self, path, py_default) {
+				var s = self.getconfigscalar (path, null);
+				if (s === null) {
+					return py_default;
+				}
+				if (s == 'true') {
+					return true;
+				}
+				if (s == 'false') {
+					return false;
+				}
+				return py_default;
+			});},
 			get gamesloadedok () {return __get__ (this, function (self, content) {
 				self.pgnlist = PgnList (self).setcontent (content);
 				self.gamesdiv.x ();
@@ -5886,6 +5908,9 @@ function app () {
 				self.configschema = configschema;
 				self.username = self.getconfigscalar ('global/username', null);
 				self.usertoken = self.getconfigscalar ('global/usertoken', null);
+				self.showfen = self.getconfigbool ('global/showfen', true);
+				self.basicboard.showfen = self.showfen;
+				self.resizetask ();
 				self.loadgames ();
 			});},
 			get storeforward () {return __get__ (this, function (self) {
@@ -5898,6 +5923,9 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.resizeorigwidth = 800;
+				self.resizeorigheight = 400;
+				self.showfen = true;
 				self.flip = false;
 				self.gamesloadingdiv = Div ();
 				self.positioninfos = list ([]);
@@ -6180,6 +6208,7 @@ function app () {
 					}
 					else if (kind == 'configstored') {
 						window.alert (('Config storing status: ' + status) + '.');
+						mainboard.setconfigschema (configschema);
 					}
 					else if (kind == 'setmainboardfen') {
 						var fen = response ['fen'];

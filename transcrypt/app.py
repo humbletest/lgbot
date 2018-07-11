@@ -2257,7 +2257,7 @@ class BasicBoard(e):
         self.build()
 
     def totalheight(self):
-        th = self.outerheight + self.fendivheight
+        th = self.outerheight + cpick(self.showfen, self.fendivheight, 0)
         if self.variantkey == "crazyhouse":
             th += 2 * self.squaresize
         return th
@@ -2495,11 +2495,13 @@ class BasicBoard(e):
                 "containerdiv": self.blackstorediv
             })            
             if self.flip:
-                self.sectioncontainer.aa([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv])
+                self.sectioncontainer.aa([self.whitestorediv, self.outercontainer, self.blackstorediv])
             else:
-                self.sectioncontainer.aa([self.blackstorediv, self.outercontainer, self.whitestorediv, self.fendiv])
+                self.sectioncontainer.aa([self.blackstorediv, self.outercontainer, self.whitestorediv])
         else:
-            self.sectioncontainer.aa([self.outercontainer, self.fendiv])
+            self.sectioncontainer.aa([self.outercontainer])
+        if self.showfen:
+            self.sectioncontainer.a(self.fendiv)
         self.x().a(self.sectioncontainer)
         self.movecanvas = Canvas(self.width, self.height).pa().t(0).l(0)
         self.movecanvashook = Div().pa().t(0).l(0).zi(5).op(0.5)
@@ -2531,6 +2533,7 @@ class BasicBoard(e):
     def parseargs(self, args):
         self.positioninfo = args.get("positioninfo", {})
         self.show = args.get("show", False)
+        self.showfen = args.get("showfen", True)
         self.squaresize = args.get("squaresize", 45)
         self.squarepaddingratio = args.get("squarepaddingratio", 0.04)
         self.marginratio = args.get("marginratio", 0.02)
@@ -2950,6 +2953,7 @@ class Board(e):
             fendiv = Div().ac("boardposfendiv")
             showboard = BasicBoard({
                 "show": True,
+                "showfen": False,
                 "positioninfo": posinfo,
                 "fen": fen,
                 "squaresize": 20,
@@ -3048,13 +3052,18 @@ class Board(e):
     def resizetabpanewidth(self, width):
         self.tabpane.resize(max(width - self.totalwidth(), 600), None)
 
-    def resize(self, width, height):
-        self.resizewidth = width
-        self.resizeheight = height - self.controlpanelheight
+    def resizetask(self):
+        self.resizewidth = self.resizeorigwidth
+        self.resizeheight = self.resizeorigheight - self.controlpanelheight
         self.basicboard.resize(self.resizewidth, self.resizeheight)
         self.basicresize()
         self.buildpositioninfo()
-        self.resizetabpanewidth(width)
+        self.resizetabpanewidth(self.resizeorigwidth)
+
+    def resize(self, width, height):
+        self.resizeorigwidth = width
+        self.resizeorigheight = height        
+        self.resizetask()
 
     def analyzecallbackfactory(self, all = False, depthlimit = None, timelimit = None):
         def analyzecallback():
@@ -3162,6 +3171,16 @@ class Board(e):
             return default
         return found
 
+    def getconfigbool(self, path, default):
+        s = self.getconfigscalar(path, None)
+        if s is None:
+            return default
+        if s == "true":
+            return True
+        if s == "false":
+            return False
+        return default
+
     def gamesloadedok(self, content):
         self.pgnlist = PgnList(self).setcontent(content)
         self.gamesdiv.x()
@@ -3178,6 +3197,9 @@ class Board(e):
         self.configschema = configschema
         self.username = self.getconfigscalar("global/username", None)
         self.usertoken = self.getconfigscalar("global/usertoken", None)
+        self.showfen = self.getconfigbool("global/showfen", True)        
+        self.basicboard.showfen = self.showfen
+        self.resizetask()
         self.loadgames()
 
     def storeforward(self):        
@@ -3190,6 +3212,9 @@ class Board(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.resizeorigwidth = 800
+        self.resizeorigheight = 400
+        self.showfen = True
         self.flip = False
         self.gamesloadingdiv = Div()
         self.positioninfos = []
@@ -3598,8 +3623,9 @@ def onevent(json):
                 data = response["data"]                
                 deserializeconfigcontent(data)
                 mainboard.setconfigschema(configschema)
-            elif kind == "configstored":
+            elif kind == "configstored":                
                 window.alert("Config storing status: " + status + ".")            
+                mainboard.setconfigschema(configschema)
             elif kind == "setmainboardfen":                
                 fen = response["fen"]
                 positioninfo = response["positioninfo"]                
