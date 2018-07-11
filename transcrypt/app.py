@@ -2161,7 +2161,10 @@ class Move:
 
 class PieceStore(e):
     def dragstartfactory(self, p, pdiv, pdivcopy):
-        def dragstart():
+        def dragstart(ev):
+            if self.show:
+                ev.preventDefault()
+                return
             self.parent.dragkind = "set"
             self.parent.draggedsetpiece = p
             self.parent.draggedpdiv = pdivcopy
@@ -2198,6 +2201,7 @@ class PieceStore(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.show = args.get("show", False)
         self.parent = args.get("parent", BasicBoard({}))
         self.store = args.get("store", "")
         self.color = args.get("color", WHITE)
@@ -2298,7 +2302,7 @@ class BasicBoard(e):
 
     def piecedragstartfactory(self, sq, pdiv):
         def piecedragstart(ev):
-            if self.promoting:
+            if self.promoting or self.show:
                 ev.preventDefault()
                 return
             self.dragkind = "move"
@@ -2477,12 +2481,14 @@ class BasicBoard(e):
             self.whitestorediv = Div().ac("boardstorediv").h(self.squaresize).w(self.outerwidth)
             self.blackstorediv = Div().ac("boardstorediv").h(self.squaresize).w(self.outerwidth)
             self.whitestore = PieceStore({
+                "show": self.show,
                 "parent": self,
                 "color": WHITE,
                 "store": self.crazyfen,
                 "containerdiv": self.whitestorediv
             })
             self.blackstore = PieceStore({
+                "show": self.show,
                 "parent": self,
                 "color": BLACK,
                 "store": self.crazyfen,
@@ -2523,6 +2529,8 @@ class BasicBoard(e):
         self.fendivheight = 25
 
     def parseargs(self, args):
+        self.positioninfo = args.get("positioninfo", {})
+        self.show = args.get("show", False)
         self.squaresize = args.get("squaresize", 45)
         self.squarepaddingratio = args.get("squarepaddingratio", 0.04)
         self.marginratio = args.get("marginratio", 0.02)
@@ -2845,7 +2853,6 @@ class PgnText(e):
         self.height = height
         self.textarea.w(width - 15).h(height - 15)
         return self
-        
 class Board(e):
     def flipcallback(self):
         self.basicboard.setflip(not self.basicboard.flip)
@@ -2937,7 +2944,14 @@ class Board(e):
             self.posdivs.append(posdiv)
             posdiv.ae("mousedown", self.posclickedfactory(i))            
             movediv = Div().ac("boardposmovediv").html(genmove)
-            fendiv = Div().ac("boardposfendiv").html(fen)
+            fendiv = Div().ac("boardposfendiv")
+            showboard = BasicBoard({
+                "show": True,
+                "positioninfo": posinfo,
+                "fen": fen,
+                "squaresize": 20
+            })
+            fendiv.a(showboard)
             posdiv.aa([movediv, fendiv])
             self.gamediv.a(posdiv)
             i += 1

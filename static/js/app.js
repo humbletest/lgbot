@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-10 18:13:55
+// Transcrypt'ed from Python, 2018-07-11 12:01:59
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -4670,7 +4670,11 @@ function app () {
 		var PieceStore = __class__ ('PieceStore', [e], {
 			__module__: __name__,
 			get dragstartfactory () {return __get__ (this, function (self, p, pdiv, pdivcopy) {
-				var dragstart = function () {
+				var dragstart = function (ev) {
+					if (self.show) {
+						ev.preventDefault ();
+						return ;
+					}
 					self.parent.dragkind = 'set';
 					self.parent.draggedsetpiece = p;
 					self.parent.draggedpdiv = pdivcopy;
@@ -4715,6 +4719,7 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (PieceStore, '__init__') (self, 'div');
+				self.show = args.py_get ('show', false);
 				self.parent = args.py_get ('parent', BasicBoard (dict ({})));
 				self.store = args.py_get ('store', '');
 				self.color = args.py_get ('color', WHITE);
@@ -4833,7 +4838,7 @@ function app () {
 			});},
 			get piecedragstartfactory () {return __get__ (this, function (self, sq, pdiv) {
 				var piecedragstart = function (ev) {
-					if (self.promoting) {
+					if (self.promoting || self.show) {
 						ev.preventDefault ();
 						return ;
 					}
@@ -5055,8 +5060,8 @@ function app () {
 				if (self.variantkey == 'crazyhouse') {
 					self.whitestorediv = Div ().ac ('boardstorediv').h (self.squaresize).w (self.outerwidth);
 					self.blackstorediv = Div ().ac ('boardstorediv').h (self.squaresize).w (self.outerwidth);
-					self.whitestore = PieceStore (dict ({'parent': self, 'color': WHITE, 'store': self.crazyfen, 'containerdiv': self.whitestorediv}));
-					self.blackstore = PieceStore (dict ({'parent': self, 'color': BLACK, 'store': self.crazyfen, 'containerdiv': self.blackstorediv}));
+					self.whitestore = PieceStore (dict ({'show': self.show, 'parent': self, 'color': WHITE, 'store': self.crazyfen, 'containerdiv': self.whitestorediv}));
+					self.blackstore = PieceStore (dict ({'show': self.show, 'parent': self, 'color': BLACK, 'store': self.crazyfen, 'containerdiv': self.blackstorediv}));
 					if (self.flip) {
 						self.sectioncontainer.aa (list ([self.whitestorediv, self.outercontainer, self.blackstorediv, self.fendiv]));
 					}
@@ -5096,6 +5101,8 @@ function app () {
 				self.fendivheight = 25;
 			});},
 			get parseargs () {return __get__ (this, function (self, args) {
+				self.positioninfo = args.py_get ('positioninfo', dict ({}));
+				self.show = args.py_get ('show', false);
 				self.squaresize = args.py_get ('squaresize', 45);
 				self.squarepaddingratio = args.py_get ('squarepaddingratio', 0.04);
 				self.marginratio = args.py_get ('marginratio', 0.02);
@@ -5602,7 +5609,9 @@ function app () {
 					self.posdivs.append (posdiv);
 					posdiv.ae ('mousedown', self.posclickedfactory (i));
 					var movediv = Div ().ac ('boardposmovediv').html (genmove);
-					var fendiv = Div ().ac ('boardposfendiv').html (fen);
+					var fendiv = Div ().ac ('boardposfendiv');
+					var showboard = BasicBoard (dict ({'show': true, 'positioninfo': posinfo, 'fen': fen, 'squaresize': 20}));
+					fendiv.a (showboard);
 					posdiv.aa (list ([movediv, fendiv]));
 					self.gamediv.a (posdiv);
 					i++;
