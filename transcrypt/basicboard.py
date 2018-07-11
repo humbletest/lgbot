@@ -694,6 +694,9 @@ class PgnInfo(e):
                 return header[1]
         return default
 
+    def playerlink(self, username):
+        return "<a href='https://lichess.org/@/{}' target='_blank' rel='noopener noreferrer'>{}</a>".format(username, username)
+
     def parsecontent(self):        
         lines = self.content.split("\n")
         self.headers = []
@@ -703,7 +706,7 @@ class PgnInfo(e):
                 key = parts[0].split(" ")[0]
                 value = parts[1].split("\"")[0]
                 self.headers.append((key, value))
-        self.white = self.getheader("White", "?")
+        self.white = self.getheader("White", "?")        
         self.black = self.getheader("Black", "?")        
         self.result = self.getheader("Result", "?")        
         self.site = self.getheader("Site", "")               
@@ -755,10 +758,10 @@ class PgnInfo(e):
     def build(self):        
         self.x().ac("pgninfocontainer")
         self.tcdiv = Div().ac("pgninfotcdiv").html("{} {}".format(self.timecontrol, self.variant))        
-        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.white)        
+        self.whitediv = Div().ac("pgninfoplayerdiv").html(self.playerlink(self.white))        
         self.whiteelodiv = Div().ac("pgninfoplayerelodiv").html("{} {}".format(self.whiteelo, self.whiteratingdiff))        
         self.whitediv.acc(self.meblack(), "pgninfotheyplayerdiv")
-        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.black)        
+        self.blackdiv = Div().ac("pgninfoplayerdiv").html(self.playerlink(self.black))        
         self.blackelodiv = Div().ac("pgninfoplayerelodiv").html("{} {}".format(self.blackelo, self.blackratingdiff))        
         self.blackdiv.acc(self.mewhite(), "pgninfotheyplayerdiv")
         self.resultdiv = Div().ac("pgninforesultdiv").html(self.result)

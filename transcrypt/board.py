@@ -94,7 +94,8 @@ class Board(e):
                 "show": True,
                 "positioninfo": posinfo,
                 "fen": fen,
-                "squaresize": 20
+                "squaresize": 20,
+                "flip": self.flip
             })
             fendiv.a(showboard)
             posdiv.aa([movediv, fendiv])
@@ -116,8 +117,12 @@ class Board(e):
                 historyobj = response["historyobj"]
                 uci_variant = historyobj["uci_variant"]
                 chess960 = historyobj["chess960"]
+                pgn = historyobj["pgn"]
+                pgninfo = PgnInfo(self).setcontent(pgn)
                 vk = uci_variant_to_variantkey(uci_variant, chess960)
-                self.variantchanged(vk, False)                
+                self.variantchanged(vk, False)         
+                self.flip = pgninfo.meblack()
+                self.basicboard.setflip(self.flip)
                 self.positioninfos = historyobj["positioninfos"]
                 self.buildgame()
                 self.tabpane.selectByKey("analysis")
@@ -327,6 +332,7 @@ class Board(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.flip = False
         self.gamesloadingdiv = Div()
         self.positioninfos = []
         self.pgnlist = None
