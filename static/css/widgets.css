@@ -702,9 +702,8 @@
     background-color: #ffc;
 }
 
-.boardposdiv {
-    height: 24px;
-    width: 600px;
+.boardposdiv {  
+    width: 400px;      
     display: flex; justify-content: space-around; align-items: center;
     margin: 1px; 
     font-family: monospace;
@@ -725,8 +724,7 @@
 }
 
 .boardposfendiv {
-    padding: 2px;
-    width: 520px;
+    padding: 2px;    
     font-size: 10px;
     vertical-align: middle;
     background-color: #eee;

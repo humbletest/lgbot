@@ -5,6 +5,7 @@ apppy:
     - transcrypt/widgets.py
     - transcrypt/schemawidgets.py
     - transcrypt/dirbrowser.py
+    - transcrypt/basicboard.py
     - transcrypt/board.py
     - transcrypt/client.py
   cmds:
