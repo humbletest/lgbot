@@ -280,8 +280,9 @@ def onevent(json):
                 data = response["data"]                
                 deserializeconfigcontent(data)
                 mainboard.setconfigschema(configschema)
-            elif kind == "configstored":
+            elif kind == "configstored":                
                 window.alert("Config storing status: " + status + ".")            
+                mainboard.setconfigschema(configschema)
             elif kind == "setmainboardfen":                
                 fen = response["fen"]
                 positioninfo = response["positioninfo"]                

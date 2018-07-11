@@ -92,6 +92,7 @@ class Board(e):
             fendiv = Div().ac("boardposfendiv")
             showboard = BasicBoard({
                 "show": True,
+                "showfen": False,
                 "positioninfo": posinfo,
                 "fen": fen,
                 "squaresize": 20,
@@ -190,13 +191,18 @@ class Board(e):
     def resizetabpanewidth(self, width):
         self.tabpane.resize(max(width - self.totalwidth(), 600), None)
 
-    def resize(self, width, height):
-        self.resizewidth = width
-        self.resizeheight = height - self.controlpanelheight
+    def resizetask(self):
+        self.resizewidth = self.resizeorigwidth
+        self.resizeheight = self.resizeorigheight - self.controlpanelheight
         self.basicboard.resize(self.resizewidth, self.resizeheight)
         self.basicresize()
         self.buildpositioninfo()
-        self.resizetabpanewidth(width)
+        self.resizetabpanewidth(self.resizeorigwidth)
+
+    def resize(self, width, height):
+        self.resizeorigwidth = width
+        self.resizeorigheight = height        
+        self.resizetask()
 
     def analyzecallbackfactory(self, all = False, depthlimit = None, timelimit = None):
         def analyzecallback():
@@ -304,6 +310,16 @@ class Board(e):
             return default
         return found
 
+    def getconfigbool(self, path, default):
+        s = self.getconfigscalar(path, None)
+        if s is None:
+            return default
+        if s == "true":
+            return True
+        if s == "false":
+            return False
+        return default
+
     def gamesloadedok(self, content):
         self.pgnlist = PgnList(self).setcontent(content)
         self.gamesdiv.x()
@@ -320,6 +336,9 @@ class Board(e):
         self.configschema = configschema
         self.username = self.getconfigscalar("global/username", None)
         self.usertoken = self.getconfigscalar("global/usertoken", None)
+        self.showfen = self.getconfigbool("global/showfen", True)        
+        self.basicboard.showfen = self.showfen
+        self.resizetask()
         self.loadgames()
 
     def storeforward(self):        
@@ -332,6 +351,9 @@ class Board(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.resizeorigwidth = 800
+        self.resizeorigheight = 400
+        self.showfen = True
         self.flip = False
         self.gamesloadingdiv = Div()
         self.positioninfos = []

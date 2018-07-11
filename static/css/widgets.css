@@ -717,7 +717,8 @@
 
 .boardposmovediv {
     padding: 2px;    
-    width: 50px;
+    width: 100px;
+    font-size: 30px;
     text-align: center;
     background-color: #fff;
     font-weight: bold;
