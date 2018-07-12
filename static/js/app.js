@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-11 18:57:58
+// Transcrypt'ed from Python, 2018-07-12 14:08:35
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5889,6 +5889,19 @@ function app () {
 				}
 				return py_default;
 			});},
+			get getconfigint () {return __get__ (this, function (self, path, py_default) {
+				var s = self.getconfigscalar (path, null);
+				if (s === null) {
+					return py_default;
+				}
+				try {
+					var i = int (s);
+					return i;
+				}
+				catch (__except0__) {
+					return py_default;
+				}
+			});},
 			get gamesloadedok () {return __get__ (this, function (self, content) {
 				self.pgnlist = PgnList (self).setcontent (content);
 				self.gamesdiv.x ();
@@ -5899,7 +5912,7 @@ function app () {
 			get loadgames () {return __get__ (this, function (self) {
 				self.gamesloadingdiv.html ('Games loading...');
 				if (!(self.username === null)) {
-					lichapiget ('games/export/{}?max=25'.format (self.username), self.usertoken, self.gamesloadedok, (function __lambda__ (err) {
+					lichapiget ('games/export/{}?max={}'.format (self.username, self.maxgames), self.usertoken, self.gamesloadedok, (function __lambda__ (err) {
 						return print (err);
 					}));
 				}
@@ -5909,6 +5922,7 @@ function app () {
 				self.username = self.getconfigscalar ('global/username', null);
 				self.usertoken = self.getconfigscalar ('global/usertoken', null);
 				self.showfen = self.getconfigbool ('global/showfen', true);
+				self.maxgames = self.getconfigint ('global/maxgames', 25);
 				self.basicboard.showfen = self.showfen;
 				self.resizetask ();
 				self.loadgames ();
@@ -5923,6 +5937,7 @@ function app () {
 			});},
 			get __init__ () {return __get__ (this, function (self, args) {
 				__super__ (Board, '__init__') (self, 'div');
+				self.maxgames = 25;
 				self.resizeorigwidth = 800;
 				self.resizeorigheight = 400;
 				self.showfen = true;

@@ -3181,6 +3181,16 @@ class Board(e):
             return False
         return default
 
+    def getconfigint(self, path, default):
+        s = self.getconfigscalar(path, None)
+        if s is None:
+            return default
+        try:
+            i = int(s)
+            return i
+        except:
+            return default
+
     def gamesloadedok(self, content):
         self.pgnlist = PgnList(self).setcontent(content)
         self.gamesdiv.x()
@@ -3191,13 +3201,14 @@ class Board(e):
     def loadgames(self):
         self.gamesloadingdiv.html("Games loading...")
         if not ( self.username is None ):
-            lichapiget("games/export/{}?max=25".format(self.username), self.usertoken, self.gamesloadedok, lambda err: print(err))
+            lichapiget("games/export/{}?max={}".format(self.username, self.maxgames), self.usertoken, self.gamesloadedok, lambda err: print(err))
 
     def setconfigschema(self, configschema):
         self.configschema = configschema
         self.username = self.getconfigscalar("global/username", None)
         self.usertoken = self.getconfigscalar("global/usertoken", None)
-        self.showfen = self.getconfigbool("global/showfen", True)        
+        self.showfen = self.getconfigbool("global/showfen", True)   
+        self.maxgames = self.getconfigint("global/maxgames", 25)
         self.basicboard.showfen = self.showfen
         self.resizetask()
         self.loadgames()
@@ -3212,6 +3223,7 @@ class Board(e):
 
     def __init__(self, args):
         super().__init__("div")
+        self.maxgames = 25
         self.resizeorigwidth = 800
         self.resizeorigheight = 400
         self.showfen = True
