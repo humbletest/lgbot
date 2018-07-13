@@ -746,3 +746,23 @@
 .pgntextcontainer {
     padding: 2px;
 }
+
+.analysismake {
+    background-color: #afa;
+}
+
+.analysisstop {
+    background-color: #faa;
+}
+
+.analysisstore {
+    background-color: #aaf;
+}
+
+.analysiscontrol {
+    background-color: #ffa;
+}
+
+.analysisanalyze {
+    background-color: #aff;
+}
