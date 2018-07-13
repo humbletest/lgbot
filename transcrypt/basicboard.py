@@ -664,7 +664,7 @@ class MultipvInfo(e):
         self.idiv = Div().ac("multipvinfoi").html("{}.".format(self.i))
         self.bestmovesandiv = Div().ac("multipvinfobestmovesan").html(self.bestmovesan)
         self.bestmovesandiv.ae("mousedown", self.bestmovesanclickedfactory(self.bestmoveuci))
-        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.effscore()))
+        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(scoreverbal(self.effscore())))
         self.bonussliderdiv = Div().ac("multipvinfobonussliderdiv")
         self.bonusslider = Slider().setmin(-500).setmax(500).ac("multipvinfobonusslider").sv(self.scorebonus())
         self.bonusslider.ae("change", self.bonussliderchanged)

@@ -26,6 +26,13 @@ def uci_variant_to_variantkey(uci_variant, chess960 = False):
         return "threeCheck"
     return uci_variant
 
+def scoreverbal(score):
+    if abs(score) < MATE_LIMIT:
+        return str(score)
+    if score >= 0:
+        return "#{}".format(MATE_SCORE - score)
+    return "#{}".format(- MATE_SCORE - score)
+
 def scorecolor(score):
     if score > MATE_LIMIT:
         return "#0f0"
