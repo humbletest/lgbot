@@ -2909,12 +2909,16 @@ class Board(e):
             pinfo = self.positioninfos[i]
             self.setfromfen(pinfo["fen"], pinfo["positioninfo"])
             for j in range(len(self.positioninfos)):
-                self.posdivs[j].arc(j == self.gamei, "boardposdivselected")                                                
+                self.posdivs[j].arc(j == self.gamei, "boardposdivselected")
+            self.history = []
         return poslicked
 
     def selectgamei(self, i):
         if len(self.positioninfos) > 0:
             self.posclickedfactory(i)()            
+
+    def gamehere(self):
+        self.selectgamei(self.gamei)
 
     def gametobegin(self):
         self.gamei = 0
@@ -2964,7 +2968,7 @@ class Board(e):
             self.gamediv.a(posdiv)
             i += 1
         self.gamei = 0
-        self.selectgamei(self.gamei)
+        self.gamehere()
 
     def siores(self, response):
         try:                        
@@ -3266,6 +3270,7 @@ class Board(e):
         self.movelistdiv = Div().ac("bigboardmovelist").w(self.movelistdivwidth).mw(self.movelistdivwidth)
         self.analysisdiv = Div()
         self.analysiscontrolpaneltop = Div().ac("bigboardanalysiscontrolpanel")
+        self.analysiscontrolpaneltop.a(Button("#", self.gamehere).ac("analysiscontrol"))
         self.analysiscontrolpaneltop.a(Button("<<", self.gametobegin).ac("analysiscontrol"))
         self.analysiscontrolpaneltop.a(Button("<", self.gameback).ac("analysiscontrol").w(60))
         self.analysiscontrolpaneltop.a(Button(">", self.gameforward).ac("analysiscontrol").w(60))

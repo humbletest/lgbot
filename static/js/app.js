@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-13 12:39:28
+// Transcrypt'ed from Python, 2018-07-13 21:29:33
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5569,6 +5569,7 @@ function app () {
 					for (var j = 0; j < len (self.positioninfos); j++) {
 						self.posdivs [j].arc (j == self.gamei, 'boardposdivselected');
 					}
+					self.history = list ([]);
 				};
 				return poslicked;
 			});},
@@ -5576,6 +5577,9 @@ function app () {
 				if (len (self.positioninfos) > 0) {
 					self.posclickedfactory (i) ();
 				}
+			});},
+			get gamehere () {return __get__ (this, function (self) {
+				self.selectgamei (self.gamei);
 			});},
 			get gametobegin () {return __get__ (this, function (self) {
 				self.gamei = 0;
@@ -5624,7 +5628,7 @@ function app () {
 					i++;
 				}
 				self.gamei = 0;
-				self.selectgamei (self.gamei);
+				self.gamehere ();
 			});},
 			get siores () {return __get__ (this, function (self, response) {
 				try {
@@ -5975,6 +5979,7 @@ function app () {
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
 				self.analysisdiv = Div ();
 				self.analysiscontrolpaneltop = Div ().ac ('bigboardanalysiscontrolpanel');
+				self.analysiscontrolpaneltop.a (Button ('#', self.gamehere).ac ('analysiscontrol'));
 				self.analysiscontrolpaneltop.a (Button ('<<', self.gametobegin).ac ('analysiscontrol'));
 				self.analysiscontrolpaneltop.a (Button ('<', self.gameback).ac ('analysiscontrol').w (60));
 				self.analysiscontrolpaneltop.a (Button ('>', self.gameforward).ac ('analysiscontrol').w (60));
