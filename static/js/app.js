@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-13 21:29:33
+// Transcrypt'ed from Python, 2018-07-13 22:55:33
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2238,6 +2238,15 @@ function app () {
 			}
 			return uci_variant;
 		};
+		var scoreverbal = function (score) {
+			if (abs (score) < MATE_LIMIT) {
+				return str (score);
+			}
+			if (score >= 0) {
+				return '#{}'.format (MATE_SCORE - score);
+			}
+			return '#{}'.format (-(MATE_SCORE) - score);
+		};
 		var scorecolor = function (score) {
 			if (score > MATE_LIMIT) {
 				return '#0f0';
@@ -3728,6 +3737,15 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
+				var i = self.childparent.getitemindex (self);
+				var newi = i + dir;
+				self.childparent.movechildi (i, newi);
+			});},
+			get elementdragend () {return __get__ (this, function (self, ev) {
+				self.dragendvect = getClientVect (ev);
+				var diff = self.dragendvect.m (self.dragstartvect);
+				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
+				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -5327,7 +5345,7 @@ function app () {
 				self.idiv = Div ().ac ('multipvinfoi').html ('{}.'.format (self.i));
 				self.bestmovesandiv = Div ().ac ('multipvinfobestmovesan').html (self.bestmovesan);
 				self.bestmovesandiv.ae ('mousedown', self.bestmovesanclickedfactory (self.bestmoveuci));
-				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (self.effscore ()));
+				self.scorenumericaldiv = Div ().ac ('multipvinfoscorenumerical').html ('{}'.format (scoreverbal (self.effscore ())));
 				self.bonussliderdiv = Div ().ac ('multipvinfobonussliderdiv');
 				self.bonusslider = Slider ().setmin (-(500)).setmax (500).ac ('multipvinfobonusslider').sv (self.scorebonus ());
 				self.bonusslider.ae ('change', self.bonussliderchanged);
@@ -6417,6 +6435,7 @@ function app () {
 			__all__.schemajson = schemajson;
 			__all__.schemawritepreferencefromobj = schemawritepreferencefromobj;
 			__all__.scorecolor = scorecolor;
+			__all__.scoreverbal = scoreverbal;
 			__all__.serializecallback = serializecallback;
 			__all__.serializeconfig = serializeconfig;
 			__all__.serializeputjsonbincallback = serializeputjsonbincallback;

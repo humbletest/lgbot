@@ -26,6 +26,13 @@ def uci_variant_to_variantkey(uci_variant, chess960 = False):
         return "threeCheck"
     return uci_variant
 
+def scoreverbal(score):
+    if abs(score) < MATE_LIMIT:
+        return str(score)
+    if score >= 0:
+        return "#{}".format(MATE_SCORE - score)
+    return "#{}".format(- MATE_SCORE - score)
+
 def scorecolor(score):
     if score > MATE_LIMIT:
         return "#0f0"
@@ -2702,7 +2709,7 @@ class MultipvInfo(e):
         self.idiv = Div().ac("multipvinfoi").html("{}.".format(self.i))
         self.bestmovesandiv = Div().ac("multipvinfobestmovesan").html(self.bestmovesan)
         self.bestmovesandiv.ae("mousedown", self.bestmovesanclickedfactory(self.bestmoveuci))
-        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(self.effscore()))
+        self.scorenumericaldiv = Div().ac("multipvinfoscorenumerical").html("{}".format(scoreverbal(self.effscore())))
         self.bonussliderdiv = Div().ac("multipvinfobonussliderdiv")
         self.bonusslider = Slider().setmin(-500).setmax(500).ac("multipvinfobonusslider").sv(self.scorebonus())
         self.bonusslider.ae("change", self.bonussliderchanged)
