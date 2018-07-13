@@ -185,7 +185,7 @@
                 "writepreference": {
                   "addchild": true,
                   "remove": true,
-                  "childsopened": true,
+                  "childsopened": false,
                   "editenabled": true,
                   "editkey": true,
                   "editvalue": true,

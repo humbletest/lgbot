@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-12 14:08:35
+// Transcrypt'ed from Python, 2018-07-13 12:39:28
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -5864,7 +5864,7 @@ function app () {
 				}
 			});},
 			get analyzingchangedcallback () {return __get__ (this, function (self) {
-				self.analysiscontrolpanel.cbc (self.analyzing.py_get (), '#afa', '#edd');
+				self.analysiscontrolpanelbottom.cbc (self.analyzing.py_get (), '#afa', '#edd');
 			});},
 			get getconfigscalar () {return __get__ (this, function (self, path, py_default) {
 				if (self.configschema === null) {
@@ -5974,28 +5974,29 @@ function app () {
 				self.movelistdivwidth = 100;
 				self.movelistdiv = Div ().ac ('bigboardmovelist').w (self.movelistdivwidth).mw (self.movelistdivwidth);
 				self.analysisdiv = Div ();
-				self.analysisdiv.a (Button ('<<', self.gametobegin));
-				self.analysisdiv.a (Button ('<', self.gameback));
-				self.analysisdiv.a (Button ('>', self.gameforward));
-				self.analysisdiv.a (Button ('>>', self.gametoend));
-				self.analysisdiv.a (Button ('Store >', self.storeforward));
-				self.analysisdiv.a (Button ('Store Make', self.storemake));
-				self.analysisdiv.a (Button ('Store Stop', self.stopandstoreanalysis));
-				self.analysiscontrolpanel = Div ().ac ('bigboardanalysiscontrolpanel');
-				self.analysiscontrolpanel.a (Button ('#', self.getstoredanalysisinfo));
-				self.analysiscontrolpanel.a (Button ('Analyze', self.analyzecallbackfactory ()));
-				self.analysiscontrolpanel.a (Button ('Analyze all', self.analyzecallbackfactory (true)));
-				self.analysiscontrolpanel.a (Button ('Quick all', self.analyzecallbackfactory (true, 5, null)));
-				self.analysiscontrolpanel.a (Button ('Stop', self.stopanalyzecallback));
-				self.analysiscontrolpanel.a (Button ('Make', self.makeanalyzedmovecallback));
-				self.analysiscontrolpanel.a (Button ('Store', self.storeanalysiscallback));
+				self.analysiscontrolpaneltop = Div ().ac ('bigboardanalysiscontrolpanel');
+				self.analysiscontrolpaneltop.a (Button ('<<', self.gametobegin).ac ('analysiscontrol'));
+				self.analysiscontrolpaneltop.a (Button ('<', self.gameback).ac ('analysiscontrol').w (60));
+				self.analysiscontrolpaneltop.a (Button ('>', self.gameforward).ac ('analysiscontrol').w (60));
+				self.analysiscontrolpaneltop.a (Button ('>>', self.gametoend).ac ('analysiscontrol'));
+				self.analysiscontrolpaneltop.a (Button ('Store >', self.storeforward).ac ('analysismake'));
+				self.analysiscontrolpaneltop.a (Button ('Store Make', self.storemake).ac ('analysismake'));
+				self.analysiscontrolpaneltop.a (Button ('Store Stop', self.stopandstoreanalysis).ac ('analysisstop'));
+				self.analysiscontrolpanelbottom = Div ().ac ('bigboardanalysiscontrolpanel');
+				self.analysiscontrolpanelbottom.a (Button ('#', self.getstoredanalysisinfo).ac ('analysisanalyze'));
+				self.analysiscontrolpanelbottom.a (Button ('Analyze', self.analyzecallbackfactory ()).ac ('analysisanalyze'));
+				self.analysiscontrolpanelbottom.a (Button ('Analyze all', self.analyzecallbackfactory (true)).ac ('analysisanalyze'));
+				self.analysiscontrolpanelbottom.a (Button ('Quick all', self.analyzecallbackfactory (true, 5, null)).ac ('analysisanalyze'));
+				self.analysiscontrolpanelbottom.a (Button ('Make', self.makeanalyzedmovecallback).ac ('analysismake'));
+				self.analysiscontrolpanelbottom.a (Button ('Stop', self.stopanalyzecallback).ac ('analysisstop'));
+				self.analysiscontrolpanelbottom.a (Button ('Store', self.storeanalysiscallback).ac ('analysisstore'));
 				var mopts = dict ({});
 				for (var i = 1; i < 21; i++) {
 					mopts [str (i)] = 'MultiPV {}'.format (i);
 				}
 				self.multipvcombo = ComboBox (dict ({'selectclass': 'boardmultipvcomboselect', 'optionfirstclass': 'boardmultipvcombooptionfirst', 'optionclass': 'boardmultipvcombooption'})).setoptions (mopts, str (self.defaultmultipv));
-				self.analysiscontrolpanel.a (self.multipvcombo);
-				self.analysisdiv.a (self.analysiscontrolpanel);
+				self.analysiscontrolpanelbottom.a (self.multipvcombo);
+				self.analysisdiv.aa (list ([self.analysiscontrolpaneltop, self.analysiscontrolpanelbottom]));
 				self.analysisinfodiv = Div ();
 				self.analysisdiv.a (self.analysisinfodiv);
 				self.gamesdiv = Div ();
