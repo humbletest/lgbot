@@ -367,11 +367,10 @@ class FileInput(Input):
         return self.ga("accept")
 
     def files(self):
-        return self.ga("files")
+        return self.e.files
 
     def __init__(self):
         super().__init__("file")
-
 
 ######################################################
 

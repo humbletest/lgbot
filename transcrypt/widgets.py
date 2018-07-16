@@ -569,7 +569,8 @@ class ProcessConsole(SplitPane):
 
 class FileUploader(e):
     def fileinputchanged(self):
-        print(self.files())
+        self.files = self.fileinput.files()
+        self.handlefiles()
 
     def preventdefaults(self, ev):
         ev.preventDefault()
@@ -643,7 +644,7 @@ class FileUploader(e):
         self.fileinput = FileInput().ac("fileuploadfileelem").setmultiple(self.multiple).setaccept(self.accept)        
         self.fileinput.sa("id", "fileinputelement")
         self.fileinput.ae("change", self.fileinputchanged)
-        self.button = Label().ac("fileuploadbutton").sa("for", "fileinputelement").html("Select some files")
+        self.button = Label().ac("fileuploadbutton").sa("for", "fileinputelement").html("Select some {}s".format(self.acceptdisplay))
         self.form.aa([self.desc, self.fileinput, self.button])
         self.droparea.a(self.form)
         for eventname in ["dragenter", "dragover", "dragleave", "drop"]:
@@ -660,7 +661,7 @@ class FileUploader(e):
     def __init__(self, args = {}):
         super().__init__("div")
         self.url = args.get("url", None)
-        self.multiple = args.get("multiple", False)
+        self.multiple = args.get("multiple", True)
         self.accept = args.get("accept", "image/*")
         self.acceptdisplay = args.get("acceptdisplay", "image")
         self.build()
