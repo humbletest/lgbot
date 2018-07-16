@@ -35,6 +35,7 @@ import random
 import json
 import functools
 import io
+import uuid
 
 print("importing pyrebase")
 import pyrebase
@@ -61,6 +62,7 @@ print("importing pyrebase done")
 # create app
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = 'secret!'
+app.config['UPLOAD_FOLDER'] = 'upload'
 #########################################################
 
 #########################################################
@@ -318,6 +320,25 @@ def read():
     obj = request.get_json()
     my_broadcast(obj)
     return ""
+
+@app.route("/upload", methods = ["POST"])
+def upload():
+    if 'files' not in request.files:            
+        return Response(json.dumps({
+            "success": False,
+            "status": "no file input"
+        }), content_type = "application/json")
+    file = request.files['files']
+    if file:            
+        filename = file.filename
+        parts = filename.split(".")            
+        savefilename = uuid.uuid1().hex + "." + parts[-1]            
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], savefilename))            
+        return Response(json.dumps({
+            "success": True,
+            "filename": filename,
+            "savefilename": savefilename
+        }), content_type = "application/json")
 
 @app.route("/file/<path:path>")
 def serve_static_envs(path):

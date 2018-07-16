@@ -766,3 +766,66 @@
 .analysisanalyze {
     background-color: #aff;
 }
+
+/* https://www.smashingmagazine.com/2018/01/drag-drop-file-uploader-vanilla-js/ */
+
+.fileuploadform {
+    margin-bottom: 10px;
+}
+
+.fileuploaddroparea {
+    border: 2px dashed #aaa;
+    border-radius: 20px;
+    width: 480px;
+    font-family: sans-serif;
+    margin: 30px;
+    padding: 30px;
+}
+
+.fileuploaddroparea.highlight {
+    border-color: purple;
+}
+
+.fileuploadp {
+    margin-top: 0;
+}
+
+.fileuploadgallery {
+    margin-top: 10px;
+}
+
+.fileuploadgallery img {
+    width: 150px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.fileuploadbutton {
+    display: inline-block;
+    padding: 10px;
+    background: #ccc;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin: 30px;
+}
+
+.fileuploadbutton:hover {
+    background: #ddd;
+}
+
+.fileuploadfileelem {
+    display: none;
+}
+
+.fileuploadinfo {
+    margin: 30px;
+    font-family: monospace;
+    font-size: 20px;
+}
+
+.fileuploadfilename {
+    font-weight: bold;
+    color: #070;
+}

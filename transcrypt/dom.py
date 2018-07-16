@@ -76,6 +76,13 @@ class e:
         self.e.removeAttribute(key)
         return self
 
+    # set or remove attribute conditional
+    def srac(self, cond, key, value):
+        if cond:
+            self.sa(key, value)
+        else:
+            self.ra(key)
+
     # shorthand for getAttribute
     def ga(self, key):
         return self.e.getAttribute(key)
@@ -217,6 +224,11 @@ class e:
         self.e.addEventListener(kind, callback)
         return self
 
+    # add event listener with false arg
+    def aef(self, kind, callback):
+        self.e.addEventListener(kind, callback, False)
+        return self
+
     # disable
     def disable(self):
         return self.sa("disabled", True)
@@ -327,5 +339,39 @@ class Canvas(e):
         self.ctx.moveTo(fromv.x, fromv.y)
         self.ctx.lineTo(tov.x, tov.y)
         self.ctx.stroke()
+
+class Form(e):
+    def __init__(self):
+        super().__init__("form")
+
+class P(e):
+    def __init__(self):
+        super().__init__("p")
+
+class Label(e):
+    def __init__(self):
+        super().__init__("label")
+
+class FileInput(Input):
+    def setmultiple(self, multiple):
+        self.srac(multiple, "multiple", True)
+        return self
+
+    def getmultiple(self):
+        return self.ga("multiple")
+
+    def setaccept(self, accept):
+        return self.sa("accept", accept)
+
+    def getaccept(self):
+        return self.ga("accept")
+
+    def files(self):
+        return self.ga("files")
+
+    def __init__(self):
+        super().__init__("file")
+
+
 ######################################################
 

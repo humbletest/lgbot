@@ -214,6 +214,9 @@ def build():
             Tab("engineconsole", "Engine console", processconsoles["engine"]),
             Tab("botconsole", "Bot console", processconsoles["bot"]),
             Tab("cbuildconsole", "Cbuild console", processconsoles["cbuild"]),
+            Tab("upload", "Upload", FileUploader({
+                "url": "/upload"
+            })),
             Tab("dirbrowser", "Dirbrowser", DirBrowser()),
             Tab("board", "Board", mainboard),
             Tab("config", "Config", buildconfigdiv()),
