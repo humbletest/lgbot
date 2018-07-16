@@ -26,8 +26,12 @@ class DirBrowser(e):
             return name
         return "/".join([self.path(), name])
 
+    def refresh(self):
+        self.loadpathlist()
+
     def build(self, statsobj):
         self.x()        
+        self.a(Button("Refresh", self.refresh).ac("dirbrowserrefreshbutton"))
         dirs = []
         files = []
         for item in statsobj:
@@ -56,7 +60,7 @@ class DirBrowser(e):
                 namediv.ac("dirbrowserdirname").html(text)
                 sizediv.html("dir")
             else:
-                text = "<a href='/file/{}'>{}</a>".format(self.namepath(item["name"]), item["name"])
+                text = "<a href='/file/{}' target='_blank' rel='noopener noreferrer'>{}</a>".format(self.namepath(item["name"]), item["name"])
                 itemdiv.ac("dirbrowserfile")
                 namediv.html(text)
                 sizediv.html("{} bytes".format(item["st_size"]))

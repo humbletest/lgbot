@@ -591,8 +591,8 @@ class FileUploader(e):
         try:
             json = JSON.parse(content)
             if json["success"]:
-                path = "/file/upload/{}".format(json["savefilename"])                
-                self.log("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}'>{}</a>".format(json["filename"], path, path))    
+                path = "/uploads/{}".format(json["savefilename"])                
+                self.log("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}' target='_blank' rel='noopener noreferrer'>{}</a>".format(json["filename"], path, path))    
             else:
                 self.log("File upload failed.", json["status"])
         except:            
@@ -641,8 +641,9 @@ class FileUploader(e):
         self.form = Form().ac("fileuploadform")
         self.desc = P().ac("fileuploadp").html("Upload {}s with the file dialog or by dragging and dropping them onto the dashed region".format(self.acceptdisplay))
         self.fileinput = FileInput().ac("fileuploadfileelem").setmultiple(self.multiple).setaccept(self.accept)        
+        self.fileinput.sa("id", "fileinputelement")
         self.fileinput.ae("change", self.fileinputchanged)
-        self.button = Label().ac("fileuploadbutton").sa("for", "fileuploadfileelem").html("Select some files")
+        self.button = Label().ac("fileuploadbutton").sa("for", "fileinputelement").html("Select some files")
         self.form.aa([self.desc, self.fileinput, self.button])
         self.droparea.a(self.form)
         for eventname in ["dragenter", "dragover", "dragleave", "drop"]:

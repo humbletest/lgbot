@@ -5,6 +5,13 @@
 !/lbot/model.py
 
 
+/upload/*
+!upload/ReadMe.md
+
+/download/*
+!download/ReadMe.md
+
+
 envs/*
 
 

@@ -44,6 +44,7 @@ try:
     fbcreds = json.loads(open("firebase/fbcreds.json").read())
     firebase = pyrebase.initialize_app(fbcreds)
     db = firebase.database()
+    dbstorage = firebase.storage()
     print("initializing firebase done")
 except:
     print("initializing firebase failed")
@@ -63,6 +64,7 @@ print("importing pyrebase done")
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = 'secret!'
 app.config['UPLOAD_FOLDER'] = 'upload'
+app.config['DOWNLOAD_FOLDER'] = 'download'
 #########################################################
 
 #########################################################
@@ -333,7 +335,9 @@ def upload():
         filename = file.filename
         parts = filename.split(".")            
         savefilename = uuid.uuid1().hex + "." + parts[-1]            
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], savefilename))            
+        savepath = os.path.join(app.config['UPLOAD_FOLDER'], savefilename)
+        file.save(savepath)            
+        dbstorage.child("upload").child(savefilename).put(savepath)
         return Response(json.dumps({
             "success": True,
             "filename": filename,
@@ -341,12 +345,18 @@ def upload():
         }), content_type = "application/json")
 
 @app.route("/file/<path:path>")
-def serve_static_envs(path):
+def serve_static_file(path):
     parts = path.split("/")
     basedir = parts[0]
     if basedir in CONFIDENTIAL_DIRS:
         return "sorry, {} directory content is confidential".format(basedir)
     return send_from_directory('.', path)
+
+@app.route("/uploads/<path:path>")
+def serve_uploaded_file(path):        
+    filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], path)    
+    dbstorage.child("upload").child(path).download(filepath)
+    return send_from_directory('.', "download/{}".format(path))
 
 @app.route("/dirlist/<path:path>")
 def dirlist_of_path(path):

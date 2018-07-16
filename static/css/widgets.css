@@ -385,6 +385,10 @@
     font-family: monospace;
 }
 
+.dirbrowserrefreshbutton {
+    width: calc(100%);
+}
+
 .dirbrowsername {
     background-color: #aef;
     font-size: 20px;
