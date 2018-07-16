@@ -1270,8 +1270,8 @@ class FileUploader(e):
         try:
             json = JSON.parse(content)
             if json["success"]:
-                path = "/file/upload/{}".format(json["savefilename"])                
-                self.log("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}'>{}</a>".format(json["filename"], path, path))    
+                path = "/uploads/{}".format(json["savefilename"])                
+                self.log("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}' target='_blank' rel='noopener noreferrer'>{}</a>".format(json["filename"], path, path))    
             else:
                 self.log("File upload failed.", json["status"])
         except:            
@@ -1320,8 +1320,9 @@ class FileUploader(e):
         self.form = Form().ac("fileuploadform")
         self.desc = P().ac("fileuploadp").html("Upload {}s with the file dialog or by dragging and dropping them onto the dashed region".format(self.acceptdisplay))
         self.fileinput = FileInput().ac("fileuploadfileelem").setmultiple(self.multiple).setaccept(self.accept)        
+        self.fileinput.sa("id", "fileinputelement")
         self.fileinput.ae("change", self.fileinputchanged)
-        self.button = Label().ac("fileuploadbutton").sa("for", "fileuploadfileelem").html("Select some files")
+        self.button = Label().ac("fileuploadbutton").sa("for", "fileinputelement").html("Select some files")
         self.form.aa([self.desc, self.fileinput, self.button])
         self.droparea.a(self.form)
         for eventname in ["dragenter", "dragover", "dragleave", "drop"]:
@@ -2148,8 +2149,12 @@ class DirBrowser(e):
             return name
         return "/".join([self.path(), name])
 
+    def refresh(self):
+        self.loadpathlist()
+
     def build(self, statsobj):
         self.x()        
+        self.a(Button("Refresh", self.refresh).ac("dirbrowserrefreshbutton"))
         dirs = []
         files = []
         for item in statsobj:
@@ -2178,7 +2183,7 @@ class DirBrowser(e):
                 namediv.ac("dirbrowserdirname").html(text)
                 sizediv.html("dir")
             else:
-                text = "<a href='/file/{}'>{}</a>".format(self.namepath(item["name"]), item["name"])
+                text = "<a href='/file/{}' target='_blank' rel='noopener noreferrer'>{}</a>".format(self.namepath(item["name"]), item["name"])
                 itemdiv.ac("dirbrowserfile")
                 namediv.html(text)
                 sizediv.html("{} bytes".format(item["st_size"]))

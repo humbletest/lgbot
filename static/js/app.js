@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-16 15:17:41
+// Transcrypt'ed from Python, 2018-07-16 16:17:02
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -3651,8 +3651,8 @@ function app () {
 				try {
 					var json = JSON.parse (content);
 					if (json ['success']) {
-						var path = '/file/upload/{}'.format (json ['savefilename']);
-						self.log ("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}'>{}</a>".format (json ['filename'], path, path));
+						var path = '/uploads/{}'.format (json ['savefilename']);
+						self.log ("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}' target='_blank' rel='noopener noreferrer'>{}</a>".format (json ['filename'], path, path));
 					}
 					else {
 						self.log ('File upload failed.', json ['status']);
@@ -3700,8 +3700,9 @@ function app () {
 				self.form = Form ().ac ('fileuploadform');
 				self.desc = P ().ac ('fileuploadp').html ('Upload {}s with the file dialog or by dragging and dropping them onto the dashed region'.format (self.acceptdisplay));
 				self.fileinput = FileInput ().ac ('fileuploadfileelem').setmultiple (self.multiple).setaccept (self.accept);
+				self.fileinput.sa ('id', 'fileinputelement');
 				self.fileinput.ae ('change', self.fileinputchanged);
-				self.button = Label ().ac ('fileuploadbutton').sa ('for', 'fileuploadfileelem').html ('Select some files');
+				self.button = Label ().ac ('fileuploadbutton').sa ('for', 'fileinputelement').html ('Select some files');
 				self.form.aa (list ([self.desc, self.fileinput, self.button]));
 				self.droparea.a (self.form);
 				var __iterable0__ = list (['dragenter', 'dragover', 'dragleave', 'drop']);
@@ -4641,8 +4642,12 @@ function app () {
 				}
 				return '/'.join (list ([self.path (), py_name]));
 			});},
+			get refresh () {return __get__ (this, function (self) {
+				self.loadpathlist ();
+			});},
 			get build () {return __get__ (this, function (self, statsobj) {
 				self.x ();
+				self.a (Button ('Refresh', self.refresh).ac ('dirbrowserrefreshbutton'));
 				var dirs = list ([]);
 				var files = list ([]);
 				var __iterable0__ = statsobj;
@@ -4690,7 +4695,7 @@ function app () {
 						sizediv.html ('dir');
 					}
 					else {
-						var text = "<a href='/file/{}'>{}</a>".format (self.namepath (item ['name']), item ['name']);
+						var text = "<a href='/file/{}' target='_blank' rel='noopener noreferrer'>{}</a>".format (self.namepath (item ['name']), item ['name']);
 						itemdiv.ac ('dirbrowserfile');
 						namediv.html (text);
 						sizediv.html ('{} bytes'.format (item ['st_size']));
@@ -6407,6 +6412,12 @@ function app () {
 						var fen = response ['fen'];
 						var positioninfo = response ['positioninfo'];
 						mainboard.setfromfen (fen, positioninfo);
+					}
+				}
+				if (__in__ ('owner', response)) {
+					var owner = response ['owner'];
+					if (owner == 'board') {
+						mainboard.siores (response);
 					}
 				}
 				if (__in__ ('owner', response)) {
