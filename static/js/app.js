@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-13 22:55:33
+// Transcrypt'ed from Python, 2018-07-16 15:17:41
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2604,6 +2604,14 @@ function app () {
 				self.e.removeAttribute (key);
 				return self;
 			});},
+			get srac () {return __get__ (this, function (self, cond, key, value) {
+				if (cond) {
+					self.sa (key, value);
+				}
+				else {
+					self.ra (key);
+				}
+			});},
 			get ga () {return __get__ (this, function (self, key) {
 				return self.e.getAttribute (key);
 			});},
@@ -2724,6 +2732,10 @@ function app () {
 			});},
 			get ae () {return __get__ (this, function (self, kind, callback) {
 				self.e.addEventListener (kind, callback);
+				return self;
+			});},
+			get aef () {return __get__ (this, function (self, kind, callback) {
+				self.e.addEventListener (kind, callback, false);
 				return self;
 			});},
 			get disable () {return __get__ (this, function (self) {
@@ -2858,6 +2870,46 @@ function app () {
 				self.ctx.moveTo (fromv.x, fromv.y);
 				self.ctx.lineTo (tov.x, tov.y);
 				self.ctx.stroke ();
+			});}
+		});
+		var Form = __class__ ('Form', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (Form, '__init__') (self, 'form');
+			});}
+		});
+		var P = __class__ ('P', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (P, '__init__') (self, 'p');
+			});}
+		});
+		var Label = __class__ ('Label', [e], {
+			__module__: __name__,
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (Label, '__init__') (self, 'label');
+			});}
+		});
+		var FileInput = __class__ ('FileInput', [Input], {
+			__module__: __name__,
+			get setmultiple () {return __get__ (this, function (self, multiple) {
+				self.srac (multiple, 'multiple', true);
+				return self;
+			});},
+			get getmultiple () {return __get__ (this, function (self) {
+				return self.ga ('multiple');
+			});},
+			get setaccept () {return __get__ (this, function (self, accept) {
+				return self.sa ('accept', accept);
+			});},
+			get getaccept () {return __get__ (this, function (self) {
+				return self.ga ('accept');
+			});},
+			get files () {return __get__ (this, function (self) {
+				return self.ga ('files');
+			});},
+			get __init__ () {return __get__ (this, function (self) {
+				__super__ (FileInput, '__init__') (self, 'file');
 			});}
 		});
 		var WINDOW_SAFETY_MARGIN = 10;
@@ -3574,6 +3626,116 @@ function app () {
 				self.setcontent (self.log);
 			});}
 		});
+		var FileUploader = __class__ ('FileUploader', [e], {
+			__module__: __name__,
+			get fileinputchanged () {return __get__ (this, function (self) {
+				print (self.files ());
+			});},
+			get preventdefaults () {return __get__ (this, function (self, ev) {
+				ev.preventDefault ();
+				ev.stopPropagation ();
+			});},
+			get highlight () {return __get__ (this, function (self) {
+				self.droparea.ac ('highlight');
+			});},
+			get unhighlight () {return __get__ (this, function (self) {
+				self.droparea.rc ('highlight');
+			});},
+			get log () {return __get__ (this, function (self, html) {
+				self.infoitems.append (html);
+				self.infoitems.reverse ();
+				self.info.html ('<br>'.join (self.infoitems));
+				self.infoitems.reverse ();
+			});},
+			get loginfo () {return __get__ (this, function (self, content) {
+				try {
+					var json = JSON.parse (content);
+					if (json ['success']) {
+						var path = '/file/upload/{}'.format (json ['savefilename']);
+						self.log ("uploaded <span class='fileuploadfilename'>{}</span> <a href='{}'>{}</a>".format (json ['filename'], path, path));
+					}
+					else {
+						self.log ('File upload failed.', json ['status']);
+					}
+				}
+				catch (__except0__) {
+					self.log ('Error parsing response as JSON.');
+				}
+			});},
+			get uploadfile () {return __get__ (this, function (self, file) {
+				if (self.url === null) {
+					print ('no upload url');
+					return ;
+				}
+				var formdata = new FormData ();
+				formdata.append ('files', file);
+				var args = {'method': 'POST', 'body': formdata};
+				fetch (self.url, args).then ((function __lambda__ (response) {
+					return response.text ().then ((function __lambda__ (content) {
+						return self.loginfo (content);
+					}), (function __lambda__ (err) {
+						return self.loginfo (err);
+					}));
+				}), (function __lambda__ (err) {
+					return self.loginfo (err);
+				}));
+			});},
+			get handlefiles () {return __get__ (this, function (self, files) {
+				if (typeof files == 'undefined' || (files != null && files .hasOwnProperty ("__kwargtrans__"))) {;
+					var files = self.files;
+				};
+				for (var i = 0; i < files.length; i++) {
+					print ('uploading file {}'.format (i));
+					self.uploadfile (files.item (i));
+				}
+			});},
+			get handledrop () {return __get__ (this, function (self, ev) {
+				self.dt = ev.dataTransfer;
+				self.files = self.dt.files;
+				self.handlefiles ();
+			});},
+			get build () {return __get__ (this, function (self) {
+				self.x ();
+				self.droparea = Div ().ac ('fileuploaddroparea');
+				self.form = Form ().ac ('fileuploadform');
+				self.desc = P ().ac ('fileuploadp').html ('Upload {}s with the file dialog or by dragging and dropping them onto the dashed region'.format (self.acceptdisplay));
+				self.fileinput = FileInput ().ac ('fileuploadfileelem').setmultiple (self.multiple).setaccept (self.accept);
+				self.fileinput.ae ('change', self.fileinputchanged);
+				self.button = Label ().ac ('fileuploadbutton').sa ('for', 'fileuploadfileelem').html ('Select some files');
+				self.form.aa (list ([self.desc, self.fileinput, self.button]));
+				self.droparea.a (self.form);
+				var __iterable0__ = list (['dragenter', 'dragover', 'dragleave', 'drop']);
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var eventname = __iterable0__ [__index0__];
+					self.droparea.aef (eventname, self.preventdefaults);
+				}
+				var __iterable0__ = list (['dragenter', 'dragover']);
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var eventname = __iterable0__ [__index0__];
+					self.droparea.aef (eventname, self.highlight);
+				}
+				var __iterable0__ = list (['dragleave', 'drop']);
+				for (var __index0__ = 0; __index0__ < len (__iterable0__); __index0__++) {
+					var eventname = __iterable0__ [__index0__];
+					self.droparea.aef (eventname, self.unhighlight);
+				}
+				self.droparea.aef ('drop', self.handledrop);
+				self.info = Div ().ac ('fileuploadinfo');
+				self.infoitems = list ([]);
+				self.aa (list ([self.droparea, self.info]));
+			});},
+			get __init__ () {return __get__ (this, function (self, args) {
+				if (typeof args == 'undefined' || (args != null && args .hasOwnProperty ("__kwargtrans__"))) {;
+					var args = dict ({});
+				};
+				__super__ (FileUploader, '__init__') (self, 'div');
+				self.url = args.py_get ('url', null);
+				self.multiple = args.py_get ('multiple', false);
+				self.accept = args.py_get ('accept', 'image/*');
+				self.acceptdisplay = args.py_get ('acceptdisplay', 'image');
+				self.build ();
+			});}
+		});
 		var schemaclipboard = null;
 		var SCHEMA_WRITE_PREFERENCE_DEFAULTS = list ([dict ({'key': 'addchild', 'display': 'Add child', 'default': true}), dict ({'key': 'remove', 'display': 'Remove', 'default': true}), dict ({'key': 'childsopened', 'display': 'Childs opened', 'default': false}), dict ({'key': 'editenabled', 'display': 'Edit enabled', 'default': true}), dict ({'key': 'editkey', 'display': 'Edit key', 'default': true}), dict ({'key': 'editvalue', 'display': 'Edit value', 'default': true}), dict ({'key': 'radio', 'display': 'Radio', 'default': false}), dict ({'key': 'slider', 'display': 'Slider', 'default': false}), dict ({'key': 'check', 'display': 'Check', 'default': false}), dict ({'key': 'showhelpashtml', 'display': 'Show help as HTML', 'default': true})]);
 		var SchemaWritePreference = __class__ ('SchemaWritePreference', [object], {
@@ -3737,15 +3899,6 @@ function app () {
 				else {
 					self.schemacontainer.x ().aa (list ([self.enablebox, self.element, self.helpbox, self.copybox, self.settingsbox]));
 				}
-				var i = self.childparent.getitemindex (self);
-				var newi = i + dir;
-				self.childparent.movechildi (i, newi);
-			});},
-			get elementdragend () {return __get__ (this, function (self, ev) {
-				self.dragendvect = getClientVect (ev);
-				var diff = self.dragendvect.m (self.dragstartvect);
-				var dir = int (diff.y / getglobalcssvarpxint ('--schemabase'));
-				self.move (dir);
 			});},
 			get elementdragstart () {return __get__ (this, function (self, ev) {
 				self.dragstartvect = getClientVect (ev);
@@ -6143,6 +6296,7 @@ function app () {
 				print ('there was an error parsing json', content);
 				return ;
 			}
+			return null;
 		};
 		var serializeputjsonbinerrcallback = function (err) {
 			print ('there was an error putting to json bin', err);
@@ -6178,7 +6332,7 @@ function app () {
 			processconsoles ['cbuild'] = ProcessConsole (dict ({'key': 'cbuild', 'cmdinpcallback': cmdinpcallback, 'cmdaliases': CBUILD_CMD_ALIASES}));
 			mainlogpane = LogPane ();
 			mainboard = Board (dict ({'movecallback': mainboardmovecallback, 'variantchangedcallback': mainboardvariantchangedcallback, 'moveclickedcallback': mainboardmoveclickedcallback, 'enginecommandcallback': mainboardenginecommandcallback, 'socket': socket}));
-			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'})).setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
+			maintabpane = TabPane (dict ({'kind': 'main', 'id': 'main'})).setTabs (list ([Tab ('engineconsole', 'Engine console', processconsoles ['engine']), Tab ('botconsole', 'Bot console', processconsoles ['bot']), Tab ('cbuildconsole', 'Cbuild console', processconsoles ['cbuild']), Tab ('upload', 'Upload', FileUploader (dict ({'url': '/upload'}))), Tab ('dirbrowser', 'Dirbrowser', DirBrowser ()), Tab ('board', 'Board', mainboard), Tab ('config', 'Config', buildconfigdiv ()), Tab ('log', 'Log', mainlogpane), Tab ('src', 'Src', srcdiv), Tab ('about', 'About', Div ().ac ('appabout').html ('Lichess GUI bot.'))]), 'botconsole');
 			ge ('maintabdiv').innerHTML = '';
 			ge ('maintabdiv').appendChild (maintabpane.e);
 		};
@@ -6260,12 +6414,6 @@ function app () {
 					if (owner == 'board') {
 						mainboard.siores (response);
 					}
-				}
-				if (__in__ ('owner', response)) {
-					var owner = response ['owner'];
-					if (owner == 'board') {
-						mainboard.siores (response);
-					}
 					item.openchilds ();
 					item.openchilds ();
 				}
@@ -6314,9 +6462,13 @@ function app () {
 			__all__.Div = Div;
 			__all__.ENGINE_CMD_ALIASES = ENGINE_CMD_ALIASES;
 			__all__.EXCLAM_LIMIT = EXCLAM_LIMIT;
+			__all__.FileInput = FileInput;
+			__all__.FileUploader = FileUploader;
+			__all__.Form = Form;
 			__all__.HORDE_START_FEN = HORDE_START_FEN;
 			__all__.INTERESTING_LIMIT = INTERESTING_LIMIT;
 			__all__.Input = Input;
+			__all__.Label = Label;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
 			__all__.LinkedSlider = LinkedSlider;
@@ -6333,6 +6485,7 @@ function app () {
 			__all__.MultipvInfo = MultipvInfo;
 			__all__.NamedSchemaItem = NamedSchemaItem;
 			__all__.Option = Option;
+			__all__.P = P;
 			__all__.PIECE_KINDS = PIECE_KINDS;
 			__all__.PIECE_NAMES = PIECE_NAMES;
 			__all__.PROMISING_LIMIT = PROMISING_LIMIT;
