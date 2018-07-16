@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-16 16:17:02
+// Transcrypt'ed from Python, 2018-07-16 16:37:16
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2906,7 +2906,7 @@ function app () {
 				return self.ga ('accept');
 			});},
 			get files () {return __get__ (this, function (self) {
-				return self.ga ('files');
+				return self.e.files;
 			});},
 			get __init__ () {return __get__ (this, function (self) {
 				__super__ (FileInput, '__init__') (self, 'file');
@@ -3629,7 +3629,8 @@ function app () {
 		var FileUploader = __class__ ('FileUploader', [e], {
 			__module__: __name__,
 			get fileinputchanged () {return __get__ (this, function (self) {
-				print (self.files ());
+				self.files = self.fileinput.files ();
+				self.handlefiles ();
 			});},
 			get preventdefaults () {return __get__ (this, function (self, ev) {
 				ev.preventDefault ();
@@ -3702,7 +3703,7 @@ function app () {
 				self.fileinput = FileInput ().ac ('fileuploadfileelem').setmultiple (self.multiple).setaccept (self.accept);
 				self.fileinput.sa ('id', 'fileinputelement');
 				self.fileinput.ae ('change', self.fileinputchanged);
-				self.button = Label ().ac ('fileuploadbutton').sa ('for', 'fileinputelement').html ('Select some files');
+				self.button = Label ().ac ('fileuploadbutton').sa ('for', 'fileinputelement').html ('Select some {}s'.format (self.acceptdisplay));
 				self.form.aa (list ([self.desc, self.fileinput, self.button]));
 				self.droparea.a (self.form);
 				var __iterable0__ = list (['dragenter', 'dragover', 'dragleave', 'drop']);
@@ -3731,7 +3732,7 @@ function app () {
 				};
 				__super__ (FileUploader, '__init__') (self, 'div');
 				self.url = args.py_get ('url', null);
-				self.multiple = args.py_get ('multiple', false);
+				self.multiple = args.py_get ('multiple', true);
 				self.accept = args.py_get ('accept', 'image/*');
 				self.acceptdisplay = args.py_get ('acceptdisplay', 'image');
 				self.build ();
