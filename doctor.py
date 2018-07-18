@@ -15,12 +15,12 @@ else:
     config = read_string_from_file("config.py","")
     write_string_to_file("config.old.py", config)
 
-    config = config.replace("liguibot", acc)
+    config = config.replace("lichguibot", acc)
     write_string_to_file("config.py", config)
 
     server = read_string_from_file("server.py","")
     write_string_to_file("server.old.py", server)
 
-    server = server.replace("lgbotconfig", acc + "config")
+    server = server.replace("lichguibotconfig", acc + "config")
     write_string_to_file("server.py", server)
     
