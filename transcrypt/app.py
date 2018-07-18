@@ -10,6 +10,9 @@ PROMISING_LIMIT = 250
 INTERESTING_LIMIT = 150
 DRAWISH_LIMIT = 80
 
+LICH_API_GAMES_EXPORT = "games/export"
+#LICH_API_GAMES_EXPORT = "api/games/user"
+
 def uci_variant_to_variantkey(uci_variant, chess960 = False):
     if uci_variant == "chess":
         if chess960:
@@ -3362,7 +3365,7 @@ class Board(e):
     def loadgames(self):
         self.gamesloadingdiv.html("Games loading...")
         if not ( self.username is None ):
-            lichapiget("games/export/{}?max={}".format(self.username, self.maxgames), self.usertoken, self.gamesloadedok, lambda err: print(err))
+            lichapiget("{}/{}?max={}".format(LICH_API_GAMES_EXPORT, self.username, self.maxgames), self.usertoken, self.gamesloadedok, lambda err: print(err))
 
     def setconfigschema(self, configschema):
         self.configschema = configschema

@@ -1,5 +1,5 @@
 "use strict";
-// Transcrypt'ed from Python, 2018-07-16 16:37:16
+// Transcrypt'ed from Python, 2018-07-17 20:27:26
 function app () {
     var __symbols__ = ['__py3.6__', '__esv5__'];
     var __all__ = {};
@@ -2212,6 +2212,7 @@ function app () {
 		var PROMISING_LIMIT = 250;
 		var INTERESTING_LIMIT = 150;
 		var DRAWISH_LIMIT = 80;
+		var LICH_API_GAMES_EXPORT = 'games/export';
 		var uci_variant_to_variantkey = function (uci_variant, chess960) {
 			if (typeof chess960 == 'undefined' || (chess960 != null && chess960 .hasOwnProperty ("__kwargtrans__"))) {;
 				var chess960 = false;
@@ -6093,7 +6094,7 @@ function app () {
 			get loadgames () {return __get__ (this, function (self) {
 				self.gamesloadingdiv.html ('Games loading...');
 				if (!(self.username === null)) {
-					lichapiget ('games/export/{}?max={}'.format (self.username, self.maxgames), self.usertoken, self.gamesloadedok, (function __lambda__ (err) {
+					lichapiget ('{}/{}?max={}'.format (LICH_API_GAMES_EXPORT, self.username, self.maxgames), self.usertoken, self.gamesloadedok, (function __lambda__ (err) {
 						return print (err);
 					}));
 				}
@@ -6480,6 +6481,7 @@ function app () {
 			__all__.HORDE_START_FEN = HORDE_START_FEN;
 			__all__.INTERESTING_LIMIT = INTERESTING_LIMIT;
 			__all__.Input = Input;
+			__all__.LICH_API_GAMES_EXPORT = LICH_API_GAMES_EXPORT;
 			__all__.Label = Label;
 			__all__.LabeledLinkedCheckBox = LabeledLinkedCheckBox;
 			__all__.LinkedCheckBox = LinkedCheckBox;
