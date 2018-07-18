@@ -10,6 +10,9 @@ PROMISING_LIMIT = 250
 INTERESTING_LIMIT = 150
 DRAWISH_LIMIT = 80
 
+LICH_API_GAMES_EXPORT = "games/export"
+#LICH_API_GAMES_EXPORT = "api/games/user"
+
 def uci_variant_to_variantkey(uci_variant, chess960 = False):
     if uci_variant == "chess":
         if chess960:

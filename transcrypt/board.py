@@ -344,7 +344,7 @@ class Board(e):
     def loadgames(self):
         self.gamesloadingdiv.html("Games loading...")
         if not ( self.username is None ):
-            lichapiget("games/export/{}?max={}".format(self.username, self.maxgames), self.usertoken, self.gamesloadedok, lambda err: print(err))
+            lichapiget("{}/{}?max={}".format(LICH_API_GAMES_EXPORT, self.username, self.maxgames), self.usertoken, self.gamesloadedok, lambda err: print(err))
 
     def setconfigschema(self, configschema):
         self.configschema = configschema

@@ -50,7 +50,7 @@ except:
     print("initializing firebase failed")
 print("getting stored config")
 try:    
-    storedconfig = db.child("lichguibotconfig").get().val()    
+    storedconfig = db.child("lgbotconfig").get().val()    
     write_string_to_file("localconfig.json", storedconfig)
     print("getting stored config done, size", len(storedconfig))
 except:
@@ -221,7 +221,7 @@ class socket_handler:
                         rjsonobj["kind"] = "configstored"
                         try:
                             print("setting config on firebase")
-                            db.child("lichguibotconfig").set(jsonobj["data"])
+                            db.child("lgbotconfig").set(jsonobj["data"])
                             print("setting config on firebase done")            
                             rjsonobj["status"] = "config stored locally and remotely"
                         except:                            
@@ -257,7 +257,7 @@ class socket_handler:
                         rjsonobj["kind"] = "setlocalconfig"
                         try:
                             print("getting config from firebase")
-                            rjsonobj["data"] = db.child("lichguibotconfig").get().val()
+                            rjsonobj["data"] = db.child("lgbotconfig").get().val()
                             write_string_to_file("localconfig.json", rjsonobj["data"])
                             print("getting config from firebase done, size", len(rjsonobj["data"]))
                         except:
